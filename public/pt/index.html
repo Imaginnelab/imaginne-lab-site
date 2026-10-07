@@ -18,6 +18,7 @@
 <script src="/assets/js/auth-config.js"></script>
 <script src="/assets/js/maintenance.js"></script>
 <link rel="stylesheet" href="/assets/css/products.css">
+<link rel="stylesheet" href="/assets/css/process.css">
 <link rel="alternate" hreflang="pt-BR" href="/pt/">
 <link rel="alternate" hreflang="en" href="/">
 <link rel="alternate" hreflang="es" href="/es/">
@@ -259,45 +260,110 @@
     </div>
   </section>
 
-  <section class="section" id="como-funciona" style="padding-top:0;">
+  <section class="section journey" id="como-funciona" data-process aria-labelledby="journey-heading">
     <div class="wrap">
-      <div class="section-head">
-        <h2 class="heading">Da conversa à entrega, em quatro etapas.</h2>
-      </div>
-
-      <div class="process-grid" data-reveal-group>
-        <div class="process-step">
-          <span class="num">01</span>
-          <div class="icon-wrap">
-            <svg class="icon" viewBox="0 0 256 256"><path fill="currentColor" d="M168,112a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,112Zm-8,24H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16Zm72-8A104,104,0,0,1,79.12,219.82L45.07,231.17a16,16,0,0,1-20.24-20.24l11.35-34.05A104,104,0,1,1,232,128Zm-16,0A88,88,0,1,0,51.81,172.06a8,8,0,0,1,.66,6.54L40,216,77.4,203.53a7.85,7.85,0,0,1,2.53-.42,8,8,0,0,1,4,1.08A88,88,0,0,0,216,128Z"/></svg>
+      <header class="journey-header">
+        <p class="journey-badge">Como funciona</p>
+        <h2 id="journey-heading">Da sua ideia<br><span>a uma peça só sua.</span></h2>
+        <p>Uma conversa, um desenho e camadas de cuidado. Veja como transformamos o que você imagina em algo que pode segurar.</p>
+      </header>
+      <div class="journey-track" data-process-track>
+        <div class="journey-spine" data-process-spine aria-hidden="true"><span class="journey-spine-fill" data-process-fill></span></div>
+        <ol class="journey-steps">
+        <li class="journey-step" data-process-step>
+          <span class="journey-point" data-process-point aria-hidden="true"></span>
+          <div class="journey-copy">
+            <p class="journey-kicker"><span class="journey-number" aria-hidden="true">01</span>A conversa</p>
+            <h3>Conte <span>sua ideia.</span></h3>
+            <p class="journey-description">Chame no Instagram, descreva a peça e mande referências se tiver. Acertamos os detalhes juntos.</p>
+            <ul class="journey-checklist">
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Envie um esboço, foto ou inspiração.</span></li>
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Conte como você vai usar a peça.</span></li>
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Combine os detalhes antes de começar.</span></li>
+            </ul>
           </div>
-          <h3>Conte sua ideia</h3>
-          <p>Chame no Instagram, descreva a peça e mande referências se tiver.</p>
-        </div>
-        <div class="process-step">
-          <span class="num">02</span>
-          <div class="icon-wrap">
-            <svg class="icon" viewBox="0 0 256 256"><path fill="currentColor" d="M200.77,53.89A103.27,103.27,0,0,0,128,24h-1.07A104,104,0,0,0,24,128c0,43,26.58,79.06,69.36,94.17A32,32,0,0,0,136,192a16,16,0,0,1,16-16h46.21a31.81,31.81,0,0,0,31.2-24.88,104.43,104.43,0,0,0,2.59-24A103.28,103.28,0,0,0,200.77,53.89Z"/></svg>
+          <div class="journey-stage journey-stage-1" aria-hidden="true" inert>
+            <div class="journey-chat">
+              <div class="journey-chat-brand"><span class="journey-avatar">il.</span><span>Imaginne Lab</span><span class="journey-online"></span></div>
+              <p class="journey-bubble journey-bubble-out journey-beat-1">Tenho uma ideia para uma peça sob medida.</p>
+              <p class="journey-bubble journey-beat-2">Vamos dar forma a ela.</p>
+              <div class="journey-attachment journey-beat-3"><svg viewBox="0 0 180 156" aria-hidden="true"><path d="M74 28h32l-7 27 21 53-8 30H68l-8-30 21-53z"/><path d="m74 28 25 27M81 55h18m-39 53h60m-52 30 13-83m31 83L99 55"/></svg><span>Sua referência</span></div>
+              <p class="journey-confirm journey-beat-4"><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>Ideia recebida</p>
+            </div>
           </div>
-          <h3>Modelamos em 3D</h3>
-          <p>Desenhamos o arquivo e ajustamos tamanho, cor e acabamento com você.</p>
-        </div>
-        <div class="process-step">
-          <span class="num">03</span>
-          <div class="icon-wrap">
-            <svg class="icon" viewBox="0 0 256 256"><path fill="currentColor" d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,32l80.34,44L128,120,47.66,76ZM40,90l80,43.78v85.79L40,175.82Zm96,129.57V133.82L216,90v85.78Z"/></svg>
+        </li>
+        <li class="journey-step" data-process-step>
+          <span class="journey-point" data-process-point aria-hidden="true"></span>
+          <div class="journey-copy">
+            <p class="journey-kicker"><span class="journey-number" aria-hidden="true">02</span>O desenho</p>
+            <h3>Damos forma <span>em 3D.</span></h3>
+            <p class="journey-description">Desenhamos o arquivo e ajustamos tamanho, cor e acabamento com você. O projeto ganha forma para atender ao que você precisa.</p>
+            <ul class="journey-checklist">
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Um modelo feito para o seu projeto.</span></li>
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Tamanho, cor e acabamento escolhidos juntos.</span></li>
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Sua aprovação antes de imprimir.</span></li>
+            </ul>
           </div>
-          <h3>Imprimimos com capricho</h3>
-          <p>Camada por camada, com revisão e acabamento manual no final.</p>
-        </div>
-        <div class="process-step">
-          <span class="num">04</span>
-          <div class="icon-wrap">
-            <svg class="icon" viewBox="0 0 256 256"><path fill="currentColor" d="M255.42,117l-14-35A15.93,15.93,0,0,0,226.58,72H192V64a8,8,0,0,0-8-8H32A16,16,0,0,0,16,72V184a16,16,0,0,0,16,16H49a32,32,0,0,0,62,0h50a32,32,0,0,0,62,0h17a16,16,0,0,0,16-16V120A7.94,7.94,0,0,0,255.42,117Z"/></svg>
+          <div class="journey-stage journey-stage-2" aria-hidden="true" inert>
+            <div class="journey-design">
+              <p class="journey-scene-label">Prévia em 3D</p>
+              <div class="journey-model-grid"><svg class="journey-wireframe" viewBox="0 0 180 156" aria-hidden="true"><g><path d="M74 28h32l-7 27 21 53-8 30H68l-8-30 21-53z"/><path d="M74 28h32M81 55h18m-39 53h60m-52 30h44M74 28l25 27M106 28 81 55m-13 83 13-83m31 83L99 55m-39 53 39-53m21 53L81 55M68 138l52-30m-8 30-52-30"/></g></svg></div>
+              <div class="journey-chips"><span class="journey-chip journey-chip-size">Tamanho <span class="journey-size-before">8 cm</span><span class="journey-size-after">12 cm</span></span><span class="journey-chip">Cor<span class="journey-color-dot"></span></span></div>
+              <p class="journey-confirm journey-beat-4"><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>Projeto aprovado</p>
+            </div>
           </div>
-          <h3>Você recebe pronto</h3>
-          <p>Embalado com cuidado e enviado até a sua porta.</p>
-        </div>
+        </li>
+        <li class="journey-step" data-process-step>
+          <span class="journey-point" data-process-point aria-hidden="true"></span>
+          <div class="journey-copy">
+            <p class="journey-kicker"><span class="journey-number" aria-hidden="true">03</span>A produção</p>
+            <h3>Impressão <span>com capricho.</span></h3>
+            <p class="journey-description">Camada por camada, sua peça se torna real. Revisamos a impressão e fazemos o acabamento à mão, cuidando dos pequenos detalhes.</p>
+            <ul class="journey-checklist">
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Construída uma camada por vez.</span></li>
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Revisada ao longo do processo.</span></li>
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Acabamento à mão no toque final.</span></li>
+            </ul>
+          </div>
+          <div class="journey-stage journey-stage-3" aria-hidden="true" inert>
+            <div class="journey-print">
+              <p class="journey-scene-label">Imprimindo sua peça</p>
+              <svg class="journey-printer" viewBox="0 0 280 200" aria-hidden="true">
+                <path class="journey-printer-frame" d="M34 176V24h212v152M34 38h212M24 177h232"/>
+                <g class="journey-print-layers"><path class="journey-layer-0" d="M108 169h64"/><path class="journey-layer-1" d="M106 161h68"/><path class="journey-layer-2" d="M104 153h72"/><path class="journey-layer-3" d="M106 145h68"/><path class="journey-layer-4" d="M109 137h62"/><path class="journey-layer-5" d="M112 129h56"/><path class="journey-layer-6" d="M115 121h50"/><path class="journey-layer-7" d="M118 113h44"/><path class="journey-layer-8" d="M121 105h38"/><path class="journey-layer-9" d="M124 97h32"/><path class="journey-layer-10" d="M126 89h28"/><path class="journey-layer-11" d="M126 81h28"/></g>
+                <g class="journey-print-nozzle"><path d="M124 39h32v15h-32zM132 54h16l-8 12z"/><path d="M140 24v15"/></g>
+              </svg>
+              <div class="journey-print-status"><span>Camada por camada</span><span class="journey-percent"><span class="journey-percent-0">0%</span><span class="journey-percent-35">35%</span><span class="journey-percent-70">70%</span><span class="journey-percent-100">100%</span></span></div>
+              <div class="journey-progress"><span></span></div>
+              <p class="journey-confirm journey-beat-4"><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>Acabamento à mão</p>
+            </div>
+          </div>
+        </li>
+        <li class="journey-step" data-process-step>
+          <span class="journey-point" data-process-point aria-hidden="true"></span>
+          <div class="journey-copy">
+            <p class="journey-kicker"><span class="journey-number" aria-hidden="true">04</span>A chegada</p>
+            <h3>Pronta <span>para você.</span></h3>
+            <p class="journey-description">Embalada com cuidado e enviada até a sua porta. Combinamos os detalhes da entrega com você pelo Instagram.</p>
+            <ul class="journey-checklist">
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Embalagem que protege a sua peça.</span></li>
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Detalhes da entrega combinados juntos.</span></li>
+              <li><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Pronta para usar, presentear ou decorar.</span></li>
+            </ul>
+          </div>
+          <div class="journey-stage journey-stage-4" aria-hidden="true" inert>
+            <div class="journey-delivery">
+              <p class="journey-scene-label">Embalada com cuidado</p>
+              <div class="journey-parcel"><svg viewBox="0 0 240 180" aria-hidden="true">
+                <path class="journey-box-side" d="m38 63 82 40v66l-82-41z"/><path class="journey-box-front" d="m120 103 82-40v65l-82 41z"/>
+                <g class="journey-box-lid"><path d="m38 63 82-40 82 40-82 40z"/><path class="journey-box-tape" d="m107 29 26-1 69 35-25 12z"/></g>
+                <g class="journey-box-label"><path d="m145 110 34-17v25l-34 17z"/><path d="m151 113 22-11m-22 18 17-8"/></g>
+              </svg><span class="journey-parcel-label">Feita para você</span></div>
+              <p class="journey-confirm journey-beat-4"><svg class="journey-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>Pronta para você</p>
+            </div>
+          </div>
+        </li>
+        </ol>
       </div>
     </div>
   </section>
@@ -402,5 +468,6 @@
 <script src="/assets/js/auth.js"></script>
 <script src="/assets/js/transition.js"></script>
 <script type="module" src="/assets/js/products.js"></script>
+<script type="module" src="/assets/js/process.js"></script>
 </body>
 </html>
