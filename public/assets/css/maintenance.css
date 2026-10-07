@@ -39,13 +39,6 @@ html[data-maintenance="curtain"] .auth-dialog { visibility: visible; }
   text-transform: uppercase;
   color: var(--ink-faint);
 }
-.maintenance-eyebrow::before {
-  content: '';
-  width: 0.5em;
-  height: 0.5em;
-  border-radius: 50%;
-  background: var(--amber);
-}
 .maintenance-title {
   margin: 0.9rem 0 0;
   font-size: clamp(2.2rem, 7vw, 3.2rem);
