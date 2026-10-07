@@ -120,16 +120,6 @@
   const helpersPromise = import('/assets/js/account-profile.js').then(module => { profileHelpers = module; render(); return module; });
   const adminLink = account.querySelector('.auth-admin');
   adminLink.href = '/admin/?lang=' + document.documentElement.lang.split('-')[0];
-  // Shortcut to the dashboard beside the avatar, for administrators only. It is a convenience:
-  // the dashboard itself checks the account again on the server.
-  const shortcut = document.createElement('a');
-  shortcut.className = 'auth-admin-shortcut';
-  shortcut.href = adminLink.href;
-  shortcut.title = t.admin;
-  shortcut.setAttribute('aria-label', t.admin);
-  shortcut.hidden = true;
-  shortcut.append(adminLink.querySelector('svg').cloneNode(true));
-  trigger.before(shortcut);
   let clientPromise;
   function status(text = '', error = false) {
     message.textContent = text;
@@ -159,7 +149,6 @@
     account.querySelector('.auth-full-name').textContent = name;
     account.querySelector('.auth-email').textContent = session?.user?.email || '';
     adminLink.hidden = !session || profile?.isadmin !== true;
-    shortcut.hidden = adminLink.hidden;
     account.querySelector('.auth-avatar').textContent = initials;
     dialog.querySelector('.auth-switch').hidden = !!session;
     dialog.querySelectorAll('[data-registration]').forEach(el => { el.hidden = !registration; });

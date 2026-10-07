@@ -94,6 +94,8 @@ function mountTabs() {
     badge.textContent = total === null ? '' : new Intl.NumberFormat(lang).format(total);
     if (total === null) tabs[name].removeAttribute('aria-label');
     else tabs[name].setAttribute('aria-label', t.tabCount.replace('{label}', sections[name].label).replace('{n}', badge.textContent));
+    // The tab just changed width, so the underline follows it.
+    placeIndicator();
   }
   const bar = document.getElementById('admin-tabs');
   let selected = '';
