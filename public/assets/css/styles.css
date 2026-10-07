@@ -36,9 +36,20 @@
 .auth-message:empty { margin: 0; }
 .auth-message.is-error { color: #b3261e; }
 [data-theme="dark"] .auth-message.is-error { color: #ffb4ab; }
-.auth-email { margin-bottom: 1.5rem; overflow-wrap: anywhere; }
-.auth-full-name { font-size: 1.25rem; font-weight: 600; overflow-wrap: anywhere; }
-.auth-account-actions { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.auth-identity { display: flex; align-items: center; gap: 1rem; padding: 1rem; margin-bottom: 1.25rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-sunken); }
+.auth-identity > div { min-width: 0; }
+.auth-avatar { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--forest); color: #FBF9F2; font-weight: 600; letter-spacing: .05em; }
+.auth-email { color: var(--ink-soft); font-size: .95rem; overflow-wrap: anywhere; }
+.auth-full-name { font-size: 1.15rem; font-weight: 600; overflow-wrap: anywhere; }
+.auth-account-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: .75rem; }
+.auth-account-actions .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; min-height: 48px; padding-inline: 1rem; white-space: nowrap; }
+.auth-account-actions svg, .auth-admin-shortcut svg { width: 18px; height: 18px; flex: none; }
+.auth-admin-shortcut { display: grid; place-items: center; width: 42px; height: 42px; flex: none; border: 1px solid var(--border-strong); border-radius: 50%; color: var(--ink); transition: border-color .2s, box-shadow .2s, transform .2s; }
+.auth-admin-shortcut[hidden] { display: none; }
+.auth-admin-shortcut:hover, .auth-admin-shortcut:focus-visible { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); transform: translateY(-1px); }
+.auth-admin-shortcut:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+@media (max-width: 420px) { .auth-account-actions { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .auth-admin-shortcut { transition: none; } }
 .auth-trigger.is-authenticated, html[data-auth="pending"] .auth-trigger { width: 42px; height: 42px; min-width: 42px; min-height: 42px; padding: 0; border-radius: 50%; border-color: transparent; background: var(--forest); color: #FBF9F2; font-size: .78rem; font-weight: 600; letter-spacing: .05em; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12), 0 1px 2px rgba(var(--shadow-color), .2); }
 [data-theme="dark"] .auth-trigger.is-authenticated, html[data-auth="pending"][data-theme="dark"] .auth-trigger { border-color: var(--border-strong); box-shadow: none; }
 .auth-trigger.is-authenticated:hover, .auth-trigger.is-authenticated:focus-visible, html[data-auth="pending"] .auth-trigger:hover, html[data-auth="pending"] .auth-trigger:focus-visible { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); transform: translateY(-1px); }

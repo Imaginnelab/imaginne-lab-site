@@ -121,3 +121,34 @@ export function copyName(name, suffix, max = 120) {
   const head = Array.from(String(name ?? '').trim()).slice(0, max - tail.length);
   return (head.join('').trimEnd() + tail.join('')).trim();
 }
+
+// ---- Paged lists (admin) -------------------------------------------------------------------
+
+// Rows fetched per request by the infinite lists.
+export const PAGE_SIZE = 12;
+
+// How many rows to ask for when a list is reloaded from the start: as many whole pages as
+// were already on screen, so the person stays where they were after saving or deleting.
+export function reloadSize(shown, pageSize = PAGE_SIZE) {
+  const count = Number.isInteger(shown) && shown > 0 ? shown : 0;
+  return Math.max(1, Math.ceil(count / pageSize)) * pageSize;
+}
+
+// Rows of a new page that are not on screen yet. Pages are read by position, so a row can
+// show up twice when something was added or reordered between two requests.
+export function freshRows(current, incoming) {
+  const known = new Set((Array.isArray(current) ? current : []).map((row) => row?.id));
+  const fresh = [];
+  for (const row of Array.isArray(incoming) ? incoming : []) {
+    if (row?.id === undefined || row?.id === null || known.has(row.id)) continue;
+    known.add(row.id);
+    fresh.push(row);
+  }
+  return fresh;
+}
+
+// Number of views of a product; 0 when the column is missing or not a number.
+export function viewCount(product) {
+  const views = Number(product?.view_count);
+  return Number.isFinite(views) && views > 0 ? Math.floor(views) : 0;
+}

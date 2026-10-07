@@ -5,6 +5,20 @@ a[href="#products"][hidden],
 a[href="#produtos"][hidden],
 a[href="#productos"][hidden] { display: none; }
 .products-carousel { position: relative; }
+.products-empty {
+  display: grid;
+  place-items: center;
+  min-height: 12rem;
+  margin: 0;
+  padding: clamp(2rem, 6vw, 4rem) 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  color: var(--ink-soft);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  text-align: center;
+}
 .products-controls { display: flex; justify-content: flex-end; gap: .5rem; margin-bottom: 1rem; }
 .products-arrow {
   display: inline-flex;
@@ -29,8 +43,11 @@ a[href="#productos"][hidden] { display: none; }
   gap: var(--products-gap);
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: .125rem;
+  scroll-behavior: auto;
+  cursor: grab;
+  user-select: none;
   /* Keep the skeleton and the populated rail the same height on classic-scrollbar systems. */
   scrollbar-width: none;
   list-style: none;
@@ -38,6 +55,26 @@ a[href="#productos"][hidden] { display: none; }
   padding: .25rem .125rem 1rem;
 }
 .products-track::-webkit-scrollbar { display: none; }
+.products-track.products-interacting { scroll-snap-type: none; }
+.products-track.products-dragging { cursor: grabbing; }
+.products-track .products-order, .products-track button { cursor: pointer; }
+.products-all-link { margin-right: auto; }
+.products-featured { border-color: color-mix(in srgb, #f4c542 60%, var(--border)); }
+.products-featured .products-name { position: relative; padding-right: 2.25rem; }
+.products-featured-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, #f4c542 15%, var(--bg-elevated));
+  pointer-events: none;
+}
+.products-featured-badge svg { width: 21px; height: 21px; fill: #f4c542; stroke: #916b16; stroke-width: .8; }
 .products-card {
   min-width: 0;
   overflow: hidden;
@@ -226,6 +263,6 @@ a[href="#productos"][hidden] { display: none; }
   .products-track { grid-auto-columns: 82%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .products-track { scroll-behavior: auto; }
+  .products-track { scroll-behavior: auto; scroll-snap-type: none; }
   .products-arrow { transition: none; }
 }

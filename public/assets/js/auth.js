@@ -4,7 +4,7 @@
       login: 'Entrar', signup: 'Criar conta', account: 'Minha conta', close: 'Fechar',
       name: 'Nome', email: 'E-mail', password: 'Senha', confirm: 'Confirme a senha',
       invitation: 'Não tem uma conta?', register: 'Cadastre-se', back: 'Já tenho uma conta',
-      wait: 'Aguarde…', logout: 'Sair', mismatch: 'As senhas não coincidem.',
+      wait: 'Aguarde…', logout: 'Sair', admin: 'Painel admin', mismatch: 'As senhas não coincidem.',
       nameRequired: 'Informe seu nome.', hint: 'Use pelo menos 8 caracteres.',
       accountCreated: 'Conta criada com sucesso! Entre com seu e-mail e senha.',
       exists: 'Este e-mail já está cadastrado. Clique em “Já tenho uma conta” para entrar.',
@@ -24,7 +24,7 @@
       login: 'Sign in', signup: 'Create account', account: 'My account', close: 'Close',
       name: 'Name', email: 'Email', password: 'Password', confirm: 'Confirm password',
       invitation: 'Don’t have an account?', register: 'Sign up', back: 'I already have an account',
-      wait: 'Please wait…', logout: 'Sign out', mismatch: 'Passwords do not match.',
+      wait: 'Please wait…', logout: 'Sign out', admin: 'Admin dashboard', mismatch: 'Passwords do not match.',
       nameRequired: 'Enter your name.', hint: 'Use at least 8 characters.',
       accountCreated: 'Account created successfully! Sign in with your email and password.',
       exists: 'This email is already registered. Click “I already have an account” to sign in.',
@@ -44,7 +44,7 @@
       login: 'Entrar', signup: 'Crear cuenta', account: 'Mi cuenta', close: 'Cerrar',
       name: 'Nombre', email: 'Correo electrónico', password: 'Contraseña', confirm: 'Confirmar contraseña',
       invitation: '¿No tienes una cuenta?', register: 'Regístrate', back: 'Ya tengo una cuenta',
-      wait: 'Espera…', logout: 'Cerrar sesión', mismatch: 'Las contraseñas no coinciden.',
+      wait: 'Espera…', logout: 'Cerrar sesión', admin: 'Panel admin', mismatch: 'Las contraseñas no coinciden.',
       nameRequired: 'Introduce tu nombre.', hint: 'Usa al menos 8 caracteres.',
       accountCreated: '¡Cuenta creada correctamente! Inicia sesión con tu correo y contraseña.',
       exists: 'Este correo ya está registrado. Haz clic en “Ya tengo una cuenta” para entrar.',
@@ -83,7 +83,7 @@
         <button class="btn btn-primary" type="submit"></button>
       </fieldset>
     </form>
-    <div class="auth-account" hidden><p class="auth-full-name"></p><p class="auth-email"></p><div class="auth-account-actions"><a class="btn btn-ghost auth-admin" hidden>Dashboard admin</a><button class="btn btn-primary" type="button">${t.logout}</button></div></div>
+    <div class="auth-account" hidden><div class="auth-identity"><span class="auth-avatar" aria-hidden="true"></span><div><p class="auth-full-name"></p><p class="auth-email"></p></div></div><div class="auth-account-actions"><a class="btn btn-primary auth-admin" hidden><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 5h7v8H4zM13 5h7v5h-7zM13 12h7v7h-7zM4 15h7v4H4z"/></svg><span>${t.admin}</span></a><button class="btn btn-ghost" type="button">${t.logout}</button></div></div>
     <p class="auth-message" role="status" aria-live="polite" aria-atomic="true"></p>
     <p class="auth-switch"><span></span> <button type="button"></button></p>`;
   document.body.append(dialog);
@@ -120,6 +120,16 @@
   const helpersPromise = import('/assets/js/account-profile.js').then(module => { profileHelpers = module; render(); return module; });
   const adminLink = account.querySelector('.auth-admin');
   adminLink.href = '/admin/?lang=' + document.documentElement.lang.split('-')[0];
+  // Shortcut to the dashboard beside the avatar, for administrators only. It is a convenience:
+  // the dashboard itself checks the account again on the server.
+  const shortcut = document.createElement('a');
+  shortcut.className = 'auth-admin-shortcut';
+  shortcut.href = adminLink.href;
+  shortcut.title = t.admin;
+  shortcut.setAttribute('aria-label', t.admin);
+  shortcut.hidden = true;
+  shortcut.append(adminLink.querySelector('svg').cloneNode(true));
+  trigger.before(shortcut);
   let clientPromise;
   function status(text = '', error = false) {
     message.textContent = text;
@@ -149,6 +159,8 @@
     account.querySelector('.auth-full-name').textContent = name;
     account.querySelector('.auth-email').textContent = session?.user?.email || '';
     adminLink.hidden = !session || profile?.isadmin !== true;
+    shortcut.hidden = adminLink.hidden;
+    account.querySelector('.auth-avatar').textContent = initials;
     dialog.querySelector('.auth-switch').hidden = !!session;
     dialog.querySelectorAll('[data-registration]').forEach(el => { el.hidden = !registration; });
     fields.namedItem('name').required = registration;

@@ -50,6 +50,11 @@
           <button class="btn btn-ghost btn-sm" id="products-retry" type="button" hidden data-i18n="retry">Try again</button>
         </div>
         <ul id="products-list" class="products-list"></ul>
+        <div class="list-more" id="products-more" data-mode="end">
+          <span class="list-spinner" aria-hidden="true"></span>
+          <span class="list-more-text" id="products-more-text" role="status"></span>
+          <button class="btn btn-ghost btn-sm" id="products-more-retry" type="button" hidden data-i18n="retry">Try again</button>
+        </div>
       </section>
 
       <section class="products coupons" id="coupons" aria-labelledby="coupons-title">
@@ -66,6 +71,11 @@
           <button class="btn btn-ghost btn-sm" id="coupons-retry" type="button" hidden data-i18n="retry">Try again</button>
         </div>
         <ul id="coupons-list" class="products-list"></ul>
+        <div class="list-more" id="coupons-more" data-mode="end">
+          <span class="list-spinner" aria-hidden="true"></span>
+          <span class="list-more-text" id="coupons-more-text" role="status"></span>
+          <button class="btn btn-ghost btn-sm" id="coupons-more-retry" type="button" hidden data-i18n="retry">Try again</button>
+        </div>
       </section>
     </section>
   </main>
@@ -190,9 +200,10 @@
     <li class="product-row">
       <img class="product-thumb" alt="" loading="lazy" decoding="async" width="64" height="64">
       <div class="product-info">
-        <p class="product-name"></p>
+        <p class="product-name"><span class="product-name-text"></span><span class="product-star" role="img" hidden><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 2.6 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5L2.5 9.5l6.6-.9z"/></svg></span></p>
         <p class="product-price"></p>
         <p class="product-photos-count"></p>
+        <p class="product-views"></p>
       </div>
       <p class="product-status"><span class="product-badge"></span><span class="product-3d" hidden>3D</span><span class="product-order"></span></p>
       <div class="product-actions">

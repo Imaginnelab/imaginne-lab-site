@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CURRENCY, MAX_PHOTOS, copyName, formatFileSize, formatPrice, imagePaths, imageUrl, localized, modelUrl, parsePrice, priceCents,
+  CURRENCY, MAX_PHOTOS, PAGE_SIZE, copyName, freshRows, reloadSize, viewCount, formatFileSize, formatPrice, imagePaths, imageUrl, localized, modelUrl, parsePrice, priceCents,
 } from '../public/assets/js/product-format.js';
 
 // Intl separates the symbol with a no-break space in some locales.
@@ -162,4 +162,39 @@ test('modelUrl builds the public URL in the product-models bucket, only for .glb
   assert.equal(modelUrl(undefined, 'abc.glb'), '');
   // imageUrl keeps pointing at the photo bucket.
   assert.equal(imageUrl(base, 'abc.png'), `${base}/storage/v1/object/public/product-images/abc.png`);
+});
+
+test('reloadSize asks for whole pages covering what was on screen', () => {
+  assert.equal(PAGE_SIZE, 12);
+  assert.equal(reloadSize(0), 12);
+  assert.equal(reloadSize(1), 12);
+  assert.equal(reloadSize(12), 12);
+  assert.equal(reloadSize(13), 24);
+  assert.equal(reloadSize(36), 36);
+  assert.equal(reloadSize(37), 48);
+  assert.equal(reloadSize(5, 4), 8);
+  for (const bad of [-3, 2.5, NaN, null, undefined, '12']) assert.equal(reloadSize(bad), 12, String(bad));
+});
+
+test('freshRows keeps only rows that are not on screen yet, in order', () => {
+  const shown = [{ id: 'a' }, { id: 'b' }];
+  assert.deepEqual(freshRows(shown, [{ id: 'b' }, { id: 'c' }, { id: 'd' }]), [{ id: 'c' }, { id: 'd' }]);
+  assert.deepEqual(freshRows(shown, [{ id: 'a' }, { id: 'b' }]), []);
+  assert.deepEqual(freshRows([], [{ id: 'x' }, { id: 'y' }]), [{ id: 'x' }, { id: 'y' }]);
+  // A page that repeats a row within itself, or carries rows without an id, is cleaned too.
+  assert.deepEqual(freshRows(shown, [{ id: 'c' }, { id: 'c' }, {}, null, { id: null }, { id: 'e' }]), [{ id: 'c' }, { id: 'e' }]);
+  assert.deepEqual(freshRows(null, null), []);
+  assert.deepEqual(freshRows(shown, 'nope'), []);
+  // The lists on screen are never changed in place.
+  assert.deepEqual(shown, [{ id: 'a' }, { id: 'b' }]);
+});
+
+test('viewCount reads the counter and tolerates a missing column', () => {
+  assert.equal(viewCount({ view_count: 42 }), 42);
+  assert.equal(viewCount({ view_count: '1500' }), 1500);
+  assert.equal(viewCount({ view_count: 0 }), 0);
+  for (const product of [{}, { view_count: null }, { view_count: -4 }, { view_count: 'abc' }, { view_count: NaN }, null, undefined]) {
+    assert.equal(viewCount(product), 0);
+  }
+  assert.equal(viewCount({ view_count: 7.9 }), 7);
 });

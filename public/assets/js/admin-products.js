@@ -1,14 +1,16 @@
 // Product manager for /admin/. The database (RLS) decides who may read or write; this file only
 // drives the interface. Everything that comes from the database reaches the page as text.
 import {
-  MAX_PHOTOS, copyName, formatFileSize, formatPrice, imagePaths, imageUrl, localized, modelUrl, parsePrice, priceCents,
+  MAX_PHOTOS, PAGE_SIZE, copyName, formatFileSize, formatPrice, freshRows, imagePaths, imageUrl, localized, modelUrl, parsePrice, priceCents,
+  reloadSize, viewCount,
 } from './product-format.js';
 
 const languages = {
   pt: {
     title: 'Produtos', subtitle: 'Produtos ativos aparecem no carrossel da página inicial.', add: 'Novo produto', retry: 'Tentar de novo',
     loading: 'Carregando produtos…', empty: 'Nenhum produto cadastrado ainda. Comece por "Novo produto".',
-    loadError: 'Não foi possível carregar os produtos.', forbidden: 'Sua sessão expirou ou esta conta não tem permissão. Entre novamente pelo site.',
+    loadError: 'Não foi possível carregar os produtos.', loadingMore: 'Carregando mais produtos…', moreError: 'Não foi possível carregar mais produtos.',
+    viewsOne: '1 visualização', viewsMany: '{n} visualizações', mostViewed: 'Mais visto', forbidden: 'Sua sessão expirou ou esta conta não tem permissão. Entre novamente pelo site.',
     saveError: 'Não foi possível salvar. Tente de novo.', deleteError: 'Não foi possível excluir. Tente de novo.', toggleError: 'Não foi possível alterar o produto. Tente de novo.',
     photoUploadError: 'Não foi possível enviar as fotos. Tente de novo.', copyError: 'Não foi possível copiar os arquivos do produto original. Nada foi salvo.',
     model: 'Modelo 3D (.glb)', addModel: 'Escolher modelo 3D', replaceModel: 'Trocar modelo 3D', modelHint: 'Opcional. GLB de até 15 MB. Ele vira o primeiro item do produto no site e pode ser girado.',
@@ -33,7 +35,8 @@ const languages = {
   en: {
     title: 'Products', subtitle: 'Active products appear in the home page carousel.', add: 'New product', retry: 'Try again',
     loading: 'Loading products…', empty: 'No products yet. Start with "New product".',
-    loadError: 'Unable to load the products.', forbidden: 'Your session expired or this account is not allowed. Sign in again on the website.',
+    loadError: 'Unable to load the products.', loadingMore: 'Loading more products…', moreError: 'Unable to load more products.',
+    viewsOne: '1 view', viewsMany: '{n} views', mostViewed: 'Most viewed', forbidden: 'Your session expired or this account is not allowed. Sign in again on the website.',
     saveError: 'Unable to save. Please try again.', deleteError: 'Unable to delete. Please try again.', toggleError: 'Unable to change the product. Please try again.',
     photoUploadError: 'Unable to upload the photos. Please try again.', copyError: 'Unable to copy the files of the original product. Nothing was saved.',
     model: '3D model (.glb)', addModel: 'Choose 3D model', replaceModel: 'Replace 3D model', modelHint: 'Optional. GLB up to 15 MB. It becomes the first item of the product on the site and can be rotated.',
@@ -58,7 +61,8 @@ const languages = {
   es: {
     title: 'Productos', subtitle: 'Los productos activos aparecen en el carrusel de la página de inicio.', add: 'Nuevo producto', retry: 'Reintentar',
     loading: 'Cargando productos…', empty: 'Aún no hay productos. Empieza con "Nuevo producto".',
-    loadError: 'No se pudieron cargar los productos.', forbidden: 'Tu sesión caducó o esta cuenta no tiene permiso. Inicia sesión de nuevo en el sitio.',
+    loadError: 'No se pudieron cargar los productos.', loadingMore: 'Cargando más productos…', moreError: 'No se pudieron cargar más productos.',
+    viewsOne: '1 visualización', viewsMany: '{n} visualizaciones', mostViewed: 'Más visto', forbidden: 'Tu sesión caducó o esta cuenta no tiene permiso. Inicia sesión de nuevo en el sitio.',
     saveError: 'No se pudo guardar. Inténtalo de nuevo.', deleteError: 'No se pudo eliminar. Inténtalo de nuevo.', toggleError: 'No se pudo cambiar el producto. Inténtalo de nuevo.',
     photoUploadError: 'No se pudieron subir las fotos. Inténtalo de nuevo.', copyError: 'No se pudieron copiar los archivos del producto original. No se guardó nada.',
     model: 'Modelo 3D (.glb)', addModel: 'Elegir modelo 3D', replaceModel: 'Cambiar modelo 3D', modelHint: 'Opcional. GLB de hasta 15 MB. Será el primer elemento del producto en el sitio y se puede girar.',
@@ -118,6 +122,9 @@ export function mountProducts({ client, lang }) {
   const stateText = $('products-state-text');
   const retry = $('products-retry');
   const list = $('products-list');
+  const more = $('products-more');
+  const moreText = $('products-more-text');
+  const moreRetry = $('products-more-retry');
   const rowTemplate = $('product-row');
   const dialog = $('product-dialog');
   const form = $('product-form');
@@ -135,6 +142,14 @@ export function mountProducts({ client, lang }) {
   const deleteConfirm = $('product-delete-confirm');
 
   let products = [];
+  // Infinite list: rows are read a page at a time, by position in a stable order.
+  let offset = 0;
+  let hasMore = false;
+  let loadingMore = false;
+  let observer = null;
+  // view_count arrives with a later migration; without it the list simply shows no views.
+  let withViews = true;
+  let mostViewedId = null;
   let editing = null;
   let deleting = null;
   let busy = false;
@@ -178,62 +193,140 @@ export function mountProducts({ client, lang }) {
     modelRemove.disabled = value;
   }
 
+  // One page of products. The order is total (id breaks every tie), so pages never overlap
+  // unless something changed in between.
+  async function fetchPage(from, to) {
+    const run = () => client.from('products').select(withViews ? `${COLUMNS},view_count` : COLUMNS)
+      .order('sort_order', { ascending: true }).order('created_at', { ascending: false }).order('id', { ascending: true })
+      .range(from, to);
+    try {
+      let result = await run();
+      // 42703: the column does not exist yet. Read the list without it instead of failing.
+      if (result.error && withViews && (result.error.code === '42703' || result.status === 400)) {
+        withViews = false;
+        result = await run();
+      }
+      return result;
+    } catch { return { data: null, error: {}, status: 0 }; }
+  }
+  // The star goes to the active product with the most views, wherever it is in the list.
+  async function fetchMostViewed() {
+    if (!withViews) return null;
+    try {
+      const { data, error } = await client.from('products').select('id,view_count').eq('is_active', true).gt('view_count', 0)
+        .order('view_count', { ascending: false }).order('id', { ascending: true }).limit(1);
+      return !error && Array.isArray(data) && data.length ? data[0].id : null;
+    } catch { return null; }
+  }
+
+  // mode: 'end' (nothing more), 'more' (invisible sentinel), 'loading' or 'error'.
+  function setMore(mode) {
+    more.dataset.mode = mode;
+    moreText.textContent = mode === 'loading' ? t.loadingMore : mode === 'error' ? t.moreError : '';
+    moreRetry.hidden = mode !== 'error';
+  }
+  // Re-observing makes the observer report again, which matters when a page did not fill the screen.
+  function watch() {
+    if (!('IntersectionObserver' in window)) { if (hasMore) loadMore(); return; }
+    if (!observer) {
+      observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) loadMore(); }, { rootMargin: '300px 0px' });
+    }
+    observer.unobserve(more);
+    if (hasMore) observer.observe(more);
+  }
+
+  // (Re)loads from the start, keeping as many rows as were on screen so the person stays in place.
   async function load() {
     const current = ++loadVersion;
+    const size = reloadSize(products.length);
     list.setAttribute('aria-busy', 'true');
     if (!products.length) showState(t.loading);
-    let data, error, status;
-    try {
-      ({ data, error, status } = await client.from('products').select(COLUMNS)
-        .order('sort_order', { ascending: true }).order('created_at', { ascending: false }));
-    } catch { error = {}; }
+    const { data, error, status } = await fetchPage(0, size - 1);
+    const top = error ? null : await fetchMostViewed();
     if (current !== loadVersion) return;
     list.setAttribute('aria-busy', 'false');
+    loadingMore = false;
     if (error) {
       products = [];
+      hasMore = false;
       render();
+      setMore('end');
+      watch();
       showState(failure(error, status, t.loadError), true);
       return;
     }
-    products = Array.isArray(data) ? data : [];
+    const rows = Array.isArray(data) ? data : [];
+    products = freshRows([], rows);
+    offset = rows.length;
+    hasMore = rows.length === size;
+    mostViewedId = top;
     render();
     showState(products.length ? '' : t.empty);
+    setMore(hasMore ? 'more' : 'end');
+    watch();
+  }
+
+  async function loadMore() {
+    if (loadingMore || !hasMore) return;
+    const current = loadVersion;
+    loadingMore = true;
+    setMore('loading');
+    const { data, error } = await fetchPage(offset, offset + PAGE_SIZE - 1);
+    // The list was reloaded meanwhile: this page belongs to an older view of it.
+    if (current !== loadVersion) return;
+    loadingMore = false;
+    if (error) { setMore('error'); return; }
+    const rows = Array.isArray(data) ? data : [];
+    const fresh = freshRows(products, rows);
+    products = products.concat(fresh);
+    offset += rows.length;
+    hasMore = rows.length === PAGE_SIZE;
+    list.append(...fresh.map(rowFor));
+    setMore(hasMore ? 'more' : 'end');
+    watch();
   }
 
   function render() {
-    const rows = products.map((product) => {
-      const row = rowTemplate.content.firstElementChild.cloneNode(true);
-      const name = localized(product, 'name', lang);
-      const cents = priceCents(product);
-      const count = imagePaths(product).length;
-      row.classList.toggle('is-inactive', !product.is_active);
-      const thumb = row.querySelector('.product-thumb');
-      thumb.src = publicUrl(product.image_path);
-      thumb.alt = fill(t.photoAlt, { name });
-      row.querySelector('.product-name').textContent = name;
-      row.querySelector('.product-price').textContent = cents === null ? t.onRequest : formatPrice(cents, lang);
-      row.querySelector('.product-photos-count').textContent = count > 1 ? fill(t.photoCount, { n: count }) : '';
-      row.querySelector('.product-badge').textContent = product.is_active ? t.active : t.inactive;
-      const badge3d = row.querySelector('.product-3d');
-      badge3d.hidden = !publicModelUrl(product.model_path);
-      badge3d.title = t.has3d;
-      badge3d.setAttribute('aria-label', t.has3d);
-      row.querySelector('.product-order').textContent = fill(t.orderShort, { n: product.sort_order });
-      const actions = {
-        edit: [t.edit, t.editLabel, () => openForm(product)],
-        duplicate: [t.duplicate, t.duplicateLabel, () => openForm(null, product)],
-        toggle: product.is_active ? [t.deactivate, t.deactivateLabel, () => toggle(product)] : [t.activate, t.activateLabel, () => toggle(product)],
-        delete: [t.delete, t.deleteLabel, () => openDelete(product)],
-      };
-      for (const [action, [text, label, handler]] of Object.entries(actions)) {
-        const button = row.querySelector(`[data-action="${action}"]`);
-        button.textContent = text;
-        button.setAttribute('aria-label', fill(label, { name }));
-        button.addEventListener('click', handler);
-      }
-      return row;
-    });
-    list.replaceChildren(...rows);
+    list.replaceChildren(...products.map(rowFor));
+  }
+
+  function rowFor(product) {
+    const row = rowTemplate.content.firstElementChild.cloneNode(true);
+    const name = localized(product, 'name', lang);
+    const cents = priceCents(product);
+    const count = imagePaths(product).length;
+    row.classList.toggle('is-inactive', !product.is_active);
+    const thumb = row.querySelector('.product-thumb');
+    thumb.src = publicUrl(product.image_path);
+    thumb.alt = fill(t.photoAlt, { name });
+    row.querySelector('.product-name-text').textContent = name;
+    const star = row.querySelector('.product-star');
+    star.hidden = !(product.is_active && product.id === mostViewedId);
+    star.setAttribute('aria-label', t.mostViewed);
+    star.title = t.mostViewed;
+    const views = viewCount(product);
+    row.querySelector('.product-views').textContent = !withViews ? '' : views === 1 ? t.viewsOne : fill(t.viewsMany, { n: new Intl.NumberFormat(lang).format(views) });
+    row.querySelector('.product-price').textContent = cents === null ? t.onRequest : formatPrice(cents, lang);
+    row.querySelector('.product-photos-count').textContent = count > 1 ? fill(t.photoCount, { n: count }) : '';
+    row.querySelector('.product-badge').textContent = product.is_active ? t.active : t.inactive;
+    const badge3d = row.querySelector('.product-3d');
+    badge3d.hidden = !publicModelUrl(product.model_path);
+    badge3d.title = t.has3d;
+    badge3d.setAttribute('aria-label', t.has3d);
+    row.querySelector('.product-order').textContent = fill(t.orderShort, { n: product.sort_order });
+    const actions = {
+      edit: [t.edit, t.editLabel, () => openForm(product)],
+      duplicate: [t.duplicate, t.duplicateLabel, () => openForm(null, product)],
+      toggle: product.is_active ? [t.deactivate, t.deactivateLabel, () => toggle(product)] : [t.activate, t.activateLabel, () => toggle(product)],
+      delete: [t.delete, t.deleteLabel, () => openDelete(product)],
+    };
+    for (const [action, [text, label, handler]] of Object.entries(actions)) {
+      const button = row.querySelector(`[data-action="${action}"]`);
+      button.textContent = text;
+      button.setAttribute('aria-label', fill(label, { name }));
+      button.addEventListener('click', handler);
+    }
+    return row;
   }
 
   // ---- Form -------------------------------------------------------------
@@ -645,6 +738,7 @@ export function mountProducts({ client, lang }) {
   // ---- Wiring -------------------------------------------------------------
   $('product-new').addEventListener('click', () => openForm());
   retry.addEventListener('click', load);
+  moreRetry.addEventListener('click', () => { if (!busy) loadMore(); });
   form.addEventListener('submit', save);
   form.addEventListener('input', (event) => {
     const input = event.target;

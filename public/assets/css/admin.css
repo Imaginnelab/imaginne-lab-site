@@ -1,5 +1,9 @@
 /* Admin dashboard only (linked from /admin/). Uses the tokens from styles.css. */
 
+/* .btn sets its own display, which would otherwise show buttons marked hidden. */
+.admin-main [hidden],
+.admin-dialog [hidden] { display: none !important; }
+
 .admin-main :focus-visible,
 .admin-dialog :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
@@ -358,3 +362,33 @@
 .switch[aria-checked="true"] { border-color: var(--amber); background: var(--amber); }
 .switch[aria-checked="true"] .switch-thumb { transform: translateX(22px); background: var(--amber-ink); }
 .switch:disabled { opacity: 0.55; cursor: wait; }
+
+/* ---------------------------------------------------------
+   Infinite lists and most viewed product
+--------------------------------------------------------- */
+/* The same element is the scroll sentinel: it must stay in the layout while there is more. */
+.list-more { display: flex; align-items: center; justify-content: center; gap: 0.6rem; flex-wrap: wrap; min-height: 1px; color: var(--ink-soft); font-size: 0.88rem; }
+.list-more[data-mode="end"] { display: none; }
+.list-more[data-mode="loading"], .list-more[data-mode="error"] { padding: 1rem 0 0.25rem; }
+.list-more[data-mode="error"] { color: #b3261e; }
+[data-theme="dark"] .list-more[data-mode="error"] { color: #ffb4ab; }
+.list-spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: list-spin 0.8s linear infinite;
+}
+.list-more[data-mode="loading"] .list-spinner { display: block; }
+@keyframes list-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .list-spinner { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
+}
+.product-star { display: inline-flex; margin-left: 0.4rem; vertical-align: -0.12em; color: var(--amber); }
+.product-star[hidden] { display: none; }
+.product-star .icon { width: 1.05em; height: 1.05em; fill: currentColor; stroke: var(--amber-ink); stroke-width: 1; stroke-linejoin: round; paint-order: stroke; }
+[data-theme="dark"] .product-star .icon { stroke: none; }
+.product-views { color: var(--ink-faint); font-size: 0.8rem; }
+.product-views:empty { display: none; }

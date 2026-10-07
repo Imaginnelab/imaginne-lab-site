@@ -1,11 +1,11 @@
 // Discount coupons for /admin/. Nothing redeems them yet: there is no checkout. The database
 // (RLS and column grants) decides who may read or write; this file only drives the interface.
-import { formatPrice, parsePrice } from './product-format.js';
+import { PAGE_SIZE, formatPrice, freshRows, parsePrice, reloadSize } from './product-format.js';
 
 const languages = {
   pt: {
     title: 'Cupons de desconto', subtitle: 'Ainda não há checkout: os cupons ficam cadastrados aqui para quando houver.', add: 'Novo cupom', retry: 'Tentar de novo',
-    loading: 'Carregando cupons…', empty: 'Nenhum cupom cadastrado ainda.', loadError: 'Não foi possível carregar os cupons.',
+    loading: 'Carregando cupons…', empty: 'Nenhum cupom cadastrado ainda.', loadError: 'Não foi possível carregar os cupons.', loadingMore: 'Carregando mais cupons…', moreError: 'Não foi possível carregar mais cupons.',
     forbidden: 'Sua sessão expirou ou esta conta não tem permissão. Entre novamente pelo site.',
     saveError: 'Não foi possível salvar. Tente de novo.', deleteError: 'Não foi possível excluir. Tente de novo.', toggleError: 'Não foi possível alterar o cupom. Tente de novo.',
     uncertain: 'Não foi possível confirmar se o cupom foi salvo. Feche esta janela e confira a lista antes de tentar de novo.',
@@ -28,7 +28,7 @@ const languages = {
   },
   en: {
     title: 'Discount coupons', subtitle: 'There is no checkout yet: coupons stay registered here for when there is one.', add: 'New coupon', retry: 'Try again',
-    loading: 'Loading coupons…', empty: 'No coupons yet.', loadError: 'Unable to load the coupons.',
+    loading: 'Loading coupons…', empty: 'No coupons yet.', loadError: 'Unable to load the coupons.', loadingMore: 'Loading more coupons…', moreError: 'Unable to load more coupons.',
     forbidden: 'Your session expired or this account is not allowed. Sign in again on the website.',
     saveError: 'Unable to save. Please try again.', deleteError: 'Unable to delete. Please try again.', toggleError: 'Unable to change the coupon. Please try again.',
     uncertain: 'Unable to confirm whether the coupon was saved. Close this window and check the list before trying again.',
@@ -51,7 +51,7 @@ const languages = {
   },
   es: {
     title: 'Cupones de descuento', subtitle: 'Todavía no hay checkout: los cupones quedan registrados aquí para cuando lo haya.', add: 'Nuevo cupón', retry: 'Reintentar',
-    loading: 'Cargando cupones…', empty: 'Aún no hay cupones.', loadError: 'No se pudieron cargar los cupones.',
+    loading: 'Cargando cupones…', empty: 'Aún no hay cupones.', loadError: 'No se pudieron cargar los cupones.', loadingMore: 'Cargando más cupones…', moreError: 'No se pudieron cargar más cupones.',
     forbidden: 'Tu sesión caducó o esta cuenta no tiene permiso. Inicia sesión de nuevo en el sitio.',
     saveError: 'No se pudo guardar. Inténtalo de nuevo.', deleteError: 'No se pudo eliminar. Inténtalo de nuevo.', toggleError: 'No se pudo cambiar el cupón. Inténtalo de nuevo.',
     uncertain: 'No se pudo confirmar si el cupón se guardó. Cierra esta ventana y revisa la lista antes de intentarlo de nuevo.',
@@ -183,6 +183,9 @@ export function mountCoupons({ client, lang }) {
   const stateText = $('coupons-state-text');
   const retry = $('coupons-retry');
   const list = $('coupons-list');
+  const more = $('coupons-more');
+  const moreText = $('coupons-more-text');
+  const moreRetry = $('coupons-more-retry');
   const rowTemplate = $('coupon-row');
   const dialog = $('coupon-dialog');
   const form = $('coupon-form');
@@ -194,6 +197,11 @@ export function mountCoupons({ client, lang }) {
   const inputs = { code: $('coupon-code'), value: $('coupon-value'), max: $('coupon-max'), start: $('coupon-start'), end: $('coupon-end') };
 
   let coupons = [];
+  // Infinite list: rows are read a page at a time, by position in a stable order.
+  let offset = 0;
+  let hasMore = false;
+  let loadingMore = false;
+  let observer = null;
   let editing = null;
   let deleting = null;
   let busy = false;
@@ -226,25 +234,81 @@ export function mountCoupons({ client, lang }) {
     if (button) button.textContent = label;
   }
 
+  // One page of coupons, newest first; id breaks ties so pages never overlap.
+  async function fetchPage(from, to) {
+    try {
+      return await client.from('coupons').select(COLUMNS)
+        .order('created_at', { ascending: false }).order('id', { ascending: true }).range(from, to);
+    } catch { return { data: null, error: {}, status: 0 }; }
+  }
+
+  // mode: 'end' (nothing more), 'more' (invisible sentinel), 'loading' or 'error'.
+  function setMore(mode) {
+    more.dataset.mode = mode;
+    moreText.textContent = mode === 'loading' ? t.loadingMore : mode === 'error' ? t.moreError : '';
+    moreRetry.hidden = mode !== 'error';
+  }
+  // Re-observing makes the observer report again, which matters when a page did not fill the screen.
+  function watch() {
+    if (!('IntersectionObserver' in window)) { if (hasMore) loadMore(); return; }
+    if (!observer) {
+      observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) loadMore(); }, { rootMargin: '300px 0px' });
+    }
+    observer.unobserve(more);
+    if (hasMore) observer.observe(more);
+  }
+
+  // (Re)loads from the start, keeping as many rows as were on screen so the person stays in place.
   async function load() {
     const current = ++loadVersion;
+    const size = reloadSize(coupons.length);
     list.setAttribute('aria-busy', 'true');
     if (!coupons.length) showState(t.loading);
-    let data, error, status;
-    try {
-      ({ data, error, status } = await client.from('coupons').select(COLUMNS).order('created_at', { ascending: false }));
-    } catch { error = {}; }
+    const { data, error, status } = await fetchPage(0, size - 1);
     if (current !== loadVersion) return;
     list.setAttribute('aria-busy', 'false');
+    loadingMore = false;
     if (error) {
       coupons = [];
+      hasMore = false;
       render();
+      setMore('end');
+      watch();
       showState(isAuthError(error, status) ? t.forbidden : t.loadError, true);
       return;
     }
-    coupons = Array.isArray(data) ? data : [];
+    const rows = Array.isArray(data) ? data : [];
+    coupons = freshRows([], rows);
+    offset = rows.length;
+    hasMore = rows.length === size;
     render();
     showState(coupons.length ? '' : t.empty);
+    setMore(hasMore ? 'more' : 'end');
+    watch();
+  }
+
+  async function loadMore() {
+    if (loadingMore || !hasMore) return;
+    const current = loadVersion;
+    loadingMore = true;
+    setMore('loading');
+    const { data, error } = await fetchPage(offset, offset + PAGE_SIZE - 1);
+    // The list was reloaded meanwhile: this page belongs to an older view of it.
+    if (current !== loadVersion) return;
+    loadingMore = false;
+    if (error) { setMore('error'); return; }
+    const rows = Array.isArray(data) ? data : [];
+    const fresh = freshRows(coupons, rows);
+    coupons = coupons.concat(fresh);
+    offset += rows.length;
+    hasMore = rows.length === PAGE_SIZE;
+    list.append(...fresh.map(rowFor));
+    setMore(hasMore ? 'more' : 'end');
+    watch();
+  }
+
+  function render() {
+    list.replaceChildren(...coupons.map(rowFor));
   }
 
   const discountText = (coupon) => (coupon.discount_type === 'amount'
@@ -260,33 +324,30 @@ export function mountCoupons({ client, lang }) {
     return t.periodNone;
   }
 
-  function render() {
-    const rows = coupons.map((coupon) => {
-      const row = rowTemplate.content.firstElementChild.cloneNode(true);
-      const status = couponStatus(coupon);
-      const code = String(coupon.code ?? '');
-      row.classList.toggle('is-inactive', status !== 'active' && status !== 'scheduled');
-      row.querySelector('.coupon-code').textContent = code;
-      row.querySelector('.coupon-discount').textContent = discountText(coupon);
-      row.querySelector('.coupon-period').textContent = periodText(coupon);
-      row.querySelector('.coupon-uses').textContent = Number.isInteger(coupon.max_uses)
-        ? fill(t.usesOf, { used: coupon.used_count, max: coupon.max_uses })
-        : fill(t.uses, { used: coupon.used_count });
-      row.querySelector('.product-badge').textContent = t[status];
-      const actions = {
-        edit: [t.edit, t.editLabel, () => openForm(coupon)],
-        toggle: coupon.is_active ? [t.deactivate, t.deactivateLabel, () => toggle(coupon)] : [t.activate, t.activateLabel, () => toggle(coupon)],
-        delete: [t.delete, t.deleteLabel, () => openDelete(coupon)],
-      };
-      for (const [action, [text, label, handler]] of Object.entries(actions)) {
-        const button = row.querySelector(`[data-action="${action}"]`);
-        button.textContent = text;
-        button.setAttribute('aria-label', fill(label, { code }));
-        button.addEventListener('click', handler);
-      }
-      return row;
-    });
-    list.replaceChildren(...rows);
+  function rowFor(coupon) {
+    const row = rowTemplate.content.firstElementChild.cloneNode(true);
+    const status = couponStatus(coupon);
+    const code = String(coupon.code ?? '');
+    row.classList.toggle('is-inactive', status !== 'active' && status !== 'scheduled');
+    row.querySelector('.coupon-code').textContent = code;
+    row.querySelector('.coupon-discount').textContent = discountText(coupon);
+    row.querySelector('.coupon-period').textContent = periodText(coupon);
+    row.querySelector('.coupon-uses').textContent = Number.isInteger(coupon.max_uses)
+      ? fill(t.usesOf, { used: coupon.used_count, max: coupon.max_uses })
+      : fill(t.uses, { used: coupon.used_count });
+    row.querySelector('.product-badge').textContent = t[status];
+    const actions = {
+      edit: [t.edit, t.editLabel, () => openForm(coupon)],
+      toggle: coupon.is_active ? [t.deactivate, t.deactivateLabel, () => toggle(coupon)] : [t.activate, t.activateLabel, () => toggle(coupon)],
+      delete: [t.delete, t.deleteLabel, () => openDelete(coupon)],
+    };
+    for (const [action, [text, label, handler]] of Object.entries(actions)) {
+      const button = row.querySelector(`[data-action="${action}"]`);
+      button.textContent = text;
+      button.setAttribute('aria-label', fill(label, { code }));
+      button.addEventListener('click', handler);
+    }
+    return row;
   }
 
   // ---- Form -------------------------------------------------------------------------------
@@ -419,6 +480,7 @@ export function mountCoupons({ client, lang }) {
   // ---- Wiring -------------------------------------------------------------------------------
   $('coupon-new').addEventListener('click', () => openForm());
   retry.addEventListener('click', load);
+  moreRetry.addEventListener('click', () => { if (!busy) loadMore(); });
   form.addEventListener('submit', save);
   form.addEventListener('input', (event) => {
     const input = event.target;
