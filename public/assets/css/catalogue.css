@@ -1,7 +1,7 @@
 .catalogue-main { padding-top: clamp(7rem, 10vw, 10rem); padding-bottom: 5rem; min-height: 65vh; }
 .catalogue-heading { margin-bottom: 2.5rem; }
 .catalogue-heading h1 { max-width: 20ch; }
-.catalogue-back { margin-bottom: 1.25rem; }
+.catalogue-back { display: inline-flex; margin-bottom: 1.25rem; }
 .catalogue-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; list-style: none; padding: 0; margin: 0; }
 .catalogue-grid .products-card { align-self: start; }
 .catalogue-feedback { display: grid; justify-items: center; gap: 1rem; margin-top: 2rem; text-align: center; color: var(--ink-soft); }
@@ -15,4 +15,3 @@
 @media (max-width: 900px) { .catalogue-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .catalogue-grid { grid-template-columns: minmax(0, 1fr); gap: 1rem; } }
 @media (prefers-reduced-motion: reduce) { .catalogue-loading::before { animation: none; } }
-

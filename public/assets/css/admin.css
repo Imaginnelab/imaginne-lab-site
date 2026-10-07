@@ -256,7 +256,8 @@
 .photo-btn-remove { color: #b3261e; }
 [data-theme="dark"] .photo-btn-remove { color: #ffb4ab; }
 .product-media { display: grid; gap: 1.5rem; min-width: 0; align-content: start; }
-.model-item { grid-template-columns: minmax(0, 1fr) auto; }
+/* Same breathing room before the button as the photo list has. */
+.model-item { grid-template-columns: minmax(0, 1fr) auto; margin-bottom: 0.75rem; }
 .model-item[hidden] { display: none; }
 .model-preview {
   grid-column: 1 / -1;

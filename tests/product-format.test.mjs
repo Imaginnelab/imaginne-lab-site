@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CURRENCY, MAX_PHOTOS, PAGE_SIZE, copyName, freshRows, reloadSize, viewCount, formatFileSize, formatPrice, imagePaths, imageUrl, localized, modelUrl, parsePrice, priceCents,
+  CURRENCY, MAX_PHOTOS, MAX_PHOTO_SIDE, PAGE_SIZE, chooseUpload, copyName, fitWithin, freshRows, reloadSize, viewCount, formatFileSize, formatPrice, imagePaths, imageUrl, localized, modelUrl, parsePrice, priceCents,
 } from '../public/assets/js/product-format.js';
 
 // Intl separates the symbol with a no-break space in some locales.
@@ -197,4 +197,40 @@ test('viewCount reads the counter and tolerates a missing column', () => {
     assert.equal(viewCount(product), 0);
   }
   assert.equal(viewCount({ view_count: 7.9 }), 7);
+});
+
+test('fitWithin shrinks to the longest side, keeps the proportion and never enlarges', () => {
+  assert.equal(MAX_PHOTO_SIDE, 1400);
+  assert.deepEqual(fitWithin(4000, 3000), { width: 1400, height: 1050 });
+  assert.deepEqual(fitWithin(3000, 4000), { width: 1050, height: 1400 });
+  assert.deepEqual(fitWithin(2800, 2800), { width: 1400, height: 1400 });
+  assert.deepEqual(fitWithin(1400, 900), { width: 1400, height: 900 });
+  assert.deepEqual(fitWithin(800, 600), { width: 800, height: 600 });
+  assert.deepEqual(fitWithin(1401, 1), { width: 1400, height: 1 });
+  assert.deepEqual(fitWithin(6000, 10), { width: 1400, height: 2 });
+  assert.deepEqual(fitWithin(1000, 500, 100), { width: 100, height: 50 });
+  // The proportion survives within a pixel of rounding.
+  for (const [w, h] of [[4032, 3024], [5184, 3456], [1920, 1080], [3000, 2001], [7, 4999]]) {
+    const out = fitWithin(w, h);
+    assert.ok(Math.max(out.width, out.height) <= 1400);
+    assert.ok(Math.abs(out.width / out.height - w / h) <= (w / h) * (1 / Math.min(out.width, out.height)), `${w}x${h}`);
+  }
+  for (const [w, h] of [[0, 100], [100, 0], [-5, 10], [NaN, 10], ['x', 10], [10, undefined]]) {
+    assert.deepEqual(fitWithin(w, h), { width: 0, height: 0 });
+  }
+});
+
+test('chooseUpload takes the optimised file only when it is a smaller WebP', () => {
+  const original = { size: 1200000, type: 'image/jpeg' };
+  assert.equal(chooseUpload(original, { size: 180000, type: 'image/webp' }), 'optimized');
+  // Not smaller, not WebP (the browser fell back to PNG), empty, or missing: keep the original.
+  assert.equal(chooseUpload(original, { size: 1200000, type: 'image/webp' }), 'original');
+  assert.equal(chooseUpload(original, { size: 1500000, type: 'image/webp' }), 'original');
+  assert.equal(chooseUpload(original, { size: 90000, type: 'image/png' }), 'original');
+  assert.equal(chooseUpload(original, { size: 0, type: 'image/webp' }), 'original');
+  assert.equal(chooseUpload(original, null), 'original');
+  assert.equal(chooseUpload(original, undefined), 'original');
+  assert.equal(chooseUpload(null, { size: 10, type: 'image/webp' }), 'original');
+  // A WebP original is still replaced when the new one is smaller.
+  assert.equal(chooseUpload({ size: 900000, type: 'image/webp' }, { size: 200000, type: 'image/webp' }), 'optimized');
 });

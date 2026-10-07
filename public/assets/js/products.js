@@ -24,11 +24,19 @@ export function enableCarousel(track, previous, next, status, copy) {
   let updateFrame = 0;
   let pointer = null;
   let suppressClick = false;
-  const maximum = () => Math.max(0, track.scrollWidth - track.clientWidth);
+  let maxScroll = 0;
+  let cardStep = 1;
+  let pageSize = 1;
+  const maximum = () => maxScroll;
   const clamp = value => Math.min(maximum(), Math.max(0, value));
-  const step = () => {
+  const step = () => cardStep;
+  const measure = () => {
+    const width = track.clientWidth;
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
     const first = track.firstElementChild;
-    return first ? first.getBoundingClientRect().width + (parseFloat(getComputedStyle(track).columnGap) || 0) : track.clientWidth;
+    maxScroll = Math.max(0, track.scrollWidth - width);
+    cardStep = Math.max(1, first ? first.getBoundingClientRect().width + gap : width);
+    pageSize = Math.max(1, Math.floor((width + gap) / cardStep));
   };
   const update = () => {
     updateFrame = 0;
@@ -63,9 +71,7 @@ export function enableCarousel(track, previous, next, status, copy) {
   };
   const move = direction => {
     const size = step();
-    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
-    const count = Math.max(1, Math.floor((track.clientWidth + gap) / size));
-    animateTo((Math.round(track.scrollLeft / size) + direction * count) * size);
+    animateTo((Math.round(track.scrollLeft / size) + direction * pageSize) * size);
   };
   previous.addEventListener('click', () => move(-1));
   next.addEventListener('click', () => move(1));
@@ -130,9 +136,23 @@ export function enableCarousel(track, previous, next, status, copy) {
   track.addEventListener('wheel', stop, { passive: true });
   track.addEventListener('touchstart', stop, { passive: true });
   track.addEventListener('scroll', schedule, { passive: true });
-  window.addEventListener('resize', schedule, { passive: true });
-  motion.addEventListener?.('change', () => { if (motion.matches) stop(); });
-  if ('ResizeObserver' in window) new ResizeObserver(schedule).observe(track);
+  const resize = () => { measure(); schedule(); };
+  const reduce = () => { if (motion.matches) stop(); };
+  window.addEventListener('resize', resize, { passive: true });
+  motion.addEventListener?.('change', reduce);
+  const observer = 'ResizeObserver' in window ? new ResizeObserver(resize) : null;
+  observer?.observe(track);
+  if (track.firstElementChild) observer?.observe(track.firstElementChild);
+  window.addEventListener('pagehide', event => {
+    stop();
+    cancelAnimationFrame(updateFrame);
+    updateFrame = 0;
+    if (event.persisted) return;
+    observer?.disconnect();
+    window.removeEventListener('resize', resize);
+    motion.removeEventListener?.('change', reduce);
+  });
+  measure();
   update();
 }
 
@@ -162,3 +182,12 @@ async function loadCatalogue() {
   } catch { hideCatalogue(); }
 }
 if (section) loadCatalogue();
+
+function scheduleHero() {
+  if (!document.querySelector('[data-hero-model]')) return;
+  const start = () => import('/assets/js/product-card.js').then(api => api.mountHeroModel()).catch(() => {});
+  if ('requestIdleCallback' in window) window.requestIdleCallback(start, { timeout: 2000 });
+  else setTimeout(start, 0);
+}
+if (document.readyState === 'complete') scheduleHero();
+else window.addEventListener('load', scheduleHero, { once: true });

@@ -41,12 +41,13 @@ function element(tag, className, text) {
   return node;
 }
 
-function photoImage(name, src) {
+function photoImage(name, src, priority = 'auto') {
   const image = element('img', 'products-image');
   image.alt = name;
   image.width = 640;
   image.height = 480;
-  image.loading = 'lazy';
+  image.loading = priority === 'high' ? 'eager' : 'lazy';
+  image.fetchPriority = priority;
   image.decoding = 'async';
   image.draggable = false;
   // Only the shared imageUrl helper supplies image URLs.
@@ -56,6 +57,51 @@ function photoImage(name, src) {
     image.hidden = true;
   }, { once: true });
   return image;
+}
+
+let viewerPromise;
+export function ensureModelViewer() {
+  if (window.customElements?.get('model-viewer')) return Promise.resolve();
+  if (!viewerPromise) {
+    viewerPromise = new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Model unavailable')), 12000);
+      import('/assets/js/model-viewer.min.js')
+        .then(() => window.customElements.whenDefined('model-viewer'))
+        .then(resolve, reject)
+        .finally(() => clearTimeout(timeout));
+    }).catch(error => { viewerPromise = null; throw error; });
+  }
+  return viewerPromise;
+}
+
+export async function mountHeroModel() {
+  const viewer = document.querySelector('[data-hero-model]');
+  if (!viewer || !viewer.dataset.modelSrc) return;
+  let visible = false;
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const rotate = () => {
+    if (visible && !document.hidden && !motion.matches) viewer.setAttribute('auto-rotate', '');
+    else viewer.removeAttribute('auto-rotate');
+  };
+  const observer = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+    visible = entries.some(entry => entry.isIntersecting);
+    rotate();
+  }, { threshold: .01 }) : null;
+  try {
+    await ensureModelViewer();
+    viewer.setAttribute('src', viewer.dataset.modelSrc);
+    observer?.observe(viewer);
+    motion.addEventListener?.('change', rotate);
+    document.addEventListener('visibilitychange', rotate);
+    const cleanup = () => {
+      observer?.disconnect();
+      motion.removeEventListener?.('change', rotate);
+      document.removeEventListener('visibilitychange', rotate);
+      viewer.removeAttribute('auto-rotate');
+    };
+    viewer.addEventListener('error', cleanup, { once: true });
+    window.addEventListener('pagehide', event => { if (!event.persisted) cleanup(); });
+  } catch { observer?.disconnect(); /* Preserve the existing frame if 3D is unavailable. */ }
 }
 
 function validExtraPath(path) {
@@ -79,9 +125,9 @@ function supportsProductModel() {
 }
 
 let gallerySequence = 0;
-function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, interest) {
+function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, interest, priority) {
   const photo = element('div', 'products-photo');
-  const cover = photoImage(name, coverUrl);
+  const cover = photoImage(name, coverUrl, priority);
   photo.append(cover);
   const paths = [product.image_path];
   const entries = [{ src: coverUrl, node: cover, kind: 'photo' }];
@@ -129,14 +175,13 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
   if (badge) { badge.setAttribute('aria-hidden', 'true'); photo.append(badge); }
   const motion = modelEntry ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   let modelLoaded = false;
-  let registrationTimeout;
   let modelVisible = false;
   let modelObserver;
   let current = 0;
   const updateRotation = () => {
     const viewer = modelEntry?.node;
     if (!viewer) return;
-    if (entries[current] === modelEntry && modelVisible && !motion.matches) viewer.setAttribute('auto-rotate', '');
+    if (entries[current] === modelEntry && modelVisible && !document.hidden && !motion.matches) viewer.setAttribute('auto-rotate', '');
     else viewer.removeAttribute('auto-rotate');
   };
   const fallback = () => {
@@ -146,9 +191,9 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
     modelEntry.node?.remove();
     entries.shift();
     modelEntry = null;
-    clearTimeout(registrationTimeout);
     modelObserver?.disconnect();
     motion.removeEventListener?.('change', updateRotation);
+    document.removeEventListener('visibilitychange', updateRotation);
     badge.remove();
     help.textContent = copy.photoHelp;
     photo.setAttribute('aria-label', `${copy.photos}: ${name}`);
@@ -159,43 +204,44 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
     show(Math.max(0, entries.indexOf(selected)), true);
     if (hadFocus) photo.focus({ preventScroll: true });
   };
-  const createModel = entry => {
-    const viewer = element('model-viewer', 'products-model');
-    entry.node = viewer;
-    const attributes = {
-      alt: `${copy.modelAlt}: ${name}`,
-      'camera-controls': '', 'disable-pan': '', 'disable-zoom': '',
-      'interaction-prompt': 'none', 'touch-action': 'none',
-      'auto-rotate-delay': '1500', 'rotation-per-second': '18deg',
-      'shadow-intensity': '0', exposure: '1', 'environment-image': 'neutral',
-      'camera-orbit': '0deg 90deg 105%',
-      'min-camera-orbit': 'auto 55deg auto', 'max-camera-orbit': 'auto 105deg auto',
-      loading: 'lazy', reveal: 'auto', poster: coverUrl,
-    };
-    Object.entries(attributes).forEach(([key, value]) => viewer.setAttribute(key, value));
-    viewer.addEventListener('error', fallback, { once: true });
-    viewer.addEventListener('camera-change', event => {
-      if (event.detail?.source === 'user-interaction') interest();
-    });
-    viewer.addEventListener('load', () => {
-      if (!modelEntry) return;
-      modelLoaded = true;
-      if (entries[current] === modelEntry) show(current, true);
-    }, { once: true });
-    // Shadow DOM camera handlers run first; only their bubbling events are isolated.
-    ['pointerdown', 'pointermove', 'pointerup', 'keydown'].forEach(type => {
-      viewer.addEventListener(type, event => event.stopPropagation());
-    });
-    // Assign the model URL exactly once; retain this element across all view changes.
-    viewer.setAttribute('src', entry.src);
-    photo.append(viewer);
-    if (!window.customElements.get('model-viewer')) {
-      registrationTimeout = setTimeout(fallback, 8000);
-      window.customElements.whenDefined('model-viewer').then(() => {
-        clearTimeout(registrationTimeout);
-      }).catch(fallback);
-    }
-    return viewer;
+  const createModel = async entry => {
+    if (entry.loading) return;
+    entry.loading = true;
+    try {
+      await ensureModelViewer();
+      if (modelEntry !== entry || !modelVisible || entries[current] !== entry || !photo.isConnected) return;
+      const viewer = element('model-viewer', 'products-model');
+      entry.node = viewer;
+      const attributes = {
+        alt: `${copy.modelAlt}: ${name}`,
+        'camera-controls': '', 'disable-pan': '', 'disable-zoom': '',
+        'interaction-prompt': 'none', 'touch-action': 'none',
+        'auto-rotate-delay': '1500', 'rotation-per-second': '18deg',
+        'shadow-intensity': '0', exposure: '1', 'environment-image': 'neutral',
+        'camera-orbit': '0deg 90deg 105%',
+        'min-camera-orbit': 'auto 55deg auto', 'max-camera-orbit': 'auto 105deg auto',
+        loading: 'lazy', reveal: 'auto', poster: coverUrl,
+      };
+      Object.entries(attributes).forEach(([key, value]) => viewer.setAttribute(key, value));
+      viewer.addEventListener('error', fallback, { once: true });
+      viewer.addEventListener('camera-change', event => {
+        if (event.detail?.source === 'user-interaction') interest();
+      });
+      viewer.addEventListener('load', () => {
+        if (!modelEntry) return;
+        modelLoaded = true;
+        if (entries[current] === modelEntry) show(current, true);
+      }, { once: true });
+      // Shadow DOM camera handlers run first; only their bubbling events are isolated.
+      ['pointerdown', 'pointermove', 'pointerup', 'keydown'].forEach(type => {
+        viewer.addEventListener(type, event => event.stopPropagation());
+      });
+      // Assign the model URL exactly once; retain this element across all view changes.
+      viewer.setAttribute('src', entry.src);
+      photo.append(viewer);
+      show(current, true);
+    } catch { fallback(); }
+    finally { entry.loading = false; }
   };
   const show = (index, force = false) => {
     const target = (index + entries.length) % entries.length;
@@ -239,6 +285,16 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
     modelObserver.observe(photo);
   }
   motion?.addEventListener?.('change', updateRotation);
+  if (modelEntry) {
+    document.addEventListener('visibilitychange', updateRotation);
+    window.addEventListener('pagehide', event => {
+      if (event.persisted) return;
+      modelObserver?.disconnect();
+      motion.removeEventListener?.('change', updateRotation);
+      document.removeEventListener('visibilitychange', updateRotation);
+      modelEntry?.node?.removeAttribute('auto-rotate');
+    });
+  }
   show(0, true);
   // Touch uses the 44px buttons; horizontal swipes stay with the outer scroll-snap rail.
   return photo;
@@ -324,14 +380,14 @@ export function trackView(id) {
   } catch { /* Statistics never affect the interface. */ }
 }
 
-export function createProductCard(product, { featured = false } = {}) {
+export function createProductCard(product, { featured = false, priority = 'auto' } = {}) {
   const name = localized(product, 'name', lang);
   const description = localized(product, 'description', lang);
   const src = imageUrl(config().url, product?.image_path);
   if (!name?.trim() || !description || !src || !validProductId(product?.id)) return null;
   const item = element('li', 'products-card');
   const interest = () => trackView(product.id);
-  const photo = productPhoto(product, name, config().url, imageUrl, src, modelUrl, interest);
+  const photo = productPhoto(product, name, config().url, imageUrl, src, modelUrl, interest, priority);
   const content = element('div', 'products-content');
   const title = element('h3', 'products-name', name);
   const details = element('p', 'products-description', description);

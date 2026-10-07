@@ -338,6 +338,18 @@
   // Never keep the predicted avatar waiting on a slow or silent SDK/profile request.
   setTimeout(() => document.documentElement.removeAttribute('data-auth'), 8000);
   if (window.IMAGINNE_AUTH?.url && window.IMAGINNE_AUTH?.publishableKey) {
-    getClient().catch(() => { /* Retried when the user submits. */ });
+    const start = () => getClient().catch(() => { /* Retried when the user submits. */ });
+    // A returning visitor needs the SDK right away to restore the session. Everyone else only
+    // needs it to sign in, so it waits until the page has loaded and the browser is idle.
+    let stored = false;
+    try { stored = Object.keys(localStorage).some(key => /^sb-.+-auth-token$/.test(key)); } catch { /* storage unavailable */ }
+    if (stored) start();
+    else {
+      authKnown = true;
+      render();
+      const idle = () => (window.requestIdleCallback ? requestIdleCallback(start, { timeout: 4000 }) : setTimeout(start, 1500));
+      if (document.readyState === 'complete') idle();
+      else window.addEventListener('load', idle, { once: true });
+    }
   }
 })();

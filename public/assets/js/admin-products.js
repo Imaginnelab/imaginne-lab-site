@@ -1,7 +1,7 @@
 // Product manager for /admin/. The database (RLS) decides who may read or write; this file only
 // drives the interface. Everything that comes from the database reaches the page as text.
 import {
-  MAX_PHOTOS, PAGE_SIZE, copyName, formatFileSize, formatPrice, freshRows, imagePaths, imageUrl, localized, modelUrl, parsePrice, priceCents,
+  MAX_PHOTOS, MAX_PHOTO_SIDE, PAGE_SIZE, chooseUpload, copyName, fitWithin, formatFileSize, formatPrice, freshRows, imagePaths, imageUrl, localized, modelUrl, parsePrice, priceCents,
   reloadSize, viewCount,
 } from './product-format.js';
 
@@ -20,7 +20,8 @@ const languages = {
     saved: 'Produto salvo.', created: 'Produto cadastrado.', deleted: 'Produto excluído.', activated: 'Produto ativado.', deactivated: 'Produto desativado.',
     newTitle: 'Novo produto', editTitle: 'Editar produto', copyTitle: 'Duplicar produto', close: 'Fechar', cancel: 'Cancelar', save: 'Salvar', saving: 'Salvando…',
     name: 'Nome', description: 'Descrição', price: 'Preço (CAD)', priceHint: 'Deixe vazio para "sob consulta".',
-    photos: 'Fotos', addPhotos: 'Adicionar fotos', photoHint: 'JPEG, PNG ou WebP, até 5 MB cada. Até 6 fotos; a primeira é a capa.',
+    photos: 'Fotos', addPhotos: 'Adicionar fotos', photoHint: 'JPEG, PNG ou WebP. As fotos são reduzidas e comprimidas antes do envio. Até 6 fotos; a primeira é a capa.',
+    optimizing: 'otimizando…', photoSource: '{name}: a foto original passa de 25 MB.',
     order: 'Ordem', orderHint: 'Números menores aparecem primeiro.', activeLabel: 'Ativo (visível no site)',
     required: 'Preencha este campo.', tooLong: 'Use no máximo {max} caracteres.', priceInvalid: 'Digite um valor como 49,90.', priceTooHigh: 'O valor é alto demais.',
     orderInvalid: 'Use um número inteiro entre -100000 e 100000.', photoRequired: 'Adicione pelo menos uma foto.',
@@ -46,7 +47,8 @@ const languages = {
     saved: 'Product saved.', created: 'Product added.', deleted: 'Product deleted.', activated: 'Product activated.', deactivated: 'Product deactivated.',
     newTitle: 'New product', editTitle: 'Edit product', copyTitle: 'Duplicate product', close: 'Close', cancel: 'Cancel', save: 'Save', saving: 'Saving…',
     name: 'Name', description: 'Description', price: 'Price (CAD)', priceHint: 'Leave empty for "price on request".',
-    photos: 'Photos', addPhotos: 'Add photos', photoHint: 'JPEG, PNG or WebP, up to 5 MB each. Up to 6 photos; the first one is the cover.',
+    photos: 'Photos', addPhotos: 'Add photos', photoHint: 'JPEG, PNG or WebP. Photos are resized and compressed before upload. Up to 6 photos; the first one is the cover.',
+    optimizing: 'optimizing…', photoSource: '{name}: the original photo is over 25 MB.',
     order: 'Order', orderHint: 'Lower numbers come first.', activeLabel: 'Active (visible on the site)',
     required: 'Fill in this field.', tooLong: 'Use at most {max} characters.', priceInvalid: 'Enter an amount such as 49.90.', priceTooHigh: 'The amount is too high.',
     orderInvalid: 'Use a whole number between -100000 and 100000.', photoRequired: 'Add at least one photo.',
@@ -72,7 +74,8 @@ const languages = {
     saved: 'Producto guardado.', created: 'Producto añadido.', deleted: 'Producto eliminado.', activated: 'Producto activado.', deactivated: 'Producto desactivado.',
     newTitle: 'Nuevo producto', editTitle: 'Editar producto', copyTitle: 'Duplicar producto', close: 'Cerrar', cancel: 'Cancelar', save: 'Guardar', saving: 'Guardando…',
     name: 'Nombre', description: 'Descripción', price: 'Precio (CAD)', priceHint: 'Déjalo vacío para "precio a consultar".',
-    photos: 'Fotos', addPhotos: 'Añadir fotos', photoHint: 'JPEG, PNG o WebP, hasta 5 MB cada una. Hasta 6 fotos; la primera es la portada.',
+    photos: 'Fotos', addPhotos: 'Añadir fotos', photoHint: 'JPEG, PNG o WebP. Las fotos se reducen y comprimen antes de subirlas. Hasta 6 fotos; la primera es la portada.',
+    optimizing: 'optimizando…', photoSource: '{name}: la foto original supera los 25 MB.',
     order: 'Orden', orderHint: 'Los números menores aparecen primero.', activeLabel: 'Activo (visible en el sitio)',
     required: 'Completa este campo.', tooLong: 'Usa como máximo {max} caracteres.', priceInvalid: 'Escribe un importe como 49,90.', priceTooHigh: 'El importe es demasiado alto.',
     orderInvalid: 'Usa un número entero entre -100000 y 100000.', photoRequired: 'Añade al menos una foto.',
@@ -93,6 +96,9 @@ const LANGS = ['pt', 'en', 'es'];
 // The extension comes from the validated MIME type, never from the original file name.
 const EXTENSIONS = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+// What may be picked; the 5 MB limit applies to the file that is actually uploaded.
+const MAX_PHOTO_SOURCE_BYTES = 25 * 1024 * 1024;
+const PHOTO_QUALITY = 0.82;
 const MAX_MODEL_BYTES = 15 * 1024 * 1024;
 const MODEL_TYPE = 'model/gltf-binary';
 // A GLB file starts with the ASCII bytes "glTF". Browsers rarely report a type for .glb files,
@@ -347,6 +353,16 @@ export function mountProducts({ client, lang }) {
     for (const photo of photos) if (photo.url) URL.revokeObjectURL(photo.url);
     photos = [];
   }
+  // "Cover · 1,2 MB → 180 KB": what was picked and what will actually be uploaded.
+  function photoMeta(photo, index) {
+    let size = '';
+    if (photo.kind === 'new') {
+      const original = formatFileSize(photo.file.size, lang);
+      size = photo.optimizing ? `${original} · ${t.optimizing}`
+        : photo.upload !== photo.file ? `${original} → ${formatFileSize(photo.upload.size, lang)}` : original;
+    }
+    return [index === 0 ? t.cover : '', size].filter(Boolean).join(' · ');
+  }
   function renderPhotos(focus = null) {
     const items = photos.map((photo, index) => {
       const item = photoTemplate.content.firstElementChild.cloneNode(true);
@@ -356,8 +372,8 @@ export function mountProducts({ client, lang }) {
       thumb.alt = fill(t.photoThumbAlt, { n });
       // File names are free text typed by someone: they only ever land in textContent.
       item.querySelector('.photo-name').textContent = photo.kind === 'new' ? photo.file.name : photo.kind === 'copy' ? t.copiedPhoto : t.savedPhoto;
-      const meta = [index === 0 ? t.cover : '', photo.kind === 'new' ? formatFileSize(photo.file.size, lang) : ''].filter(Boolean);
-      item.querySelector('.photo-meta').textContent = meta.join(' · ');
+      item.dataset.photoId = photo.id;
+      item.querySelector('.photo-meta').textContent = photoMeta(photo, index);
       item.classList.toggle('is-cover', index === 0);
       const buttons = {
         cover: [t.makeCoverLabel, index === 0, () => movePhoto(photo, 0, 'cover')],
@@ -401,11 +417,55 @@ export function mountProducts({ client, lang }) {
     for (const file of files) {
       if (photos.length >= MAX_PHOTOS) { problems.push(t.photoMax); break; }
       if (!Object.hasOwn(EXTENSIONS, file.type)) { problems.push(fill(t.photoType, { name: file.name })); continue; }
-      if (file.size > MAX_PHOTO_BYTES) { problems.push(fill(t.photoSize, { name: file.name })); continue; }
-      photos.push({ id: ++photoSeq, kind: 'new', file, url: URL.createObjectURL(file) });
+      if (file.size > MAX_PHOTO_SOURCE_BYTES) { problems.push(fill(t.photoSource, { name: file.name })); continue; }
+      const photo = { id: ++photoSeq, kind: 'new', file, url: URL.createObjectURL(file), upload: file, optimizing: true };
+      photo.ready = preparePhoto(photo);
+      photos.push(photo);
     }
     setError(photoInput, problems.join(' '));
     renderPhotos();
+  }
+
+  // Resizes to at most MAX_PHOTO_SIDE and re-encodes as WebP, in the browser. Null whenever
+  // that is not possible, and the caller then keeps the original file.
+  async function optimizePhoto(file) {
+    try {
+      // 'from-image' applies the EXIF orientation, so phone photos are not stored sideways.
+      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      const { width, height } = fitWithin(bitmap.width, bitmap.height, MAX_PHOTO_SIDE);
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext('2d');
+      context.imageSmoothingQuality = 'high';
+      // The canvas keeps the alpha channel, so transparent PNGs stay transparent in WebP.
+      context.drawImage(bitmap, 0, 0, width, height);
+      bitmap.close?.();
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', PHOTO_QUALITY));
+      canvas.width = 0;
+      canvas.height = 0;
+      // Browsers that cannot encode WebP answer with a PNG instead.
+      return blob && blob.type === 'image/webp' ? blob : null;
+    } catch { return null; }
+  }
+  // Decides what will be uploaded for a picked photo and shows the result in its row.
+  async function preparePhoto(photo) {
+    const optimized = await optimizePhoto(photo.file);
+    photo.upload = chooseUpload(photo.file, optimized) === 'optimized' ? optimized : photo.file;
+    photo.optimizing = false;
+    // Removed, or the form was closed, while it was being processed.
+    if (!photos.includes(photo)) return;
+    if (!Object.hasOwn(EXTENSIONS, photo.upload.type) || photo.upload.size > MAX_PHOTO_BYTES) {
+      // The limits apply to the file that would be stored.
+      URL.revokeObjectURL(photo.url);
+      photos.splice(photos.indexOf(photo), 1);
+      setError(photoInput, fill(t.photoSize, { name: photo.file.name }));
+      renderPhotos();
+      return;
+    }
+    // Only the text changes, so whatever has the keyboard focus in the list keeps it.
+    const row = photoList.querySelector(`[data-photo-id="${photo.id}"]`);
+    if (row) row.querySelector('.photo-meta').textContent = photoMeta(photo, photos.indexOf(photo));
   }
 
   // ---- 3D model of the form --------------------------------------------------
@@ -460,6 +520,16 @@ export function mountProducts({ client, lang }) {
     if (current !== modelCheck || !dialog.open) return;
     setError(modelInput, problem ? fill(problem, { name: file.name }) : '');
     if (!problem) setModel({ kind: 'new', file, url: URL.createObjectURL(file) });
+  }
+
+  // Frees what the closed form was holding: photo previews and, above all, the 3D viewer,
+  // which must not keep rendering behind a closed dialog.
+  function releaseForm() {
+    clearPhotos();
+    renderPhotos();
+    ++modelCheck;
+    setModel(null);
+    editing = null;
   }
 
   // source: a product to duplicate (a new product pre-filled from it).
@@ -556,12 +626,20 @@ export function mountProducts({ client, lang }) {
     if (busy) return;
     const values = validate();
     if (!values) return;
-    const items = photos.slice();
     const modelItemToSave = model;
     const target = editing;
     const oldPaths = target ? imagePaths(target) : [];
     const oldModel = target && publicModelUrl(target.model_path) ? target.model_path : '';
     setBusy(true, saveButton, t.saving);
+    // Photos picked a moment ago may still be being optimised.
+    await Promise.all(photos.map((photo) => photo.ready));
+    const items = photos.slice();
+    if (!items.length) {
+      setBusy(false, saveButton, t.save);
+      if (!photoInput.hasAttribute('aria-invalid')) setError(photoInput, t.photoRequired);
+      formError.textContent = t.fixErrors;
+      return;
+    }
     const uploaded = [];
     let failed = '';
     let uncertain = false;
@@ -570,8 +648,9 @@ export function mountProducts({ client, lang }) {
       const paths = [];
       for (const item of items) {
         if (item.kind === 'saved') { paths.push(item.path); continue; }
-        let body = item.file;
-        let type = item.file?.type;
+        // For a picked photo this is the optimised WebP, or the original when that was not better.
+        let body = item.upload;
+        let type = item.upload?.type;
         if (item.kind === 'copy') {
           const copy = await fetchPhoto(item.path);
           if (!copy) { failed = t.copyError; break; }
@@ -652,6 +731,8 @@ export function mountProducts({ client, lang }) {
       return;
     }
     dialog.close();
+    // Do not wait for the close event to let go of the previews and the 3D viewer.
+    releaseForm();
     showNotice(target ? t.saved : t.created);
     await load();
   }
@@ -770,7 +851,7 @@ export function mountProducts({ client, lang }) {
     el.addEventListener('cancel', (event) => { if (busy) event.preventDefault(); });
   }
   // The close event arrives a moment after close(); by then the form may already be open again.
-  dialog.addEventListener('close', () => { if (!dialog.open) { clearPhotos(); renderPhotos(); ++modelCheck; setModel(null); editing = null; } });
+  dialog.addEventListener('close', () => { if (!dialog.open) releaseForm(); });
   deleteDialog.addEventListener('close', () => { if (!deleteDialog.open) deleting = null; });
 
   load();

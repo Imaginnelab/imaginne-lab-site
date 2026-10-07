@@ -152,3 +152,27 @@ export function viewCount(product) {
   const views = Number(product?.view_count);
   return Number.isFinite(views) && views > 0 ? Math.floor(views) : 0;
 }
+
+// ---- Photo optimisation before upload (admin) ---------------------------------------------
+
+// Longest side of a stored product photo. Cards show them at 300-450 px; this leaves room
+// for sharp screens without shipping camera-sized files.
+export const MAX_PHOTO_SIDE = 1400;
+
+// Size to draw an image at so its longest side is at most `max`, keeping the proportion.
+// Smaller images are never enlarged.
+export function fitWithin(width, height, max = MAX_PHOTO_SIDE) {
+  const w = Math.floor(Number(width));
+  const h = Math.floor(Number(height));
+  if (!(w > 0) || !(h > 0) || !(max > 0)) return { width: 0, height: 0 };
+  const scale = Math.min(1, max / Math.max(w, h));
+  return { width: Math.max(1, Math.round(w * scale)), height: Math.max(1, Math.round(h * scale)) };
+}
+
+// Which file to upload: the optimised WebP only when it really exists and is smaller.
+// Anything else (no WebP support, an error, a result that grew) keeps the original, so the
+// optimisation can never stand between the administrator and saving a product.
+export function chooseUpload(original, optimized) {
+  const ok = optimized && optimized.type === 'image/webp' && optimized.size > 0 && optimized.size < original?.size;
+  return ok ? 'optimized' : 'original';
+}

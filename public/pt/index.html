@@ -14,6 +14,7 @@
 <link rel="preload" href="/assets/fonts/dmmono-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/maintenance.css">
+<link rel="preconnect" href="https://xdinubduvlxattlpjrvu.supabase.co" crossorigin>
 <script src="/assets/js/auth-config.js"></script>
 <script src="/assets/js/maintenance.js"></script>
 <link rel="stylesheet" href="/assets/css/products.css">
@@ -147,13 +148,13 @@
         <div class="frame">
           <model-viewer
             id="hero-bust"
-            src="/assets/3d/lion-head/lion_head.glb"
+            data-hero-model
+            data-model-src="/assets/3d/lion-head/lion_head.glb"
             alt="Escultura de cabeça de leão impressa em 3D interativa, feita pela Imaginne Lab"
             camera-controls
             disable-pan
             disable-zoom
             interaction-prompt="none"
-            auto-rotate
             auto-rotate-delay="1500"
             rotation-per-second="18deg"
             shadow-intensity="0"
@@ -162,7 +163,7 @@
             camera-orbit="0deg 90deg 105%"
             min-camera-orbit="auto 55deg auto"
             max-camera-orbit="auto 105deg auto"
-            loading="eager"
+            loading="lazy"
             reveal="auto">
           </model-viewer>
         </div>
@@ -398,7 +399,6 @@
   </div>
 </footer>
 
-<script type="module" src="/assets/js/model-viewer.min.js"></script>
 <script src="/assets/js/main.js"></script>
 <script src="/assets/js/auth.js"></script>
 <script src="/assets/js/transition.js"></script>

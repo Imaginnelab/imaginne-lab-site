@@ -18,10 +18,12 @@ export function mountCatalogue(root, api) {
   let done = false;
   let initialized = false;
   let featured = null;
+  let featuredPromise;
+  let sentinelFrame = 0;
   const ids = new Set();
   const add = (product, highlighted = false) => {
     if (ids.has(product?.id)) return;
-    const card = api.createProductCard(product, { featured: highlighted });
+    const card = api.createProductCard(product, { featured: highlighted, priority: grid.children.length === 0 ? 'high' : 'auto' });
     if (card) { ids.add(product.id); grid.append(card); }
   };
   const observer = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
@@ -37,7 +39,10 @@ export function mountCatalogue(root, api) {
     retry.hidden = true;
     message.textContent = '';
     try {
-      if (!initialized) featured = await api.featuredProduct();
+      if (!initialized) {
+        featuredPromise ||= api.featuredProduct().catch(error => { featuredPromise = null; throw error; });
+        featured = await featuredPromise;
+      }
       const size = !initialized && featured ? 11 : 12;
       const options = { limit: String(size), offset: String(offset) };
       if (featured) options.id = 'neq.' + featured.id;
@@ -58,17 +63,34 @@ export function mountCatalogue(root, api) {
       root.removeAttribute('aria-busy');
       loading.hidden = true;
       sentinel.hidden = done;
+      if (done) {
+        observer?.disconnect();
+        window.removeEventListener('scroll', scheduleSentinel);
+        cancelAnimationFrame(sentinelFrame);
+        sentinelFrame = 0;
+      }
       if (!done && retry.hidden) {
         if (observer) observer.observe(sentinel);
-        else requestAnimationFrame(checkSentinel);
+        else scheduleSentinel();
       }
     }
   };
   const checkSentinel = () => {
+    sentinelFrame = 0;
     if (!busy && !done && retry.hidden && sentinel.getBoundingClientRect().top < window.innerHeight + 160) loadNext();
   };
+  const scheduleSentinel = () => {
+    if (!sentinelFrame) sentinelFrame = requestAnimationFrame(checkSentinel);
+  };
   retry.addEventListener('click', loadNext);
-  if (!observer) window.addEventListener('scroll', checkSentinel, { passive: true });
+  if (!observer) window.addEventListener('scroll', scheduleSentinel, { passive: true });
+  window.addEventListener('pagehide', event => {
+    cancelAnimationFrame(sentinelFrame);
+    sentinelFrame = 0;
+    if (event.persisted) return;
+    observer?.disconnect();
+    window.removeEventListener('scroll', scheduleSentinel);
+  });
   loadNext();
   return { loadNext };
 }
@@ -90,4 +112,3 @@ async function start() {
   }
 }
 if (root) start();
-
