@@ -35,7 +35,7 @@ No dependencies to install. Requires only Node.js.
 npm run dev
 ```
 
-Serves `public/` at http://localhost:3000.
+Serves `public/` at http://127.0.0.1:3000 with automatic browser reload when files change. The reload client is injected only in local responses; files in `public/` and deployed output are unchanged. If port 3000 is occupied, use `npm run dev -- 3001`; `npm run dev -- 0` selects a free port and prints its URL. The server binds to loopback only.
 
 ## Editing content
 

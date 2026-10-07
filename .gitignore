@@ -4,3 +4,10 @@ Thumbs.db
 
 .vercel
 .env*
+
+# Estado operacional local da Fábrica Dev
+.maestri/fabrica-dev/
+
+# Worktrees e configuração local do Claude Code
+.claude/worktrees/
+.claude/settings.local.json
