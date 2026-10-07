@@ -453,15 +453,28 @@
   background: var(--amber);
   transform: translateX(calc(var(--tab-x, 0px) + 0.75rem));
 }
-.admin-tabs.is-ready::after { transition: transform 0.32s var(--ease-out), width 0.32s var(--ease-out); }
-/* The list that was just chosen slides in from the side its tab is on. */
-@keyframes admin-panel-in { from { opacity: 0; transform: translateX(18px); } }
-@keyframes admin-panel-in-back { from { opacity: 0; transform: translateX(-18px); } }
-.admin-panel-in { animation: admin-panel-in 0.28s var(--ease-out) both; }
-.admin-panel-in-back { animation: admin-panel-in-back 0.28s var(--ease-out) both; }
+.admin-tabs.is-ready::after { transition: transform 0.24s var(--ease-out), width 0.24s var(--ease-out); }
+/* Switching tabs: the old list leaves to one side while the new one arrives from the other,
+   short and with a strong ease-out so it reads as one quick, clear movement. */
+@keyframes admin-panel-in { from { opacity: 0; transform: translateX(56px) scale(0.985); } }
+@keyframes admin-panel-in-back { from { opacity: 0; transform: translateX(-56px) scale(0.985); } }
+@keyframes admin-panel-out { to { opacity: 0; transform: translateX(-56px) scale(0.985); } }
+@keyframes admin-panel-out-back { to { opacity: 0; transform: translateX(56px) scale(0.985); } }
+.admin-panel-in { animation: admin-panel-in 0.24s var(--ease-out) both; }
+.admin-panel-in-back { animation: admin-panel-in-back 0.24s var(--ease-out) both; }
+/* With view transitions both lists animate together; the rest of the page stays put. */
+#products, #coupons { view-transition-name: admin-panel; }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-group(admin-panel) { animation-duration: 0.24s; animation-timing-function: var(--ease-out); }
+::view-transition-old(admin-panel), ::view-transition-new(admin-panel) { height: auto; width: 100%; object-fit: none; object-position: top left; }
+::view-transition-old(admin-panel) { animation: admin-panel-out 0.14s cubic-bezier(0.4, 0, 1, 1) both; }
+::view-transition-new(admin-panel) { animation: admin-panel-in 0.24s var(--ease-out) 0.06s both; }
+:root[data-tabs="back"]::view-transition-old(admin-panel) { animation-name: admin-panel-out-back; }
+:root[data-tabs="back"]::view-transition-new(admin-panel) { animation-name: admin-panel-in-back; }
 @media (prefers-reduced-motion: reduce) {
   .admin-tabs.is-ready::after { transition: none; }
   .admin-panel-in, .admin-panel-in-back { animation: none; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }
 /* A long list has a page scrollbar and a short one does not: reserve its room so switching
    tabs never moves the content sideways. */

@@ -113,22 +113,34 @@ function mountTabs() {
   function select(name, { focus = false, remember = true } = {}) {
     const previous = selected;
     selected = name;
-    for (const other of names) {
-      const active = other === name;
-      tabs[other].setAttribute('aria-selected', String(active));
-      // Roving tabindex: Tab leaves the bar and goes into the panel; the arrows move between tabs.
-      tabs[other].tabIndex = active ? 0 : -1;
-      const panel = document.getElementById(other);
-      panel.hidden = !active;
-      panel.classList.remove('admin-panel-in', 'admin-panel-in-back');
-      // The new list slides in from the side its tab is on; the first paint has no animation.
-      if (active && previous && previous !== name) {
-        void panel.offsetWidth;
-        panel.classList.add(names.indexOf(name) > names.indexOf(previous) ? 'admin-panel-in' : 'admin-panel-in-back');
+    const changing = !!previous && previous !== name;
+    const forward = names.indexOf(name) > names.indexOf(previous);
+    const show = (animateIn) => {
+      for (const other of names) {
+        const active = other === name;
+        tabs[other].setAttribute('aria-selected', String(active));
+        // Roving tabindex: Tab leaves the bar and goes into the panel; the arrows move between tabs.
+        tabs[other].tabIndex = active ? 0 : -1;
+        const panel = document.getElementById(other);
+        panel.hidden = !active;
+        panel.classList.remove('admin-panel-in', 'admin-panel-in-back');
+        if (active && animateIn) {
+          void panel.offsetWidth;
+          panel.classList.add(forward ? 'admin-panel-in' : 'admin-panel-in-back');
+        }
       }
-    }
-    placeIndicator();
-    bar.classList.toggle('is-ready', !!previous);
+      placeIndicator();
+      bar.classList.toggle('is-ready', !!previous);
+    };
+    // The old list leaves to one side while the new one arrives from the other. Browsers with
+    // view transitions animate both at once; the others only slide the new list in. The first
+    // paint and reduced motion have no animation.
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (changing && !still && document.startViewTransition) {
+      document.documentElement.dataset.tabs = forward ? 'forward' : 'back';
+      const transition = document.startViewTransition(() => show(false));
+      transition.finished.finally(() => { delete document.documentElement.dataset.tabs; });
+    } else show(changing && !still);
     if (focus) tabs[name].focus();
     // replaceState: the choice survives a reload without piling up history entries or jumping the page.
     if (remember && location.hash !== `#${name}`) history.replaceState(null, '', `${location.pathname}${location.search}#${name}`);
