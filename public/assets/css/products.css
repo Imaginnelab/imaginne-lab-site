@@ -323,3 +323,24 @@ a[href="#productos"][hidden] { display: none; }
   .products-track { scroll-behavior: auto; scroll-snap-type: none; }
   .products-arrow { transition: none; }
 }
+
+/* Arrow icons are drawn, not typed: text arrows sit on the font's baseline and never land in
+   the middle of a round button. One shape each, mirrored for "next". */
+.products-arrow, .products-gallery-arrow { display: grid; place-items: center; padding: 0; line-height: 1; }
+.products-arrow > span {
+  display: block; width: 18px; height: 18px; font-size: 0; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 12H5M11 6l-6 6 6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 12H5M11 6l-6 6 6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.products-arrow[data-products-next] > span { transform: scaleX(-1); }
+.products-gallery-arrow { font-size: 0; }
+.products-gallery-arrow::after {
+  content: ""; width: 16px; height: 16px; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.products-gallery-arrow:last-child::after { transform: scaleX(-1); }
+/* While one of them waits, the spinner takes the icon's place at the same size. */
+.products-arrow[aria-busy="true"]::before, .products-gallery-arrow[aria-busy="true"]::before { width: 16px; height: 16px; margin: 0; }
+.products-gallery-arrow[aria-busy="true"]::after { display: none; }
+.products-arrow[hidden], .products-gallery-arrow[hidden] { display: none; }
