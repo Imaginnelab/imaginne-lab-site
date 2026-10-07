@@ -1,1 +1,3 @@
-Leia AGENTS.md para as regras deste projeto. Para organizar equipe e painel no Maestri, use as skills pessoais initial-setup, feature e fix e docs/maestri/Guia.md.
+Leia AGENTS.md para as regras deste projeto. Para organizar equipe e painel no Maestri, use as skills pessoais initial-setup, feature, fix e security e docs/maestri/Guia.md.
+
+Segurança: consulte a seção de segurança de docs/maestri/Guia.md e Guias/Revisar seguranca.md no Dev Brain. Setup faz revisão inicial por leitura; feature/fix verificam os controles afetados, usando os devs existentes. Auditoria usa security e relata por padrão; correções exigem escopo autorizado. Testes ativos precisam de ambiente isolado, inclusive backend Supabase/pagamentos. Registre cobertura e lacunas; não guarde credenciais nem declare ausência de brechas.
