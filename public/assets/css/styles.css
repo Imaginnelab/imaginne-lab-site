@@ -214,14 +214,6 @@ h1, h2, h3, h4, p { margin: 0; }
   text-transform: uppercase;
   color: var(--ink-faint);
 }
-.eyebrow::before {
-  content: '';
-  width: 0.5em;
-  height: 0.5em;
-  border-radius: 50%;
-  background: var(--amber);
-  flex-shrink: 0;
-}
 
 h1.heading,
 h2.heading {
@@ -785,7 +777,6 @@ html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
   gap: 1.5rem;
 }
 .spotlight-copy .eyebrow { color: rgba(251,249,242,0.6); }
-.spotlight-copy .eyebrow::before { background: var(--amber); }
 .spotlight-copy h2 {
   font-size: clamp(1.9rem, 3.2vw, 2.6rem);
   font-weight: 600;
