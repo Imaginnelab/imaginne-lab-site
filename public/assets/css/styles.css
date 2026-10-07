@@ -982,3 +982,9 @@ button.is-icon[aria-busy="true"] > *, .btn.is-icon[aria-busy="true"] > * { displ
 .search-clear[aria-busy="true"]::before { width: 16px; height: 16px; margin: 0; }
 .search-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .search-box, .search-input { transition: none; } }
+/* The field never draws its own focus outline: inside the clipped pill only its left edge would
+   show, as a stray line. The pill itself carries the focus ring. */
+.search-box .search-input, .search-box .search-input:focus, .search-box .search-input:focus-visible { outline: 0; border: 0; box-shadow: none; -webkit-appearance: none; appearance: none; }
+/* The field is only as tall as its text, centred in the pill, so the typing caret is a normal
+   text caret instead of a bar the full height of the box; a little room keeps it off the icon. */
+.search-box .search-input { align-self: center; height: 1.5em; line-height: 1.5; padding: 0 .5rem 0 .4rem; }
