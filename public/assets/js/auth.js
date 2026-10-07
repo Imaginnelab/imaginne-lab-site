@@ -181,6 +181,8 @@
     switcher.disabled = value;
     account.querySelector('button').disabled = value;
     account.querySelector('button').textContent = value ? t.wait : t.logout;
+    // A locked button always shows why: the spinner comes from aria-busy (styles.css).
+    for (const button of [submit, account.querySelector('button')]) { if (value) button.setAttribute('aria-busy', 'true'); else button.removeAttribute('aria-busy'); }
     dialog.setAttribute('aria-busy', String(value));
     render();
   }

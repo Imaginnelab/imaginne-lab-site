@@ -123,7 +123,8 @@ const SCOPE = ['#products', '#product-dialog', '#product-delete'];
 
 let mounted = false;
 
-export function mountProducts({ client, lang }) {
+// onChange: called after a row is created or deleted, so the page can update its totals.
+export function mountProducts({ client, lang, onChange }) {
   if (mounted) return;
   mounted = true;
   const t = languages[lang] || languages.en;
@@ -148,6 +149,8 @@ export function mountProducts({ client, lang }) {
   const saveButton = $('product-save');
   const photoInput = $('product-photo');
   const photoList = $('product-photos');
+  const photoButton = document.querySelector('label[for="product-photo"]');
+  const modelButton = document.querySelector('label[for="product-model"]');
   const photoTemplate = $('photo-item');
   const modelInput = $('product-model');
   const modelItem = $('product-model-item');
@@ -191,6 +194,8 @@ export function mountProducts({ client, lang }) {
   };
   const failure = (error, status, fallback) => (isAuthError(error, status) ? t.forbidden : fallback);
 
+  // The button that started a wait spins (aria-busy; the spinner itself is in styles.css).
+  const spin = (button, on) => { if (on) button.setAttribute('aria-busy', 'true'); else button.removeAttribute('aria-busy'); };
   function showNotice(text, error = false) {
     notice.classList.toggle('is-error', error);
     notice.textContent = text;
@@ -205,7 +210,7 @@ export function mountProducts({ client, lang }) {
     for (const el of [dialog, deleteDialog, list]) el.setAttribute('aria-busy', String(value));
     scoped('button').forEach((el) => { el.disabled = value; });
     form.querySelectorAll('input, textarea, select').forEach((el) => { el.disabled = value; });
-    if (button) button.textContent = label;
+    if (button) { button.textContent = label; spin(button, value); }
     // Re-enabling everything would also re-enable "move up" on the first photo, and so on.
     if (!value) renderPhotos();
     modelRemove.disabled = value;
@@ -341,7 +346,7 @@ export function mountProducts({ client, lang }) {
     const actions = {
       edit: [t.edit, t.editLabel, () => openForm(product)],
       duplicate: [t.duplicate, t.duplicateLabel, () => openForm(null, product)],
-      toggle: product.is_active ? [t.deactivate, t.deactivateLabel, () => toggle(product)] : [t.activate, t.activateLabel, () => toggle(product)],
+      toggle: product.is_active ? [t.deactivate, t.deactivateLabel, (event) => toggle(product, event.currentTarget)] : [t.activate, t.activateLabel, (event) => toggle(product, event.currentTarget)],
       delete: [t.delete, t.deleteLabel, () => openDelete(product)],
     };
     for (const [action, [text, label, handler]] of Object.entries(actions)) {
@@ -411,6 +416,7 @@ export function mountProducts({ client, lang }) {
     });
     photoList.replaceChildren(...items);
     photoList.hidden = !items.length;
+    spin(photoButton, photos.some((photo) => photo.optimizing));
     if (!focus) return;
     // Keep the keyboard where it was: same action on the same photo, or the nearest thing left.
     const wanted = photoList.querySelector('[data-focus]');
@@ -481,6 +487,7 @@ export function mountProducts({ client, lang }) {
       renderPhotos();
       return;
     }
+    spin(photoButton, photos.some((item) => item.optimizing));
     // Only the text changes, so whatever has the keyboard focus in the list keeps it.
     const row = photoList.querySelector(`[data-photo-id="${photo.id}"]`);
     if (row) row.querySelector('.photo-meta').textContent = photoMeta(photo, photos.indexOf(photo));
@@ -509,6 +516,8 @@ export function mountProducts({ client, lang }) {
   }
   function renderModel() {
     $('product-model-button').textContent = model ? t.replaceModel : t.addModel;
+    // Also covers a change of texture size, which optimises the same file again.
+    spin(modelButton, !!model?.optimizing);
     modelRemove.setAttribute('aria-label', t.removeModel);
     modelRemove.disabled = busy;
     modelItem.hidden = !model;
@@ -797,6 +806,7 @@ export function mountProducts({ client, lang }) {
     // Do not wait for the close event to let go of the previews and the 3D viewer.
     releaseForm();
     showNotice(target ? t.saved : t.created);
+    if (!target) onChange?.();
     await load();
   }
 
@@ -830,17 +840,17 @@ export function mountProducts({ client, lang }) {
   }
 
   // ---- Row actions --------------------------------------------------------
-  async function toggle(product) {
+  async function toggle(product, button) {
     if (busy) return;
     const activate = !product.is_active;
-    setBusy(true);
+    setBusy(true, button, button.textContent);
     let failed = '';
     try {
       const { data, error, status } = await client.from('products').update({ is_active: activate }).eq('id', product.id).select('id');
       if (error) failed = failure(error, status, t.toggleError);
       else if (!Array.isArray(data) || !data.length) failed = t.forbidden;
     } catch { failed = t.toggleError; }
-    setBusy(false);
+    setBusy(false, button, button.textContent);
     showNotice(failed || (activate ? t.activated : t.deactivated), !!failed);
     if (!failed) await load();
   }
@@ -876,6 +886,7 @@ export function mountProducts({ client, lang }) {
     }
     deleteDialog.close();
     showNotice(t.deleted);
+    onChange?.();
     await load();
   }
 

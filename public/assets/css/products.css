@@ -83,7 +83,25 @@ a[href="#productos"][hidden] { display: none; }
   background: var(--bg-elevated);
   scroll-snap-align: start;
 }
-.products-photo { aspect-ratio: 4 / 3; overflow: hidden; background: var(--bg-sunken); }
+.products-photo { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--bg-sunken); }
+.products-image-loader { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; pointer-events: none; }
+.products-image-loader[hidden], .products-model-open[hidden], .products-media-spinner[hidden] { display: none; }
+.products-media-spinner {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--amber);
+  border-radius: 50%;
+  background: var(--bg-elevated);
+}
+.products-photo[data-media-visible] .products-media-spinner, .products-page-loader .products-media-spinner { animation: products-media-spin .85s linear infinite; }
+.products-page-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 1.5rem; text-align: center; color: var(--ink-soft); }
+.products-page-retry { min-height: 44px; padding: .6rem 1rem; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); background: var(--bg-elevated); color: var(--ink); cursor: pointer; }
+.products-page-retry[hidden] { display: none; }
+.products-page-retry:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+@keyframes products-media-spin { to { transform: rotate(360deg); } }
 .products-image { width: 100%; height: 100%; object-fit: cover; }
 .products-image[hidden] { display: none; }
 .products-gallery { position: relative; }
@@ -301,6 +319,7 @@ a[href="#productos"][hidden] { display: none; }
   .products-track { grid-auto-columns: 82%; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .products-photo[data-media-visible] .products-media-spinner, .products-page-loader .products-media-spinner { animation: none; }
   .products-track { scroll-behavior: auto; scroll-snap-type: none; }
   .products-arrow { transition: none; }
 }

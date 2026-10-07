@@ -169,7 +169,8 @@ export function couponStatus(coupon, now = new Date()) {
 
 let mounted = false;
 
-export function mountCoupons({ client, lang }) {
+// onChange: called after a row is created or deleted, so the page can update its totals.
+export function mountCoupons({ client, lang, onChange }) {
   if (mounted) return;
   mounted = true;
   const t = languages[lang] || languages.en;
@@ -217,6 +218,8 @@ export function mountCoupons({ client, lang }) {
   // 23505: the unique constraint on the code.
   const failure = (error, status, fallback) => (error?.code === '23505' ? t.duplicate : isAuthError(error, status) ? t.forbidden : fallback);
 
+  // The button that started a wait spins (aria-busy; the spinner itself is in styles.css).
+  const spin = (button, on) => { if (on) button.setAttribute('aria-busy', 'true'); else button.removeAttribute('aria-busy'); };
   function showNotice(text, error = false) {
     notice.classList.toggle('is-error', error);
     notice.textContent = text;
@@ -231,7 +234,7 @@ export function mountCoupons({ client, lang }) {
     for (const el of [dialog, deleteDialog, list]) el.setAttribute('aria-busy', String(value));
     scoped('button').forEach((el) => { el.disabled = value; });
     form.querySelectorAll('input').forEach((el) => { el.disabled = value; });
-    if (button) button.textContent = label;
+    if (button) { button.textContent = label; spin(button, value); }
   }
 
   // One page of coupons, newest first; id breaks ties so pages never overlap.
@@ -338,7 +341,7 @@ export function mountCoupons({ client, lang }) {
     row.querySelector('.product-badge').textContent = t[status];
     const actions = {
       edit: [t.edit, t.editLabel, () => openForm(coupon)],
-      toggle: coupon.is_active ? [t.deactivate, t.deactivateLabel, () => toggle(coupon)] : [t.activate, t.activateLabel, () => toggle(coupon)],
+      toggle: coupon.is_active ? [t.deactivate, t.deactivateLabel, (event) => toggle(coupon, event.currentTarget)] : [t.activate, t.activateLabel, (event) => toggle(coupon, event.currentTarget)],
       delete: [t.delete, t.deleteLabel, () => openDelete(coupon)],
     };
     for (const [action, [text, label, handler]] of Object.entries(actions)) {
@@ -429,21 +432,22 @@ export function mountCoupons({ client, lang }) {
     }
     dialog.close();
     showNotice(target ? t.saved : t.created);
+    if (!target) onChange?.();
     await load();
   }
 
   // ---- Row actions --------------------------------------------------------------------------
-  async function toggle(coupon) {
+  async function toggle(coupon, button) {
     if (busy) return;
     const activate = !coupon.is_active;
-    setBusy(true);
+    setBusy(true, button, button.textContent);
     let failed = '';
     try {
       const { data, error, status } = await client.from('coupons').update({ is_active: activate }).eq('id', coupon.id).select('id');
       if (error) failed = isAuthError(error, status) ? t.forbidden : t.toggleError;
       else if (!Array.isArray(data) || !data.length) failed = t.forbidden;
     } catch { failed = t.toggleError; }
-    setBusy(false);
+    setBusy(false, button, button.textContent);
     showNotice(failed || (activate ? t.activated : t.deactivated), !!failed);
     if (!failed) await load();
   }
@@ -474,6 +478,7 @@ export function mountCoupons({ client, lang }) {
     }
     deleteDialog.close();
     showNotice(t.deleted);
+    onChange?.();
     await load();
   }
 

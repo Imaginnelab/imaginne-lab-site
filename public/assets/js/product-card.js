@@ -3,6 +3,8 @@ const { priceCents, formatPrice, localized, imageUrl, modelUrl } = format;
 
 const COPY = {
   en: {
+    loadingImage: 'Loading image…', waitingModel: '3D will load shortly…',
+    loadingProducts: 'Loading more products…', retryProducts: 'Could not load more products. Try again.', retry: 'Try again',
     openModel: 'View in 3D', loadingModel: 'Loading 3D…', queuedModel: 'Waiting to load 3D…',
     preparingModel: 'Preparing 3D…', readyModel: '3D ready', errorModel: 'Could not load 3D. Try again.',
     empty: 'New pieces are on their way. Check back soon.',
@@ -14,6 +16,8 @@ const COPY = {
     modelHelp: 'Drag the 3D model or use its arrow keys to rotate. Use the view buttons to switch between 3D and photos. Swipe on photos to browse products.',
   },
   pt: {
+    loadingImage: 'Carregando imagem…', waitingModel: 'O 3D será carregado em instantes…',
+    loadingProducts: 'Carregando mais produtos…', retryProducts: 'Não foi possível carregar mais produtos. Tente de novo.', retry: 'Tentar de novo',
     openModel: 'Ver em 3D', loadingModel: 'Carregando 3D…', queuedModel: 'Aguardando para carregar 3D…',
     preparingModel: 'Preparando 3D…', readyModel: '3D pronto', errorModel: 'Não foi possível carregar o 3D. Tente de novo.',
     empty: 'Novas peças estão a caminho. Volte em breve.',
@@ -25,6 +29,8 @@ const COPY = {
     modelHelp: 'Arraste o modelo 3D ou use suas setas para girar. Use os botões de vista para alternar entre 3D e fotos. Deslize nas fotos para navegar pelos produtos.',
   },
   es: {
+    loadingImage: 'Cargando imagen…', waitingModel: 'El 3D se cargará en unos instantes…',
+    loadingProducts: 'Cargando más productos…', retryProducts: 'No pudimos cargar más productos. Inténtalo de nuevo.', retry: 'Intentar de nuevo',
     openModel: 'Ver en 3D', loadingModel: 'Cargando 3D…', queuedModel: 'Esperando para cargar 3D…',
     preparingModel: 'Preparando 3D…', readyModel: '3D listo', errorModel: 'No pudimos cargar el 3D. Inténtalo de nuevo.',
     empty: 'Nuevas piezas están en camino. Vuelve pronto.',
@@ -47,7 +53,7 @@ function element(tag, className, text) {
   return node;
 }
 
-function photoImage(name, src, priority = 'auto') {
+function photoImage(name, src, priority = 'auto', onState = () => {}) {
   const image = element('img', 'products-image');
   image.alt = name;
   image.width = 640;
@@ -56,16 +62,40 @@ function photoImage(name, src, priority = 'auto') {
   image.fetchPriority = priority;
   image.decoding = 'async';
   image.draggable = false;
-  // Only the shared imageUrl helper supplies image URLs.
-  image.src = src;
+  image.dataset.productsLoading = 'true';
+  image.addEventListener('load', () => { image.dataset.productsLoading = 'false'; onState(); }, { once: true });
   image.addEventListener('error', () => {
+    image.dataset.productsLoading = 'false';
     image.dataset.productsFailed = 'true';
     image.hidden = true;
+    onState();
   }, { once: true });
+  // Only the shared imageUrl helper supplies image URLs.
+  image.src = src;
+  Promise.resolve().then(() => {
+    if (image.complete && image.naturalWidth > 0) { image.dataset.productsLoading = 'false'; onState(); }
+  });
   return image;
 }
 
 let viewerPromise;
+const mediaPhotos = new Map();
+const mediaObserver = window.IntersectionObserver ? new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    mediaPhotos.set(entry.target, entry.isIntersecting);
+    if (entry.isIntersecting && !document.hidden) entry.target.setAttribute('data-media-visible', '');
+    else entry.target.removeAttribute('data-media-visible');
+  });
+}) : null;
+document.addEventListener('visibilitychange', () => {
+  mediaPhotos.forEach((visible, photo) => {
+    if (visible && !document.hidden) photo.setAttribute('data-media-visible', '');
+    else photo.removeAttribute('data-media-visible');
+  });
+});
+window.addEventListener('pagehide', event => {
+  if (!event.persisted) { mediaObserver?.disconnect(); mediaPhotos.clear(); }
+});
 export function ensureModelViewer() {
   if (window.customElements?.get('model-viewer')) return Promise.resolve();
   if (!viewerPromise) {
@@ -117,7 +147,7 @@ function validExtraPath(path) {
 
 let webGLSupported;
 function supportsProductModel() {
-  if (!window.customElements || !window.IntersectionObserver) return false;
+  if (!window.customElements) return false;
   if (webGLSupported !== undefined) return webGLSupported;
   try {
     // The bundled viewer's renderer requires WebGL2. Probe once, then release that context.
@@ -131,21 +161,17 @@ function supportsProductModel() {
 }
 
 const MAX_MODEL_BYTES = 15 * 1024 * 1024;
-const AUTO_MODEL_BYTES = 2_000_000;
+const MODEL_DWELL = 1300;
 const modelQueue = [];
 const liveModels = [];
 const modelCards = new Set();
 let activeModel = null;
 let lastModelMotion = 0;
+let fallbackVisibilityFrame = 0;
 const modelLimit = () => document.querySelector('[data-hero-model]') ? 1 : 2;
 
 function automaticConnection() {
-  const connection = navigator.connection;
-  return !document.hidden
-    && !(typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 2)
-    && !connection?.saveData
-    && !['slow-2g', '2g', '3g'].includes(connection?.effectiveType)
-    && !(typeof connection?.downlink === 'number' && connection.downlink > 0 && connection.downlink < 1);
+  return !document.hidden && !navigator.connection?.saveData && Boolean(window.IntersectionObserver);
 }
 function cancelQueuedModel(job) {
   const index = modelQueue.indexOf(job);
@@ -162,18 +188,19 @@ async function pumpModels() {
   }
   if (liveModels.length >= modelLimit()) {
     const victim = liveModels.find(item => !item.visible()) || (job.explicit ? liveModels[0] : null);
-    if (!victim) { job.reset(); pumpModels(); return; }
+    if (!victim) { job.reset(); job.arm(); pumpModels(); return; }
     victim.dispose();
   }
   activeModel = job;
   job.abort = new AbortController();
-  const timeout = setTimeout(() => job.abort?.abort(), 60000);
+  job.timedOut = false;
+  const timeout = setTimeout(() => { job.timedOut = true; job.abort?.abort(); }, 60000);
   try {
     await job.load(job.abort.signal);
     liveModels.push(job);
   } catch (error) {
     job.dispose();
-    if (error?.name !== 'AbortError') job.failed();
+    if (job.timedOut || error?.name !== 'AbortError') job.failed();
   } finally {
     clearTimeout(timeout);
     job.abort = null;
@@ -185,7 +212,6 @@ async function pumpModels() {
 function queueModel(job, explicit) {
   if (job.loaded || activeModel === job || modelQueue.includes(job)) return;
   job.explicit = explicit;
-  if (!explicit) job.autoAttempted = true;
   job.waiting();
   modelQueue.push(job);
   pumpModels();
@@ -225,8 +251,18 @@ async function fetchModelBlob(src, signal, hint, progress) {
   progress(100);
   return new Blob(chunks, { type: 'model/gltf-binary' });
 }
-window.addEventListener('scroll', () => { lastModelMotion = performance.now(); }, { passive: true, capture: true });
+const fallbackVisibility = () => {
+  if (window.IntersectionObserver || fallbackVisibilityFrame) return;
+  fallbackVisibilityFrame = requestAnimationFrame(() => {
+    fallbackVisibilityFrame = 0;
+    new Set([...liveModels, ...modelQueue, ...(activeModel ? [activeModel] : [])]).forEach(job => job.visibility());
+  });
+};
+window.addEventListener('scroll', () => { lastModelMotion = performance.now(); fallbackVisibility(); }, { passive: true, capture: true });
+window.addEventListener('resize', fallbackVisibility, { passive: true });
 window.addEventListener('pagehide', event => {
+  cancelAnimationFrame(fallbackVisibilityFrame);
+  fallbackVisibilityFrame = 0;
   activeModel?.abort?.abort();
   modelQueue.splice(0).forEach(job => job.reset());
   modelCards.forEach(job => job.suspend());
@@ -237,18 +273,45 @@ window.addEventListener('pagehide', event => {
   }
 });
 document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    activeModel?.abort?.abort();
+    modelQueue.splice(0).forEach(job => job.reset());
+  }
   modelCards.forEach(job => { job.rotation(); job.arm(); });
   if (!document.hidden) pumpModels();
 });
 window.addEventListener('pageshow', () => modelCards.forEach(job => job.arm()));
+navigator.connection?.addEventListener?.('change', () => {
+  if (navigator.connection.saveData) {
+    if (activeModel && !activeModel.explicit) activeModel.abort?.abort();
+    [...modelQueue].filter(job => !job.explicit).forEach(cancelQueuedModel);
+  }
+  modelCards.forEach(job => job.arm());
+});
 
 let gallerySequence = 0;
 function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, interest, priority) {
   const photo = element('div', 'products-photo');
-  const cover = photoImage(name, coverUrl, priority);
+  mediaPhotos.set(photo, false);
+  mediaObserver?.observe(photo);
+  const cover = photoImage(name, coverUrl, priority, () => refreshImage());
   photo.append(cover);
+  const imageLoader = element('div', 'products-image-loader');
+  const imageSpinner = element('span', 'products-media-spinner');
+  imageSpinner.setAttribute('aria-hidden', 'true');
+  const imageStatus = element('span', 'products-status');
+  imageStatus.setAttribute('role', 'status');
+  imageLoader.append(imageSpinner, imageStatus);
+  photo.append(imageLoader);
   const paths = [product.image_path];
   const entries = [{ src: coverUrl, node: cover, kind: 'photo' }];
+  let current = 0;
+  function refreshImage() {
+    const selected = entries[current];
+    const loading = selected?.kind === 'photo' && selected.node?.dataset.productsLoading === 'true';
+    imageLoader.hidden = !loading;
+    imageStatus.textContent = loading ? copy.loadingImage : '';
+  }
   if (Array.isArray(product.extra_image_paths)) {
     product.extra_image_paths.slice(0, 5).forEach(path => {
       if (!validExtraPath(path) || paths.includes(path)) return;
@@ -268,7 +331,7 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
       }
     } catch { /* Invalid optional models retain their photos. */ }
   }
-  if (entries.length === 1) return photo;
+  if (entries.length === 1) { refreshImage(); return photo; }
   photo.classList.add('products-gallery');
   photo.tabIndex = 0;
   photo.setAttribute('role', 'group');
@@ -296,6 +359,7 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
   const message = modelEntry ? element('span', 'products-model-message') : null;
   const progress = modelEntry ? element('progress', 'products-model-progress') : null;
   const ready = modelEntry ? element('span', 'products-status') : null;
+  const modelSpinner = modelEntry ? element('span', 'products-media-spinner') : null;
   if (prompt) {
     open.type = 'button';
     open.setAttribute('aria-label', `${copy.openModel}: ${name}${sizeText}`);
@@ -304,14 +368,14 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
     progress.max = 100;
     progress.hidden = true;
     progress.setAttribute('aria-label', copy.loadingModel);
-    prompt.append(open, progress, message);
+    modelSpinner.setAttribute('aria-hidden', 'true');
+    prompt.append(modelSpinner, open, progress, message);
     photo.append(prompt);
     ready.setAttribute('role', 'status');
     ready.setAttribute('aria-live', 'polite');
     photo.append(ready);
   }
   const motion = modelEntry ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-  let current = 0;
   let visible = false;
   let wellVisible = false;
   let observer;
@@ -320,7 +384,19 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
   let lastProgress = -1;
   let lastAnnouncement = -1;
   let restoreFocus = false;
+  let visibleSince = 0;
+  let selectedSince = performance.now();
   const selectedModel = () => entries[current] === modelEntry;
+  const poolBlocked = () => liveModels.length >= modelLimit() && !liveModels.some(item => !item.visible());
+  const refreshPrompt = () => {
+    if (!job) return;
+    prompt.hidden = !selectedModel() || job.loaded;
+    const pending = job.phase === 'queued' || job.phase === 'loading';
+    const manual = navigator.connection?.saveData || !window.IntersectionObserver || job.autoFailed || poolBlocked();
+    open.hidden = pending ? !job.explicit : !manual;
+    modelSpinner.hidden = !pending && manual;
+    if (job.phase === 'idle') message.textContent = manual ? '' : copy.waitingModel;
+  };
   const rotation = () => {
     const viewer = modelEntry?.node;
     if (!viewer) return;
@@ -332,10 +408,11 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
     const target = (index + entries.length) % entries.length;
     if (target === current && !force) return;
     entries.forEach(entry => { if (entry.node) entry.node.hidden = true; });
+    if (target !== current) selectedSince = performance.now();
     current = target;
     const selected = entries[current];
     if (selected.kind === 'photo' && !selected.node) {
-      selected.node = photoImage(name, selected.src);
+      selected.node = photoImage(name, selected.src, 'auto', () => refreshImage());
       photo.append(selected.node);
     }
     if (selected.kind === 'photo') selected.node.hidden = selected.node.dataset.productsFailed === 'true';
@@ -345,9 +422,11 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
     if (selected.kind !== 'model' && job) {
       cancelQueuedModel(job);
       if (activeModel === job && !job.explicit) job.abort?.abort();
+      modelCards.forEach(item => { if (item !== job) item.arm(); });
     }
     rotation();
     job?.arm();
+    refreshImage();
     status.textContent = `${selected.kind === 'model' ? '3D' : modelEntry ? copy.view : copy.photo} ${current + 1} / ${entries.length}`;
   };
   const reportProgress = value => {
@@ -364,12 +443,15 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
   const reset = () => {
     if (!prompt) return;
     open.disabled = false;
+    open.removeAttribute('aria-busy');
+    job.phase = 'idle';
     open.textContent = copy.openModel + sizeText;
     progress.hidden = true;
     message.textContent = '';
     ready.textContent = '';
     photo.removeAttribute('aria-busy');
     if (selectedModel()) { cover.hidden = cover.dataset.productsFailed === 'true'; prompt.hidden = false; }
+    refreshPrompt();
   };
   const dispose = () => {
     const index = liveModels.indexOf(job);
@@ -381,28 +463,43 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
     job.loaded = false;
     if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
     reset();
-    if (focused) open.focus({ preventScroll: true });
+    if (focused) (open.hidden ? photo : open).focus({ preventScroll: true });
   };
   const arm = () => {
     clearTimeout(automaticTimer);
-    if (!job || job.loaded || job.autoAttempted || activeModel === job || modelQueue.includes(job) || !wellVisible || !selectedModel()
-      || !bytes || bytes > AUTO_MODEL_BYTES || !automaticConnection() || activeModel) return;
+    refreshPrompt();
+    if (!job || job.loaded || job.autoFailed || activeModel === job || modelQueue.includes(job) || !wellVisible || !selectedModel()
+      || !automaticConnection() || poolBlocked()) return;
     automaticTimer = setTimeout(() => {
-      if (performance.now() - lastModelMotion < 600) { arm(); return; }
-      if (wellVisible && selectedModel() && automaticConnection() && !activeModel) queueModel(job, false);
-    }, 600);
+      if (performance.now() - Math.max(lastModelMotion, visibleSince, selectedSince) < MODEL_DWELL) { arm(); return; }
+      if (wellVisible && selectedModel() && automaticConnection()) queueModel(job, false);
+      else arm();
+    }, MODEL_DWELL);
   };
   const job = modelEntry ? {
-    loaded: false, explicit: false, autoAttempted: false, abort: null,
+    loaded: false, explicit: false, autoFailed: false, phase: 'idle', abort: null,
     visible: () => visible && selectedModel(),
-    eligible: () => photo.isConnected && visible && selectedModel() && !document.hidden,
+    visibility: () => {
+      if (window.IntersectionObserver) return;
+      const rect = photo.getBoundingClientRect();
+      visible = rect.bottom > 0 && rect.top < window.innerHeight && rect.right > 0 && rect.left < window.innerWidth;
+      if (!visible) cancelQueuedModel(job);
+      rotation();
+    },
+    eligible: () => {
+      job.visibility();
+      return photo.isConnected && visible && selectedModel() && !document.hidden
+        && (job.explicit || (wellVisible && performance.now() - Math.max(lastModelMotion, visibleSince, selectedSince) >= MODEL_DWELL));
+    },
     arm, rotation, reset, dispose,
     suspend: () => { clearTimeout(automaticTimer); modelEntry.node?.removeAttribute('auto-rotate'); },
     cleanup: () => { clearTimeout(automaticTimer); observer?.disconnect(); motion.removeEventListener?.('change', rotation); },
     waiting: () => {
       clearTimeout(automaticTimer);
+      job.phase = 'queued';
       restoreFocus = document.activeElement === open;
       open.disabled = true;
+      if (job.explicit) open.setAttribute('aria-busy', 'true');
       open.textContent = copy.loadingModel;
       message.textContent = copy.queuedModel;
       progress.hidden = false;
@@ -410,9 +507,11 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
       photo.setAttribute('aria-busy', 'true');
       lastProgress = -1;
       lastAnnouncement = -1;
+      refreshPrompt();
     },
-    failed: () => { message.textContent = copy.errorModel; },
+    failed: () => { job.autoFailed = true; job.phase = 'error'; message.textContent = copy.errorModel; refreshPrompt(); },
     load: async signal => {
+      job.phase = 'loading';
       message.textContent = copy.loadingModel;
       await ensureModelViewer();
       if (signal.aborted || !job.eligible()) throw new DOMException('Cancelled', 'AbortError');
@@ -452,6 +551,10 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
       });
       if (signal.aborted || !photo.isConnected) throw new DOMException('Cancelled', 'AbortError');
       job.loaded = true;
+      job.autoFailed = false;
+      job.phase = 'ready';
+      open.removeAttribute('aria-busy');
+      open.disabled = false;
       photo.removeAttribute('aria-busy');
       message.textContent = copy.readyModel;
       ready.textContent = copy.readyModel;
@@ -467,18 +570,21 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
       visible = true; // An actual click/keyboard activation is explicit intent even before the first IO callback.
       queueModel(job, true);
     });
-    observer = new IntersectionObserver(observations => {
+    if (window.IntersectionObserver) observer = new IntersectionObserver(observations => {
       const entry = observations[0];
       visible = entry.isIntersecting && entry.intersectionRatio > 0;
-      wellVisible = visible && entry.intersectionRatio >= .75;
+      const well = visible && entry.intersectionRatio >= .75;
+      if (well && !wellVisible) visibleSince = performance.now();
+      wellVisible = well;
       if (!visible) {
         cancelQueuedModel(job);
         if (activeModel === job && !job.explicit) job.abort?.abort();
       }
       rotation();
       arm();
+      if (!visible) modelCards.forEach(item => { if (item !== job) item.arm(); });
     }, { threshold: [0, .01, .75, 1] });
-    observer.observe(photo);
+    observer?.observe(photo);
     motion.addEventListener?.('change', rotation);
   }
   previous.addEventListener('click', () => { interest(); show(current - 1); });

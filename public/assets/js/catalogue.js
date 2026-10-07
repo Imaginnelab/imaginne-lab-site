@@ -29,14 +29,18 @@ export function mountCatalogue(root, api) {
   const observer = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
     if (entries.some(entry => entry.isIntersecting)) loadNext();
   }, { rootMargin: '160px 0px' }) : null;
-  const loadNext = async () => {
+  const loadNext = async (fromRetry = false) => {
     if (busy || done) return;
     busy = true;
     observer?.unobserve(sentinel);
     root.setAttribute('aria-busy', 'true');
     loading.hidden = false;
     loading.textContent = copy.loading;
-    retry.hidden = true;
+    retry.hidden = !fromRetry;
+    if (fromRetry) {
+      retry.setAttribute('aria-busy', 'true');
+      retry.disabled = true;
+    }
     message.textContent = '';
     try {
       if (!initialized) {
@@ -54,12 +58,15 @@ export function mountCatalogue(root, api) {
       done = rows.length < size;
       if (grid.children.length === 0) message.textContent = await api.maintenanceMode() ? copy.maintenance : copy.empty;
       status.textContent = `${copy.count}: ${grid.children.length}`;
+      retry.hidden = true;
     } catch {
       message.textContent = copy.error;
       retry.textContent = copy.retry;
       retry.hidden = false;
     } finally {
       busy = false;
+      retry.removeAttribute('aria-busy');
+      retry.disabled = false;
       root.removeAttribute('aria-busy');
       loading.hidden = true;
       sentinel.hidden = done;
@@ -82,7 +89,7 @@ export function mountCatalogue(root, api) {
   const scheduleSentinel = () => {
     if (!sentinelFrame) sentinelFrame = requestAnimationFrame(checkSentinel);
   };
-  retry.addEventListener('click', loadNext);
+  retry.addEventListener('click', () => loadNext(true));
   if (!observer) window.addEventListener('scroll', scheduleSentinel, { passive: true });
   window.addEventListener('pagehide', event => {
     cancelAnimationFrame(sentinelFrame);
@@ -108,7 +115,15 @@ async function start() {
     const retry = root.querySelector('[data-catalogue-retry]');
     retry.textContent = copy.retry;
     retry.hidden = false;
-    retry.addEventListener('click', () => location.reload(), { once: true });
+    retry.addEventListener('click', () => {
+      retry.setAttribute('aria-busy', 'true');
+      retry.disabled = true;
+      try { location.reload(); }
+      catch {
+        retry.removeAttribute('aria-busy');
+        retry.disabled = false;
+      }
+    });
   }
 }
 if (root) start();

@@ -16,7 +16,7 @@
 /* ---------------------------------------------------------
    Product list
 --------------------------------------------------------- */
-.products { margin-top: 3rem; }
+.products { margin-top: 1.75rem; }
 .products-head {
   display: flex;
   align-items: flex-end;
@@ -298,7 +298,7 @@
 /* ---------------------------------------------------------
    Coupons
 --------------------------------------------------------- */
-.coupons { margin-top: 3.5rem; }
+
 .coupon-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto auto; }
 .coupon-code { font-family: var(--font-mono); letter-spacing: 0.04em; }
 .coupon-facts { color: var(--ink-soft); font-size: 0.88rem; overflow-wrap: anywhere; }
@@ -407,3 +407,72 @@
 [data-theme="dark"] .product-star .icon { stroke: none; }
 .product-views { color: var(--ink-faint); font-size: 0.8rem; }
 .product-views:empty { display: none; }
+
+/* ---------------------------------------------------------
+   Tabs (products / coupons)
+--------------------------------------------------------- */
+.admin-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 2.5rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+.admin-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 52px;
+  padding: 0.9rem 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.admin-tab:hover { color: var(--ink); }
+/* The bar clips what leaves it, so the focus ring is drawn inside the tab. */
+.admin-tab:focus-visible { outline-offset: -4px; border-radius: 10px; }
+.admin-tab[aria-selected="true"] { color: var(--ink); }
+.admin-tab::after {
+  content: '';
+  position: absolute;
+  inset: auto 0.75rem 0 0.75rem;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: transparent;
+  transition: background-color 0.2s var(--ease-out);
+}
+.admin-tab[aria-selected="true"]::after { background: var(--amber); }
+/* Both weights are laid out, one on top of the other, so choosing a tab never shifts the bar. */
+.admin-tab-label { display: inline-grid; }
+.admin-tab-label::after { content: attr(data-label); grid-area: 1 / 1; font-weight: 700; visibility: hidden; }
+.admin-tab-label > span { grid-area: 1 / 1; }
+.admin-tab[aria-selected="true"] .admin-tab-label > span { font-weight: 700; }
+.admin-tab-count {
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--bg-sunken);
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 500;
+}
+@media (max-width: 480px) {
+  .admin-tabs { padding: 0 0.25rem; }
+  .admin-tab { flex: 1; min-width: 0; padding-inline: 0.5rem; }
+}
+
+/* ---------------------------------------------------------
+   Waiting buttons (spinner from styles.css, via aria-busy)
+--------------------------------------------------------- */
+/* The picker buttons show the spinner in place of their icon while a file is being optimised. */
+.file-button[aria-busy="true"] .icon { display: none; }
+/* The switch has no text: the spinner takes the place of the thumb, centred. */
+.switch[aria-busy="true"] { display: inline-flex; align-items: center; justify-content: center; opacity: 1; color: var(--ink-soft); }

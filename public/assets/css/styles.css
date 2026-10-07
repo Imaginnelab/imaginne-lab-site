@@ -966,3 +966,13 @@ html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
 .error-page .eyebrow { justify-content: center; margin-bottom: 1rem; }
 .error-page .heading { margin-bottom: 1rem; }
 .error-page .lede { margin-inline: auto; margin-bottom: 2rem; }
+
+/* A button that is locked while something loads says so with a spinner: set aria-busy="true"
+   on it for as long as it waits. Icon-only buttons add .is-icon so the spinner replaces the icon. */
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+@keyframes btn-pulse { 50% { opacity: .35; } }
+button[aria-busy="true"], .btn[aria-busy="true"] { cursor: progress; }
+button[aria-busy="true"]::before, .btn[aria-busy="true"]::before { content: ""; display: inline-block; flex: none; width: 1em; height: 1em; margin-right: .5em; vertical-align: -.15em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: btn-spin .7s linear infinite; }
+button.is-icon[aria-busy="true"]::before, .btn.is-icon[aria-busy="true"]::before { margin-right: 0; }
+button.is-icon[aria-busy="true"] > *, .btn.is-icon[aria-busy="true"] > * { display: none; }
+@media (prefers-reduced-motion: reduce) { button[aria-busy="true"]::before, .btn[aria-busy="true"]::before { animation: btn-pulse 1.4s ease-in-out infinite; } }

@@ -28,7 +28,7 @@
           <h2 id="maintenance-heading"></h2>
           <p id="maintenance-help" class="maintenance-help"></p>
           <div class="maintenance-row">
-            <button class="switch" id="maintenance-switch" type="button" role="switch" aria-checked="false" aria-labelledby="maintenance-heading" aria-describedby="maintenance-help" disabled><span class="switch-thumb"></span></button>
+            <button class="switch is-icon" id="maintenance-switch" type="button" role="switch" aria-checked="false" aria-labelledby="maintenance-heading" aria-describedby="maintenance-help" disabled><span class="switch-thumb"></span></button>
             <span class="maintenance-state" id="maintenance-state" aria-live="polite"></span>
             <button class="btn btn-ghost btn-sm" id="maintenance-retry" type="button" hidden></button>
           </div>
@@ -36,7 +36,12 @@
         </article>
       </div>
 
-      <section class="products" id="products" aria-labelledby="products-title">
+      <div class="admin-tabs" id="admin-tabs" role="tablist">
+        <button class="admin-tab" id="tab-products" type="button" role="tab" data-tab="products" aria-controls="products" aria-selected="true"><span class="admin-tab-label">Products</span><span class="admin-tab-count" hidden></span></button>
+        <button class="admin-tab" id="tab-coupons" type="button" role="tab" data-tab="coupons" aria-controls="coupons" aria-selected="false" tabindex="-1"><span class="admin-tab-label">Coupons</span><span class="admin-tab-count" hidden></span></button>
+      </div>
+
+      <section class="products" id="products" role="tabpanel" aria-labelledby="tab-products">
         <div class="products-head">
           <div>
             <h2 id="products-title" data-i18n="title">Products</h2>
@@ -57,7 +62,7 @@
         </div>
       </section>
 
-      <section class="products coupons" id="coupons" aria-labelledby="coupons-title">
+      <section class="products coupons" id="coupons" role="tabpanel" aria-labelledby="tab-coupons" hidden>
         <div class="products-head">
           <div>
             <h2 id="coupons-title" data-i18n="title">Discount coupons</h2>
