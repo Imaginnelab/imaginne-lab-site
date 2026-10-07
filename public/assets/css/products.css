@@ -344,3 +344,8 @@ a[href="#productos"][hidden] { display: none; }
 .products-arrow[aria-busy="true"]::before, .products-gallery-arrow[aria-busy="true"]::before { width: 16px; height: 16px; margin: 0; }
 .products-gallery-arrow[aria-busy="true"]::after { display: none; }
 .products-arrow[hidden], .products-gallery-arrow[hidden] { display: none; }
+/* The card arrows still hold their (invisible) text, which would share the button with the
+   icon and push it off centre; the icon is placed on the button itself instead. */
+.products-gallery-arrow { position: relative; }
+.products-gallery-arrow::after { position: absolute; inset: 0; margin: auto; }
+.products-gallery-arrow[aria-busy="true"]::before { position: absolute; inset: 0; margin: auto; }
