@@ -7,6 +7,7 @@
   <title>Dashboard admin · Imaginne Lab</title>
   <link rel="icon" href="/assets/img/logo-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
   <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('imaginne-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));</script>
 </head>
 <body>
@@ -23,10 +24,283 @@
       <div class="admin-grid">
         <article class="admin-card"><h2 id="profile-heading"></h2><p id="admin-name"></p><p id="admin-email"></p></article>
         <article class="admin-card"><h2 id="access-heading"></h2><p id="admin-role"></p></article>
+        <article class="admin-card maintenance-card" id="maintenance-card" aria-labelledby="maintenance-heading">
+          <h2 id="maintenance-heading"></h2>
+          <p id="maintenance-help" class="maintenance-help"></p>
+          <div class="maintenance-row">
+            <button class="switch" id="maintenance-switch" type="button" role="switch" aria-checked="false" aria-labelledby="maintenance-heading" aria-describedby="maintenance-help" disabled><span class="switch-thumb"></span></button>
+            <span class="maintenance-state" id="maintenance-state" aria-live="polite"></span>
+            <button class="btn btn-ghost btn-sm" id="maintenance-retry" type="button" hidden></button>
+          </div>
+          <p class="form-error" id="maintenance-error" role="alert"></p>
+        </article>
       </div>
-      <p id="admin-empty" class="lede"></p>
+
+      <section class="products" id="products" aria-labelledby="products-title">
+        <div class="products-head">
+          <div>
+            <h2 id="products-title" data-i18n="title">Products</h2>
+            <p class="products-sub" data-i18n="subtitle">Active products appear in the home page carousel.</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="product-new" type="button" data-i18n="add">New product</button>
+        </div>
+        <p id="products-notice" class="products-notice" role="status" aria-live="polite"></p>
+        <div id="products-state" class="products-state">
+          <p id="products-state-text"></p>
+          <button class="btn btn-ghost btn-sm" id="products-retry" type="button" hidden data-i18n="retry">Try again</button>
+        </div>
+        <ul id="products-list" class="products-list"></ul>
+      </section>
+
+      <section class="products coupons" id="coupons" aria-labelledby="coupons-title">
+        <div class="products-head">
+          <div>
+            <h2 id="coupons-title" data-i18n="title">Discount coupons</h2>
+            <p class="products-sub" data-i18n="subtitle">There is no checkout yet: coupons stay registered here for when there is one.</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="coupon-new" type="button" data-i18n="add">New coupon</button>
+        </div>
+        <p id="coupons-notice" class="products-notice" role="status" aria-live="polite"></p>
+        <div id="coupons-state" class="products-state">
+          <p id="coupons-state-text"></p>
+          <button class="btn btn-ghost btn-sm" id="coupons-retry" type="button" hidden data-i18n="retry">Try again</button>
+        </div>
+        <ul id="coupons-list" class="products-list"></ul>
+      </section>
     </section>
   </main>
+
+  <!-- Dialogs live outside #admin-content: the access re-check hides that section for a moment. -->
+  <dialog id="maintenance-confirm" class="admin-dialog admin-dialog-small" aria-labelledby="maintenance-confirm-title" aria-describedby="maintenance-confirm-text">
+    <h2 id="maintenance-confirm-title"></h2>
+    <p id="maintenance-confirm-text"></p>
+    <div class="admin-dialog-actions">
+      <button class="btn btn-ghost btn-sm" type="button" id="maintenance-confirm-cancel"></button>
+      <button class="btn btn-danger btn-sm" type="button" id="maintenance-confirm-yes"></button>
+    </div>
+  </dialog>
+
+  <dialog id="product-dialog" class="admin-dialog" aria-labelledby="product-form-title">
+    <form id="product-form" class="product-form" novalidate>
+      <div class="admin-dialog-head">
+        <h2 id="product-form-title"></h2>
+        <button class="admin-dialog-close" type="button" data-close data-i18n-label="close" aria-label="Close">×</button>
+      </div>
+
+      <div class="product-langs">
+        <fieldset class="product-lang" data-lang="pt">
+          <legend lang="pt-BR">Português</legend>
+          <label for="product-name-pt" data-i18n="name">Name</label>
+          <div class="field-row"><input id="product-name-pt" name="name_pt" type="text" maxlength="120" required autocomplete="off" lang="pt-BR" aria-describedby="product-name-pt-error"><span class="field-count" data-count-for="product-name-pt" aria-hidden="true"></span></div>
+          <p class="field-error" id="product-name-pt-error"></p>
+          <label for="product-description-pt" data-i18n="description">Description</label>
+          <div class="field-row"><textarea id="product-description-pt" name="description_pt" rows="5" maxlength="600" required lang="pt-BR" aria-describedby="product-description-pt-error"></textarea><span class="field-count" data-count-for="product-description-pt" aria-hidden="true"></span></div>
+          <p class="field-error" id="product-description-pt-error"></p>
+        </fieldset>
+        <fieldset class="product-lang" data-lang="en">
+          <legend lang="en">English</legend>
+          <label for="product-name-en" data-i18n="name">Name</label>
+          <div class="field-row"><input id="product-name-en" name="name_en" type="text" maxlength="120" required autocomplete="off" lang="en" aria-describedby="product-name-en-error"><span class="field-count" data-count-for="product-name-en" aria-hidden="true"></span></div>
+          <p class="field-error" id="product-name-en-error"></p>
+          <label for="product-description-en" data-i18n="description">Description</label>
+          <div class="field-row"><textarea id="product-description-en" name="description_en" rows="5" maxlength="600" required lang="en" aria-describedby="product-description-en-error"></textarea><span class="field-count" data-count-for="product-description-en" aria-hidden="true"></span></div>
+          <p class="field-error" id="product-description-en-error"></p>
+        </fieldset>
+        <fieldset class="product-lang" data-lang="es">
+          <legend lang="es">Español</legend>
+          <label for="product-name-es" data-i18n="name">Name</label>
+          <div class="field-row"><input id="product-name-es" name="name_es" type="text" maxlength="120" required autocomplete="off" lang="es" aria-describedby="product-name-es-error"><span class="field-count" data-count-for="product-name-es" aria-hidden="true"></span></div>
+          <p class="field-error" id="product-name-es-error"></p>
+          <label for="product-description-es" data-i18n="description">Description</label>
+          <div class="field-row"><textarea id="product-description-es" name="description_es" rows="5" maxlength="600" required lang="es" aria-describedby="product-description-es-error"></textarea><span class="field-count" data-count-for="product-description-es" aria-hidden="true"></span></div>
+          <p class="field-error" id="product-description-es-error"></p>
+        </fieldset>
+      </div>
+
+      <div class="product-details">
+        <div class="product-media">
+        <div class="product-photo">
+          <p class="field-label" id="product-photos-label" data-i18n="photos">Photos</p>
+          <ul id="product-photos" class="photo-list" aria-labelledby="product-photos-label"></ul>
+          <input class="file-input" id="product-photo" name="photo" type="file" multiple accept="image/jpeg,image/png,image/webp" aria-describedby="product-photo-hint product-photo-error">
+          <label class="btn btn-ghost btn-sm file-button" for="product-photo">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M12 18v-6M9.5 14.5 12 12l2.5 2.5"/></svg>
+            <span data-i18n="addPhotos">Add photos</span>
+          </label>
+          <p class="field-hint" id="product-photo-hint" data-i18n="photoHint">JPEG, PNG or WebP, up to 5 MB each. Up to 6 photos; the first one is the cover.</p>
+          <p class="field-error" id="product-photo-error"></p>
+        </div>
+        <div class="product-model">
+          <p class="field-label" id="product-model-label" data-i18n="model">3D model (.glb)</p>
+          <div id="product-model-item" class="photo-item model-item" hidden>
+            <div class="model-preview" id="product-model-preview"></div>
+            <div class="photo-info">
+              <p class="photo-name" id="product-model-name"></p>
+              <p class="photo-meta" id="product-model-meta"></p>
+            </div>
+            <div class="photo-actions">
+              <button class="photo-btn photo-btn-icon photo-btn-remove" type="button" id="product-model-remove"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m4 4 8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+            </div>
+          </div>
+          <input class="file-input" id="product-model" name="model" type="file" accept=".glb,model/gltf-binary" aria-describedby="product-model-hint product-model-error">
+          <label class="btn btn-ghost btn-sm file-button" for="product-model">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M12 3 4 7.5v9L12 21l8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/></svg>
+            <span id="product-model-button">Choose 3D model</span>
+          </label>
+          <p class="field-hint" id="product-model-hint" data-i18n="modelHint">Optional. GLB up to 15 MB. It becomes the first item of the product on the site and can be rotated.</p>
+          <p class="field-error" id="product-model-error"></p>
+        </div>
+        </div>
+        <div class="product-meta">
+          <div>
+            <label for="product-price" data-i18n="price">Price (CAD)</label>
+            <input id="product-price" name="price" type="text" inputmode="decimal" autocomplete="off" aria-describedby="product-price-hint product-price-error">
+            <p class="field-hint" id="product-price-hint" data-i18n="priceHint">Leave empty for "price on request".</p>
+            <p class="field-error" id="product-price-error"></p>
+          </div>
+          <div>
+            <label for="product-order" data-i18n="order">Order</label>
+            <input id="product-order" name="sort_order" type="number" step="1" min="-100000" max="100000" value="0" inputmode="numeric" aria-describedby="product-order-hint product-order-error">
+            <p class="field-hint" id="product-order-hint" data-i18n="orderHint">Lower numbers come first.</p>
+            <p class="field-error" id="product-order-error"></p>
+          </div>
+          <label class="field-check"><input id="product-active" name="is_active" type="checkbox" checked><span data-i18n="activeLabel">Active (visible on the site)</span></label>
+        </div>
+      </div>
+
+      <p class="form-error" id="product-form-error" role="alert"></p>
+      <div class="admin-dialog-actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-close data-i18n="cancel">Cancel</button>
+        <button class="btn btn-primary btn-sm" type="submit" id="product-save" data-i18n="save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="product-delete" class="admin-dialog admin-dialog-small" aria-labelledby="product-delete-title" aria-describedby="product-delete-text">
+    <h2 id="product-delete-title" data-i18n="deleteTitle">Delete product?</h2>
+    <p id="product-delete-text"></p>
+    <p class="form-error" id="product-delete-error" role="alert"></p>
+    <div class="admin-dialog-actions">
+      <button class="btn btn-ghost btn-sm" type="button" data-close data-i18n="cancel">Cancel</button>
+      <button class="btn btn-danger btn-sm" type="button" id="product-delete-confirm" data-i18n="delete">Delete</button>
+    </div>
+  </dialog>
+
+  <template id="product-row">
+    <li class="product-row">
+      <img class="product-thumb" alt="" loading="lazy" decoding="async" width="64" height="64">
+      <div class="product-info">
+        <p class="product-name"></p>
+        <p class="product-price"></p>
+        <p class="product-photos-count"></p>
+      </div>
+      <p class="product-status"><span class="product-badge"></span><span class="product-3d" hidden>3D</span><span class="product-order"></span></p>
+      <div class="product-actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-action="edit"></button>
+        <button class="btn btn-ghost btn-sm" type="button" data-action="duplicate"></button>
+        <button class="btn btn-ghost btn-sm" type="button" data-action="toggle"></button>
+        <button class="btn btn-ghost btn-sm product-delete-btn" type="button" data-action="delete"></button>
+      </div>
+    </li>
+  </template>
+
+  <template id="photo-item">
+    <li class="photo-item">
+      <img class="photo-thumb" alt="" width="56" height="56">
+      <div class="photo-info">
+        <p class="photo-name"></p>
+        <p class="photo-meta"></p>
+      </div>
+      <div class="photo-actions">
+        <button class="photo-btn" type="button" data-photo="cover"></button>
+        <button class="photo-btn photo-btn-icon" type="button" data-photo="up"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m4 10 4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="photo-btn photo-btn-icon" type="button" data-photo="down"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="photo-btn photo-btn-icon photo-btn-remove" type="button" data-photo="remove"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m4 4 8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+      </div>
+    </li>
+  </template>
+
+  <dialog id="coupon-dialog" class="admin-dialog admin-dialog-medium" aria-labelledby="coupon-form-title">
+    <form id="coupon-form" class="product-form" novalidate>
+      <div class="admin-dialog-head">
+        <h2 id="coupon-form-title"></h2>
+        <button class="admin-dialog-close" type="button" data-close data-i18n-label="close" aria-label="Close">×</button>
+      </div>
+      <div class="coupon-grid">
+        <div class="coupon-wide">
+          <label for="coupon-code" data-i18n="code">Code</label>
+          <input id="coupon-code" name="code" type="text" maxlength="32" required autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="coupon-code-hint coupon-code-error">
+          <p class="field-hint" id="coupon-code-hint" data-i18n="codeHint">3 to 32 characters: letters, numbers, hyphen or underscore.</p>
+          <p class="field-error" id="coupon-code-error"></p>
+        </div>
+        <fieldset class="coupon-type coupon-wide">
+          <legend data-i18n="type">Discount type</legend>
+          <label class="field-check"><input type="radio" name="discount_type" value="percent" checked><span data-i18n="typePercent">Percentage</span></label>
+          <label class="field-check"><input type="radio" name="discount_type" value="amount"><span data-i18n="typeAmount">Fixed amount (CAD)</span></label>
+        </fieldset>
+        <div>
+          <label for="coupon-value" id="coupon-value-label">Value</label>
+          <input id="coupon-value" name="value" type="text" inputmode="decimal" required autocomplete="off" aria-describedby="coupon-value-error">
+          <p class="field-error" id="coupon-value-error"></p>
+        </div>
+        <div>
+          <label for="coupon-max" data-i18n="maxUses">Usage limit</label>
+          <input id="coupon-max" name="max_uses" type="number" min="1" max="1000000" step="1" inputmode="numeric" aria-describedby="coupon-max-hint coupon-max-error">
+          <p class="field-hint" id="coupon-max-hint" data-i18n="maxUsesHint">Leave empty for no limit.</p>
+          <p class="field-error" id="coupon-max-error"></p>
+        </div>
+        <div>
+          <label for="coupon-start" data-i18n="startsAt">Starts</label>
+          <input id="coupon-start" name="starts_at" type="datetime-local" aria-describedby="coupon-start-hint coupon-start-error">
+          <p class="field-hint" id="coupon-start-hint" data-i18n="optional">Optional.</p>
+          <p class="field-error" id="coupon-start-error"></p>
+        </div>
+        <div>
+          <label for="coupon-end" data-i18n="expiresAt">Ends</label>
+          <input id="coupon-end" name="expires_at" type="datetime-local" aria-describedby="coupon-end-hint coupon-end-error">
+          <p class="field-hint" id="coupon-end-hint" data-i18n="optional">Optional.</p>
+          <p class="field-error" id="coupon-end-error"></p>
+        </div>
+        <label class="field-check coupon-wide"><input id="coupon-active" name="is_active" type="checkbox" checked><span data-i18n="activeLabel">Active</span></label>
+        <p class="field-hint coupon-wide" id="coupon-used"></p>
+      </div>
+      <p class="form-error" id="coupon-form-error" role="alert"></p>
+      <div class="admin-dialog-actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-close data-i18n="cancel">Cancel</button>
+        <button class="btn btn-primary btn-sm" type="submit" id="coupon-save" data-i18n="save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="coupon-delete" class="admin-dialog admin-dialog-small" aria-labelledby="coupon-delete-title" aria-describedby="coupon-delete-text">
+    <h2 id="coupon-delete-title" data-i18n="deleteTitle">Delete coupon?</h2>
+    <p id="coupon-delete-text"></p>
+    <p class="form-error" id="coupon-delete-error" role="alert"></p>
+    <div class="admin-dialog-actions">
+      <button class="btn btn-ghost btn-sm" type="button" data-close data-i18n="cancel">Cancel</button>
+      <button class="btn btn-danger btn-sm" type="button" id="coupon-delete-confirm" data-i18n="delete">Delete</button>
+    </div>
+  </dialog>
+
+  <template id="coupon-row">
+    <li class="product-row coupon-row">
+      <div class="product-info">
+        <p class="product-name coupon-code"></p>
+        <p class="product-price coupon-discount"></p>
+      </div>
+      <div class="coupon-facts">
+        <p class="coupon-period"></p>
+        <p class="coupon-uses"></p>
+      </div>
+      <p class="product-status"><span class="product-badge"></span></p>
+      <div class="product-actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-action="edit"></button>
+        <button class="btn btn-ghost btn-sm" type="button" data-action="toggle"></button>
+        <button class="btn btn-ghost btn-sm product-delete-btn" type="button" data-action="delete"></button>
+      </div>
+    </li>
+  </template>
+
   <script src="/assets/js/auth-config.js"></script>
   <script type="module" src="/assets/js/admin.js"></script>
 </body>
