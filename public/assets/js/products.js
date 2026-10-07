@@ -1,3 +1,5 @@
+import { mountProductSearch, productSearchCopy, productSearchFilter, searchTerm } from '/assets/js/product-search.js';
+
 const section = document.querySelector('[data-products-section]');
 
 function hideCatalogue() {
@@ -6,16 +8,6 @@ function hideCatalogue() {
   document.querySelectorAll('a[href]').forEach(link => {
     if (link.getAttribute('href') === '#' + section.id) link.hidden = true;
   });
-}
-
-function showEmptyCatalogue(copy) {
-  const message = document.createElement('p');
-  message.className = 'products-empty';
-  message.setAttribute('role', 'status');
-  message.textContent = copy.empty;
-  section.querySelector('.products-carousel').replaceChildren(message);
-  section.removeAttribute('aria-busy');
-  section.classList.remove('products-loading');
 }
 
 export function enableCarousel(track, previous, next, status, copy, pagination = {}) {
@@ -179,15 +171,45 @@ export function enableCarousel(track, previous, next, status, copy, pagination =
   });
   measure();
   update();
-  return { refresh: resize };
+  return {
+    refresh: resize,
+    reset() {
+      navigationIntent++;
+      stop();
+      const captured = pointer;
+      pointer = null;
+      if (captured && track.hasPointerCapture(captured.id)) track.releasePointerCapture(captured.id);
+      track.classList.remove('products-dragging');
+      track.scrollLeft = 0;
+      resize();
+    },
+  };
 }
 
 export async function mountProductCarousel(section, api) {
   const { featuredProduct, requestProducts, createProductCard, productCopy } = api;
+  const copy = productSearchCopy(api.productLanguage);
   const track = section.querySelector('[data-products-track]');
   const status = section.querySelector('[data-products-status]');
-  const featured = await featuredProduct();
+  const previous = section.querySelector('[data-products-previous]');
+  const nextButton = section.querySelector('[data-products-next]');
+  const feedback = document.createElement('div');
+  feedback.className = 'products-empty products-search-feedback';
+  feedback.hidden = true;
+  const feedbackText = document.createElement('p');
+  feedbackText.setAttribute('role', 'status');
+  const feedbackRetry = document.createElement('button');
+  feedbackRetry.type = 'button';
+  feedbackRetry.className = 'products-page-retry';
+  feedbackRetry.textContent = productCopy.retry;
+  feedbackRetry.hidden = true;
+  feedback.append(feedbackText, feedbackRetry);
+  track.before(feedback);
   const ids = new Set();
+  let generation = 0;
+  let term = '';
+  let featured = null;
+  let initialized = false;
   let offset = 0;
   let done = false;
   let busy = false;
@@ -205,25 +227,14 @@ export async function mountProductCarousel(section, api) {
     }
     return { fragment, added };
   };
-  const options = size => {
+  const options = (size, selectedFeatured = featured) => {
     const query = { limit: String(size), offset: String(offset) };
-    if (featured) query.id = 'neq.' + featured.id;
+    if (selectedFeatured) query.id = 'neq.' + selectedFeatured.id;
+    const filter = productSearchFilter(term);
+    // requestProducts uses URLSearchParams: it URL-encodes this value once, including quotes.
+    if (filter) query.or = filter;
     return query;
   };
-  const firstSize = featured ? 11 : 12;
-  const rows = await requestProducts(options(firstSize));
-  if (!featured && rows.length === 0) { showEmptyCatalogue(productCopy); return; }
-  const first = buildCards([...(featured ? [featured] : []), ...rows]);
-  if (!first.added.size) { hideCatalogue(); return; }
-  track.replaceChildren(first.fragment);
-  first.added.forEach(id => ids.add(id));
-  offset = rows.length;
-  done = rows.length < firstSize;
-  track.removeAttribute('aria-hidden');
-  track.tabIndex = 0;
-  section.removeAttribute('aria-busy');
-  section.classList.remove('products-loading');
-  status.textContent = `${productCopy.position}: ${ids.size}`;
 
   const indicator = document.createElement('li');
   indicator.className = 'products-card products-page-loader';
@@ -243,62 +254,134 @@ export async function mountProductCarousel(section, api) {
     if (done) return Promise.resolve(false);
     if (busy) return inFlight;
     if (failed && !explicit && !retryOnReturn) return Promise.resolve(false);
+    const current = generation;
+    const queryTerm = term;
+    const firstPage = !initialized;
     busy = true;
     failed = false;
     retryOnReturn = false;
     spinner.hidden = false;
     const retryFocused = document.activeElement === retry;
+    const feedbackRetryFocused = firstPage && document.activeElement === feedbackRetry;
     retry.hidden = !fromRetry;
     if (fromRetry) {
       retry.setAttribute('aria-busy', 'true');
       retry.disabled = true;
     }
-    message.textContent = productCopy.loadingProducts;
-    if (!indicator.isConnected) track.append(indicator);
+    if (firstPage) {
+      feedback.hidden = false;
+      feedbackText.textContent = copy.loading;
+      feedbackRetry.hidden = !fromRetry;
+      feedbackRetry.disabled = fromRetry;
+      if (fromRetry) feedbackRetry.setAttribute('aria-busy', 'true');
+      previous.disabled = true;
+      nextButton.disabled = true;
+    } else {
+      message.textContent = productCopy.loadingProducts;
+      if (!indicator.isConnected) track.append(indicator);
+    }
     track.setAttribute('aria-busy', 'true');
     controls?.refresh();
     inFlight = (async () => {
       let loaded = false;
       try {
-        const nextRows = await requestProducts(options(12));
-        const next = buildCards(nextRows);
+        const selectedFeatured = firstPage ? (queryTerm ? null : await featuredProduct()) : featured;
+        if (current !== generation) return false;
+        const size = firstPage && selectedFeatured ? 11 : 12;
+        const nextRows = await requestProducts(options(size, selectedFeatured));
+        if (current !== generation) return false;
+        featured = selectedFeatured;
+        const rows = firstPage && featured ? [featured, ...nextRows] : nextRows;
+        const next = buildCards(rows);
         const restoreFocus = retryFocused && (document.activeElement === retry || document.activeElement === document.body);
         indicator.remove();
         track.append(next.fragment);
         next.added.forEach(id => ids.add(id));
         offset += nextRows.length;
-        done = nextRows.length < 12;
+        done = nextRows.length < size;
+        initialized = true;
         loaded = next.added.size > 0;
         status.textContent = `${productCopy.position}: ${ids.size}`;
+        track.hidden = ids.size === 0;
+        track.removeAttribute('aria-hidden');
+        track.tabIndex = ids.size ? 0 : -1;
+        feedback.hidden = ids.size > 0;
+        feedbackText.textContent = ids.size ? '' : queryTerm ? copy.noResults(queryTerm) : productCopy.empty;
+        feedbackRetry.hidden = true;
         if (restoreFocus) track.focus({ preventScroll: true });
+        if (feedbackRetryFocused && (document.activeElement === feedbackRetry || document.activeElement === document.body)) {
+          if (ids.size) track.focus({ preventScroll: true });
+          else section.querySelector('[data-products-search] input')?.focus({ preventScroll: true });
+        }
       } catch {
+        if (current !== generation) return false;
         failed = true;
-        spinner.hidden = true;
-        retry.hidden = false;
-        message.textContent = productCopy.retryProducts;
+        if (firstPage) {
+          done = true;
+          feedbackText.textContent = copy.error;
+          feedbackRetry.hidden = false;
+        } else {
+          spinner.hidden = true;
+          retry.hidden = false;
+          message.textContent = productCopy.retryProducts;
+        }
       } finally {
-        busy = false;
-        retry.removeAttribute('aria-busy');
-        retry.disabled = false;
-        retry.hidden = !failed;
-        track.removeAttribute('aria-busy');
-        controls?.refresh();
+        if (current === generation) {
+          busy = false;
+          retry.removeAttribute('aria-busy');
+          retry.disabled = false;
+          retry.hidden = !failed;
+          feedbackRetry.removeAttribute('aria-busy');
+          feedbackRetry.disabled = false;
+          track.removeAttribute('aria-busy');
+          section.removeAttribute('aria-busy');
+          section.classList.remove('products-loading');
+          controls?.refresh();
+        }
       }
       return loaded;
     })();
     return inFlight;
   };
   retry.addEventListener('click', () => loadMore(true, true));
-  controls = enableCarousel(track, section.querySelector('[data-products-previous]'), section.querySelector('[data-products-next]'), status, productCopy, {
-    hasMore: () => !done,
+  const search = value => {
+    generation++;
+    term = searchTerm(value);
+    initialized = false;
+    featured = null;
+    offset = 0;
+    done = false;
+    busy = false;
+    failed = false;
+    retryOnReturn = false;
+    inFlight = null;
+    ids.clear();
+    indicator.remove();
+    track.replaceChildren();
+    track.hidden = true;
+    status.textContent = '';
+    // Reset before enabling pagination, so near-end callbacks cannot start a second first page.
+    controls?.reset();
+    return loadMore(true);
+  };
+  feedbackRetry.addEventListener('click', () => {
+    done = false;
+    return loadMore(true, true);
+  });
+  const searchHost = section.querySelector('[data-products-search]');
+  if (searchHost) mountProductSearch(searchHost, api.productLanguage, search);
+  controls = enableCarousel(track, previous, nextButton, status, productCopy, {
+    hasMore: () => initialized && !done,
     count: () => ids.size,
     loadMore,
     near: near => {
+      if (!initialized) return;
       if (!near) { retryOnReturn = true; return; }
       loadMore(false);
     },
   });
-  return { loadMore, count: () => ids.size, hasMore: () => !done };
+  await search('');
+  return { loadMore, search, count: () => ids.size, hasMore: () => initialized && !done };
 }
 
 async function loadCatalogue() {

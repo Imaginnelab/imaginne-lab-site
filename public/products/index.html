@@ -19,6 +19,7 @@
 <script src="/assets/js/maintenance.js"></script>
 <link rel="stylesheet" href="/assets/css/products.css">
 <link rel="stylesheet" href="/assets/css/catalogue.css">
+<link rel="stylesheet" href="/assets/css/product-search.css">
 <link rel="alternate" hreflang="pt-BR" href="/pt/products/">
 <link rel="alternate" hreflang="en" href="/products/">
 <link rel="alternate" hreflang="es" href="/es/products/">
@@ -132,7 +133,10 @@
     <div class="section-head catalogue-heading">
       <a class="btn btn-ghost btn-sm catalogue-back" href="/" data-transition>Back to home</a>
       <h1 class="heading" id="catalogue-title">Small pieces. Endless&nbsp;possibilities.</h1>
-      <p class="lede">Browse every piece from our studio, explore the details, and order directly with&nbsp;us.</p>
+      <div class="catalogue-search-row">
+        <p class="lede">Browse every piece from our studio, explore the details, and order directly with&nbsp;us.</p>
+        <div data-catalogue-search></div>
+      </div>
     </div>
     <ul class="catalogue-grid" data-catalogue-grid role="list" aria-label="Our products"></ul>
     <div class="catalogue-feedback">

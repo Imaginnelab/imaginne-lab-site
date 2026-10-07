@@ -4,12 +4,14 @@ import {
   MAX_PHOTOS, MAX_PHOTO_SIDE, PAGE_SIZE, chooseUpload, copyName, fitWithin, formatFileSize, formatPrice, freshRows, imagePaths, imageUrl, localized, modelUrl, parsePrice, priceCents,
   reloadSize, viewCount,
 } from './product-format.js';
+import { createSearchBox, searchFilter } from './search-box.js';
 
 const languages = {
   pt: {
     title: 'Produtos', subtitle: 'Produtos ativos aparecem no carrossel da página inicial.', add: 'Novo produto', retry: 'Tentar de novo',
     loading: 'Carregando produtos…', empty: 'Nenhum produto cadastrado ainda. Comece por "Novo produto".',
     loadError: 'Não foi possível carregar os produtos.', loadingMore: 'Carregando mais produtos…', moreError: 'Não foi possível carregar mais produtos.',
+    searchOpen: 'Pesquisar produtos', searchField: 'Pesquisar pelo nome', searchClear: 'Limpar pesquisa', searching: 'Pesquisando…', noResults: 'Nenhum resultado para "{term}".',
     viewsOne: '1 visualização', viewsMany: '{n} visualizações', mostViewed: 'Mais visto', forbidden: 'Sua sessão expirou ou esta conta não tem permissão. Entre novamente pelo site.',
     saveError: 'Não foi possível salvar. Tente de novo.', deleteError: 'Não foi possível excluir. Tente de novo.', toggleError: 'Não foi possível alterar o produto. Tente de novo.',
     photoUploadError: 'Não foi possível enviar as fotos. Tente de novo.', copyError: 'Não foi possível copiar os arquivos do produto original. Nada foi salvo.',
@@ -39,6 +41,7 @@ const languages = {
     title: 'Products', subtitle: 'Active products appear in the home page carousel.', add: 'New product', retry: 'Try again',
     loading: 'Loading products…', empty: 'No products yet. Start with "New product".',
     loadError: 'Unable to load the products.', loadingMore: 'Loading more products…', moreError: 'Unable to load more products.',
+    searchOpen: 'Search products', searchField: 'Search by name', searchClear: 'Clear search', searching: 'Searching…', noResults: 'No results for "{term}".',
     viewsOne: '1 view', viewsMany: '{n} views', mostViewed: 'Most viewed', forbidden: 'Your session expired or this account is not allowed. Sign in again on the website.',
     saveError: 'Unable to save. Please try again.', deleteError: 'Unable to delete. Please try again.', toggleError: 'Unable to change the product. Please try again.',
     photoUploadError: 'Unable to upload the photos. Please try again.', copyError: 'Unable to copy the files of the original product. Nothing was saved.',
@@ -68,6 +71,7 @@ const languages = {
     title: 'Productos', subtitle: 'Los productos activos aparecen en el carrusel de la página de inicio.', add: 'Nuevo producto', retry: 'Reintentar',
     loading: 'Cargando productos…', empty: 'Aún no hay productos. Empieza con "Nuevo producto".',
     loadError: 'No se pudieron cargar los productos.', loadingMore: 'Cargando más productos…', moreError: 'No se pudieron cargar más productos.',
+    searchOpen: 'Buscar productos', searchField: 'Buscar por nombre', searchClear: 'Borrar búsqueda', searching: 'Buscando…', noResults: 'Ningún resultado para "{term}".',
     viewsOne: '1 visualización', viewsMany: '{n} visualizaciones', mostViewed: 'Más visto', forbidden: 'Tu sesión caducó o esta cuenta no tiene permiso. Inicia sesión de nuevo en el sitio.',
     saveError: 'No se pudo guardar. Inténtalo de nuevo.', deleteError: 'No se pudo eliminar. Inténtalo de nuevo.', toggleError: 'No se pudo cambiar el producto. Inténtalo de nuevo.',
     photoUploadError: 'No se pudieron subir las fotos. Inténtalo de nuevo.', copyError: 'No se pudieron copiar los archivos del producto original. No se guardó nada.',
@@ -120,6 +124,7 @@ const LIMITS = { name: 120, description: 600 };
 // Each language keeps its own wording, whatever language the dashboard is in.
 const COPY_SUFFIX = { pt: ' (cópia)', en: ' (copy)', es: ' (copia)' };
 const SCOPE = ['#products', '#product-dialog', '#product-delete'];
+const SEARCH_COLUMNS = ['name_pt', 'name_en', 'name_es'];
 
 let mounted = false;
 
@@ -166,6 +171,8 @@ export function mountProducts({ client, lang, onChange }) {
   let hasMore = false;
   let loadingMore = false;
   let observer = null;
+  // Text being searched for; '' shows the whole list.
+  let term = '';
   // Columns added by later migrations. While one is missing the list is read without it,
   // and the page simply shows no views or stores no model size.
   let optionalColumns = ['view_count', 'model_bytes'];
@@ -219,9 +226,14 @@ export function mountProducts({ client, lang, onChange }) {
   // One page of products. The order is total (id breaks every tie), so pages never overlap
   // unless something changed in between.
   async function fetchPage(from, to) {
-    const run = () => client.from('products').select([COLUMNS, ...optionalColumns].join(','))
-      .order('sort_order', { ascending: true }).order('created_at', { ascending: false }).order('id', { ascending: true })
-      .range(from, to);
+    // supabase-js adds the outer parentheses of an "or" filter itself.
+    const filter = searchFilter(term, SEARCH_COLUMNS).slice(1, -1);
+    const run = () => {
+      const query = client.from('products').select([COLUMNS, ...optionalColumns].join(','));
+      return (filter ? query.or(filter) : query)
+        .order('sort_order', { ascending: true }).order('created_at', { ascending: false }).order('id', { ascending: true })
+        .range(from, to);
+    };
     try {
       let result = await run();
       // 42703: a column does not exist yet. Read the list without it instead of failing.
@@ -265,9 +277,11 @@ export function mountProducts({ client, lang, onChange }) {
   }
 
   // (Re)loads from the start, keeping as many rows as were on screen so the person stays in place.
-  async function load() {
+  // fresh: a new search starts again from a single page. An answer that arrives after a newer
+  // request was made is dropped, so a slow search never overwrites the latest one.
+  async function load({ fresh = false } = {}) {
     const current = ++loadVersion;
-    const size = reloadSize(products.length);
+    const size = fresh ? PAGE_SIZE : reloadSize(products.length);
     list.setAttribute('aria-busy', 'true');
     if (!products.length) showState(t.loading);
     const { data, error, status } = await fetchPage(0, size - 1);
@@ -290,7 +304,7 @@ export function mountProducts({ client, lang, onChange }) {
     hasMore = rows.length === size;
     mostViewedId = top;
     render();
-    showState(products.length ? '' : t.empty);
+    showState(products.length ? '' : term ? fill(t.noResults, { term }) : t.empty);
     setMore(hasMore ? 'more' : 'end');
     watch();
   }
@@ -891,8 +905,13 @@ export function mountProducts({ client, lang, onChange }) {
   }
 
   // ---- Wiring -------------------------------------------------------------
+  const search = createSearchBox({
+    labels: { open: t.searchOpen, field: t.searchField, clear: t.searchClear, searching: t.searching },
+    onSearch: (text) => { term = text; return load({ fresh: true }); },
+  });
+  $('products-tools').prepend(search.element);
   $('product-new').addEventListener('click', () => openForm());
-  retry.addEventListener('click', load);
+  retry.addEventListener('click', () => load());
   moreRetry.addEventListener('click', () => { if (!busy) loadMore(); });
   form.addEventListener('submit', save);
   form.addEventListener('input', (event) => {

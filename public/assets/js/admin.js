@@ -139,7 +139,9 @@ function mountTabs() {
     if (changing && !still && document.startViewTransition) {
       document.documentElement.dataset.tabs = forward ? 'forward' : 'back';
       const transition = document.startViewTransition(() => show(false));
-      transition.finished.finally(() => { delete document.documentElement.dataset.tabs; });
+      // A skipped transition (hidden tab, a second click) still switches the tab; only the animation is lost.
+      transition.finished.catch(() => {}).finally(() => { delete document.documentElement.dataset.tabs; });
+      transition.ready.catch(() => {});
     } else show(changing && !still);
     if (focus) tabs[name].focus();
     // replaceState: the choice survives a reload without piling up history entries or jumping the page.

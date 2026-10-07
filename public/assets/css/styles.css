@@ -962,3 +962,23 @@ button[aria-busy="true"]::before, .btn[aria-busy="true"]::before { content: ""; 
 button.is-icon[aria-busy="true"]::before, .btn.is-icon[aria-busy="true"]::before { margin-right: 0; }
 button.is-icon[aria-busy="true"] > *, .btn.is-icon[aria-busy="true"] > * { display: none; }
 @media (prefers-reduced-motion: reduce) { button[aria-busy="true"]::before, .btn[aria-busy="true"]::before { animation: btn-pulse 1.4s ease-in-out infinite; } }
+
+/* Search box (assets/js/search-box.js): a round magnifier that opens into a field. */
+.search-box { --search-w: 400px; position: relative; display: inline-flex; align-items: center; width: 44px; max-width: 100%; height: 44px; flex: none; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); background: var(--bg-elevated); color: var(--ink); overflow: hidden; transition: width .32s var(--ease-out), border-color .2s, box-shadow .2s; }
+.search-box.is-open { width: min(var(--search-w), 100%); border-color: var(--ink); }
+.search-box:focus-within { box-shadow: 0 0 0 3px rgba(255, 199, 44, .35); }
+.search-toggle, .search-clear { display: grid; place-items: center; flex: none; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.search-toggle:hover, .search-clear:hover:not(:disabled) { background: var(--bg-sunken); }
+.search-toggle:focus-visible, .search-clear:focus-visible { outline: 2px solid var(--ink); outline-offset: -4px; }
+.search-box svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.search-input { flex: 1; min-width: 0; height: 100%; padding: 0 .25rem; border: 0; outline: 0; background: transparent; color: inherit; font: inherit; font-size: 16px; opacity: 0; transform: translateX(-8px); transition: opacity .2s .08s, transform .32s var(--ease-out); pointer-events: none; }
+.search-box.is-open .search-input { opacity: 1; transform: none; pointer-events: auto; }
+.search-input::placeholder { color: var(--ink-faint); }
+.search-input::-webkit-search-cancel-button { display: none; }
+.search-clear { margin-right: 1px; }
+.search-clear[hidden] { display: none; }
+.search-box:not(.is-open) .search-clear { display: none; }
+.search-clear[aria-busy="true"] { cursor: progress; }
+.search-clear[aria-busy="true"]::before { width: 16px; height: 16px; margin: 0; }
+.search-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .search-box, .search-input { transition: none; } }

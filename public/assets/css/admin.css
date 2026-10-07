@@ -505,3 +505,18 @@ html { scrollbar-gutter: stable; }
 .file-button[aria-busy="true"] .icon { display: none; }
 /* The switch has no text: the spinner takes the place of the thumb, centred. */
 .switch[aria-busy="true"] { display: inline-flex; align-items: center; justify-content: center; opacity: 1; color: var(--ink-soft); }
+
+/* ---------------------------------------------------------
+   Search next to the "New" button (component from search-box.js)
+--------------------------------------------------------- */
+/* The tools take the rest of the row so the open search has room for its 400px. When the row
+   is narrower than that, the search fills it and the button wraps underneath. */
+.products-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  flex: 1 1 18rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}

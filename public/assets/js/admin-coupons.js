@@ -1,11 +1,12 @@
 // Discount coupons for /admin/. Nothing redeems them yet: there is no checkout. The database
 // (RLS and column grants) decides who may read or write; this file only drives the interface.
 import { PAGE_SIZE, formatPrice, freshRows, parsePrice, reloadSize } from './product-format.js';
+import { createSearchBox, searchFilter } from './search-box.js';
 
 const languages = {
   pt: {
     title: 'Cupons de desconto', subtitle: 'Ainda não há checkout: os cupons ficam cadastrados aqui para quando houver.', add: 'Novo cupom', retry: 'Tentar de novo',
-    loading: 'Carregando cupons…', empty: 'Nenhum cupom cadastrado ainda.', loadError: 'Não foi possível carregar os cupons.', loadingMore: 'Carregando mais cupons…', moreError: 'Não foi possível carregar mais cupons.',
+    loading: 'Carregando cupons…', empty: 'Nenhum cupom cadastrado ainda.', loadError: 'Não foi possível carregar os cupons.', loadingMore: 'Carregando mais cupons…', searchOpen: 'Pesquisar cupons', searchField: 'Pesquisar pelo código', searchClear: 'Limpar pesquisa', searching: 'Pesquisando…', noResults: 'Nenhum resultado para "{term}".', moreError: 'Não foi possível carregar mais cupons.',
     forbidden: 'Sua sessão expirou ou esta conta não tem permissão. Entre novamente pelo site.',
     saveError: 'Não foi possível salvar. Tente de novo.', deleteError: 'Não foi possível excluir. Tente de novo.', toggleError: 'Não foi possível alterar o cupom. Tente de novo.',
     uncertain: 'Não foi possível confirmar se o cupom foi salvo. Feche esta janela e confira a lista antes de tentar de novo.',
@@ -28,7 +29,7 @@ const languages = {
   },
   en: {
     title: 'Discount coupons', subtitle: 'There is no checkout yet: coupons stay registered here for when there is one.', add: 'New coupon', retry: 'Try again',
-    loading: 'Loading coupons…', empty: 'No coupons yet.', loadError: 'Unable to load the coupons.', loadingMore: 'Loading more coupons…', moreError: 'Unable to load more coupons.',
+    loading: 'Loading coupons…', empty: 'No coupons yet.', loadError: 'Unable to load the coupons.', loadingMore: 'Loading more coupons…', searchOpen: 'Search coupons', searchField: 'Search by code', searchClear: 'Clear search', searching: 'Searching…', noResults: 'No results for "{term}".', moreError: 'Unable to load more coupons.',
     forbidden: 'Your session expired or this account is not allowed. Sign in again on the website.',
     saveError: 'Unable to save. Please try again.', deleteError: 'Unable to delete. Please try again.', toggleError: 'Unable to change the coupon. Please try again.',
     uncertain: 'Unable to confirm whether the coupon was saved. Close this window and check the list before trying again.',
@@ -51,7 +52,7 @@ const languages = {
   },
   es: {
     title: 'Cupones de descuento', subtitle: 'Todavía no hay checkout: los cupones quedan registrados aquí para cuando lo haya.', add: 'Nuevo cupón', retry: 'Reintentar',
-    loading: 'Cargando cupones…', empty: 'Aún no hay cupones.', loadError: 'No se pudieron cargar los cupones.', loadingMore: 'Cargando más cupones…', moreError: 'No se pudieron cargar más cupones.',
+    loading: 'Cargando cupones…', empty: 'Aún no hay cupones.', loadError: 'No se pudieron cargar los cupones.', loadingMore: 'Cargando más cupones…', searchOpen: 'Buscar cupones', searchField: 'Buscar por código', searchClear: 'Borrar búsqueda', searching: 'Buscando…', noResults: 'Ningún resultado para "{term}".', moreError: 'No se pudieron cargar más cupones.',
     forbidden: 'Tu sesión caducó o esta cuenta no tiene permiso. Inicia sesión de nuevo en el sitio.',
     saveError: 'No se pudo guardar. Inténtalo de nuevo.', deleteError: 'No se pudo eliminar. Inténtalo de nuevo.', toggleError: 'No se pudo cambiar el cupón. Inténtalo de nuevo.',
     uncertain: 'No se pudo confirmar si el cupón se guardó. Cierra esta ventana y revisa la lista antes de intentarlo de nuevo.',
@@ -203,6 +204,8 @@ export function mountCoupons({ client, lang, onChange }) {
   let hasMore = false;
   let loadingMore = false;
   let observer = null;
+  // Text being searched for; '' shows the whole list.
+  let term = '';
   let editing = null;
   let deleting = null;
   let busy = false;
@@ -239,8 +242,11 @@ export function mountCoupons({ client, lang, onChange }) {
 
   // One page of coupons, newest first; id breaks ties so pages never overlap.
   async function fetchPage(from, to) {
+    // supabase-js adds the outer parentheses of an "or" filter itself.
+    const filter = searchFilter(term, ['code']).slice(1, -1);
     try {
-      return await client.from('coupons').select(COLUMNS)
+      const query = client.from('coupons').select(COLUMNS);
+      return await (filter ? query.or(filter) : query)
         .order('created_at', { ascending: false }).order('id', { ascending: true }).range(from, to);
     } catch { return { data: null, error: {}, status: 0 }; }
   }
@@ -262,9 +268,11 @@ export function mountCoupons({ client, lang, onChange }) {
   }
 
   // (Re)loads from the start, keeping as many rows as were on screen so the person stays in place.
-  async function load() {
+  // fresh: a new search starts again from a single page. An answer that arrives after a newer
+  // request was made is dropped, so a slow search never overwrites the latest one.
+  async function load({ fresh = false } = {}) {
     const current = ++loadVersion;
-    const size = reloadSize(coupons.length);
+    const size = fresh ? PAGE_SIZE : reloadSize(coupons.length);
     list.setAttribute('aria-busy', 'true');
     if (!coupons.length) showState(t.loading);
     const { data, error, status } = await fetchPage(0, size - 1);
@@ -285,7 +293,7 @@ export function mountCoupons({ client, lang, onChange }) {
     offset = rows.length;
     hasMore = rows.length === size;
     render();
-    showState(coupons.length ? '' : t.empty);
+    showState(coupons.length ? '' : term ? fill(t.noResults, { term }) : t.empty);
     setMore(hasMore ? 'more' : 'end');
     watch();
   }
@@ -483,8 +491,13 @@ export function mountCoupons({ client, lang, onChange }) {
   }
 
   // ---- Wiring -------------------------------------------------------------------------------
+  const search = createSearchBox({
+    labels: { open: t.searchOpen, field: t.searchField, clear: t.searchClear, searching: t.searching },
+    onSearch: (text) => { term = text; return load({ fresh: true }); },
+  });
+  $('coupons-tools').prepend(search.element);
   $('coupon-new').addEventListener('click', () => openForm());
-  retry.addEventListener('click', load);
+  retry.addEventListener('click', () => load());
   moreRetry.addEventListener('click', () => { if (!busy) loadMore(); });
   form.addEventListener('submit', save);
   form.addEventListener('input', (event) => {
