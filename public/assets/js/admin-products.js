@@ -498,7 +498,10 @@ export function mountProducts({ client, lang }) {
           if (!body) failed = t.copyError;
           else {
             const path = `${crypto.randomUUID()}.glb`;
-            const { error } = await client.storage.from(MODEL_BUCKET).upload(path, body, { contentType: MODEL_TYPE, cacheControl: '31536000', upsert: false });
+            // Browsers report no type for .glb files, and the upload sends the Blob's own type
+            // (not the contentType option), which the bucket would refuse as octet-stream.
+            const typed = new Blob([body], { type: MODEL_TYPE });
+            const { error } = await client.storage.from(MODEL_BUCKET).upload(path, typed, { contentType: MODEL_TYPE, cacheControl: '31536000', upsert: false });
             if (error) failed = failure(error, null, t.modelUploadError);
             else { uploaded.push({ bucket: MODEL_BUCKET, path }); modelPath = path; }
           }
