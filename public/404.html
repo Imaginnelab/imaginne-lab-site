@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <script>(function(){var s=localStorage.getItem('imaginne-theme');document.documentElement.setAttribute('data-theme',s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));})();</script>
+<script>(function(){var d=document.documentElement;try{var p=performance.getEntriesByType('navigation')[0],n=p&&p.type,h=location.hash,f=(n==='reload'||n==='back_forward')?sessionStorage.getItem('imaginne-nav-scrolled:'+location.pathname):null;if(f?f==='1':(h&&h!=='#'&&h!=='#top'&&h!=='#inicio')){d.setAttribute('data-nav','scrolled');}}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Imaginne Lab · Page Not Found</title>
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="/assets/img/logo-icon.svg">
 <link rel="preload" href="/assets/fonts/outfit-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/dmmono-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/dmmono-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <meta name="theme-color" content="#343D30">
 </head>

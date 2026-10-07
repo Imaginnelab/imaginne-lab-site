@@ -39,12 +39,15 @@
 .auth-email { margin-bottom: 1.5rem; overflow-wrap: anywhere; }
 .auth-full-name { font-size: 1.25rem; font-weight: 600; overflow-wrap: anywhere; }
 .auth-account-actions { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-.auth-trigger.is-authenticated { width: 42px; height: 42px; min-width: 42px; min-height: 42px; padding: 0; border-radius: 50%; border-color: transparent; background: var(--forest); color: #FBF9F2; font-size: .78rem; font-weight: 600; letter-spacing: .05em; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12), 0 1px 2px rgba(var(--shadow-color), .2); }
-[data-theme="dark"] .auth-trigger.is-authenticated { border-color: var(--border-strong); box-shadow: none; }
-.auth-trigger.is-authenticated:hover, .auth-trigger.is-authenticated:focus-visible { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); transform: translateY(-1px); }
-.auth-trigger.is-authenticated span { margin-right: -.05em; }
-.auth-trigger.is-authenticated svg { display: none; }
+.auth-trigger.is-authenticated, html[data-auth="pending"] .auth-trigger { width: 42px; height: 42px; min-width: 42px; min-height: 42px; padding: 0; border-radius: 50%; border-color: transparent; background: var(--forest); color: #FBF9F2; font-size: .78rem; font-weight: 600; letter-spacing: .05em; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12), 0 1px 2px rgba(var(--shadow-color), .2); }
+[data-theme="dark"] .auth-trigger.is-authenticated, html[data-auth="pending"][data-theme="dark"] .auth-trigger { border-color: var(--border-strong); box-shadow: none; }
+.auth-trigger.is-authenticated:hover, .auth-trigger.is-authenticated:focus-visible, html[data-auth="pending"] .auth-trigger:hover, html[data-auth="pending"] .auth-trigger:focus-visible { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); transform: translateY(-1px); }
+.auth-trigger.is-authenticated span, html[data-auth="pending"] .auth-trigger::after { margin-right: -.05em; }
+.auth-trigger.is-authenticated svg, html[data-auth="pending"] .auth-trigger svg { display: none; }
 .auth-trigger.is-authenticated span { display: inline; }
+/* Saved session detected in <head>: paint the avatar before auth.js resolves, so the header never changes width. */
+html[data-auth="pending"] .nav-actions .auth-trigger span { display: none; }
+html[data-auth="pending"] .auth-trigger::after { content: var(--auth-initials, ""); }
 .admin-main { padding-block: 3rem; }
 .admin-main h1 { margin: 1rem 0; }
 .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 1.5rem; margin-block: 2rem; }
@@ -280,7 +283,9 @@ p.lede {
   z-index: 60;
   pointer-events: none;
   --nav-pill-w: 1060px;
-  --nav-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Was cubic-bezier(0.32, 0.72, 0, 1): its long tail spent the last ~200ms moving items
+     1px at a time, which read as extra ticks after the header had visually arrived. */
+  --nav-ease: cubic-bezier(0.25, 0.6, 0.5, 1);
 }
 .nav .wrap {
   position: relative;
@@ -288,6 +293,7 @@ p.lede {
   pointer-events: auto;
   max-width: min(var(--max-w), 100%);
   height: 76px;
+  padding-top: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -298,7 +304,7 @@ p.lede {
 .nav .wrap::before {
   content: '';
   position: absolute;
-  inset: 10px 0;
+  inset: 14px 0 6px;
   z-index: -1;
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--bg-elevated) 68%, transparent);
@@ -313,25 +319,29 @@ p.lede {
   transform-origin: top center;
   pointer-events: none;
 }
-.nav.is-scrolled .wrap {
+/* html[data-nav="scrolled"] is set in <head> when the page is expected to open already scrolled. */
+.nav.is-scrolled .wrap,
+html[data-nav="scrolled"] .nav:not(.is-synced) .wrap {
   max-width: min(var(--nav-pill-w), calc(100% - 1.5rem));
   padding-inline: 9px 7px;
   gap: 1rem;
-  transform: translateY(4px);
 }
-.nav.is-scrolled .nav-links { gap: 1.5rem; }
-.nav.is-scrolled .wrap::before {
+.nav.is-scrolled .nav-links,
+html[data-nav="scrolled"] .nav:not(.is-synced) .nav-links { gap: 1.5rem; }
+.nav.is-scrolled .wrap::before,
+html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
   opacity: 1;
   transform: scale(1);
 }
 /* Transitions only switch on after load, so a page opened mid-scroll
-   starts as a pill instead of animating into one. */
+   starts as a pill instead of animating into one. Everything that changes
+   geometry shares one duration and curve so it all stops together. */
 .nav.is-ready .wrap {
-  transition: max-width 0.45s var(--nav-ease), padding 0.45s var(--nav-ease), gap 0.45s var(--nav-ease), transform 0.45s var(--nav-ease);
+  transition: max-width 0.45s var(--nav-ease), padding 0.45s var(--nav-ease), gap 0.45s var(--nav-ease);
 }
 .nav.is-ready .nav-links { transition: gap 0.45s var(--nav-ease); }
 .nav.is-ready .wrap::before {
-  transition: opacity 0.35s cubic-bezier(0.23, 1, 0.32, 1), transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: opacity 0.45s var(--nav-ease), transform 0.45s var(--nav-ease);
 }
 @media (prefers-reduced-motion: reduce) {
   .nav .wrap::before { transform: none; }
@@ -345,6 +355,7 @@ p.lede {
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-bottom: 1px solid var(--border);
 }
+.nav:has(+ .admin-main) .wrap { padding-top: 0; }
 .brand {
   display: flex;
   align-items: center;

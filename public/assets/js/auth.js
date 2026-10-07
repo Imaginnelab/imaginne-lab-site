@@ -115,6 +115,8 @@
   let profileFailed = false;
   let profileVersion = 0;
   let profileHelpers;
+  let authKnown = false;
+  let authFailed = false;
   const helpersPromise = import('/assets/js/account-profile.js').then(module => { profileHelpers = module; render(); return module; });
   const adminLink = account.querySelector('.auth-admin');
   adminLink.href = '/admin/?lang=' + document.documentElement.lang.split('-')[0];
@@ -128,7 +130,17 @@
     form.classList.toggle('is-registration', registration);
     dialog.querySelector('#auth-title').textContent = session ? t.account : registration ? t.signup : t.login;
     const name = profileHelpers?.fullName(profile, session?.user) || '';
-    trigger.querySelector('span').textContent = session ? (profileHelpers?.initials(name) || '?') : t.login;
+    const initials = session ? (profileHelpers?.initials(name) || '?') : '';
+    trigger.querySelector('span').textContent = session ? initials : t.login;
+    // The <head> script paints a predicted avatar (html[data-auth="pending"]) from these hints;
+    // release it once the real state, including the profile name, is known.
+    if (authKnown && (!session || profile || profileFailed)) {
+      try {
+        if (session && profileHelpers) localStorage.setItem('imaginne-auth-initials', initials);
+        else if (!session && !authFailed) localStorage.removeItem('imaginne-auth-initials');
+      } catch { /* storage unavailable */ }
+      document.documentElement.removeAttribute('data-auth');
+    }
     trigger.classList.toggle('is-authenticated', !!session);
     trigger.setAttribute('aria-label', session ? `${t.account}${name ? ': ' + name : ''}` : t.login);
     trigger.title = session ? name || t.account : t.login;
@@ -168,6 +180,8 @@
         const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
         const client = createClient(config.url, config.publishableKey);
         client.auth.onAuthStateChange((_event, next) => {
+          authKnown = true;
+          authFailed = false;
           // Registration must finish at the login form, even with email confirmation disabled.
           if (busy && mode === 'signup' && next) return;
           session = next;
@@ -181,9 +195,11 @@
         const { data, error } = await client.auth.getSession();
         if (error) throw error;
         session = data.session;
+        authKnown = true;
+        authFailed = false;
         render();
         return client;
-      })().catch(error => { clientPromise = null; throw error; });
+      })().catch(error => { clientPromise = null; authKnown = true; authFailed = true; render(); throw error; });
     }
     return clientPromise;
   }
@@ -307,6 +323,8 @@
     finally { loading(false); }
   });
   render();
+  // Never keep the predicted avatar waiting on a slow or silent SDK/profile request.
+  setTimeout(() => document.documentElement.removeAttribute('data-auth'), 8000);
   if (window.IMAGINNE_AUTH?.url && window.IMAGINNE_AUTH?.publishableKey) {
     getClient().catch(() => { /* Retried when the user submits. */ });
   }
