@@ -13,7 +13,9 @@ const languages = {
     viewsOne: '1 visualização', viewsMany: '{n} visualizações', mostViewed: 'Mais visto', forbidden: 'Sua sessão expirou ou esta conta não tem permissão. Entre novamente pelo site.',
     saveError: 'Não foi possível salvar. Tente de novo.', deleteError: 'Não foi possível excluir. Tente de novo.', toggleError: 'Não foi possível alterar o produto. Tente de novo.',
     photoUploadError: 'Não foi possível enviar as fotos. Tente de novo.', copyError: 'Não foi possível copiar os arquivos do produto original. Nada foi salvo.',
-    model: 'Modelo 3D (.glb)', addModel: 'Escolher modelo 3D', replaceModel: 'Trocar modelo 3D', modelHint: 'Opcional. GLB de até 15 MB. Ele vira o primeiro item do produto no site e pode ser girado.',
+    model: 'Modelo 3D (.glb)', addModel: 'Escolher modelo 3D', replaceModel: 'Trocar modelo 3D', modelHint: 'Opcional. GLB de até 15 MB, deixado mais leve automaticamente antes do envio. Ele vira o primeiro item do produto no site e pode ser girado.',
+    optimizingModel: 'otimizando modelo…', modelHeavy: 'Este modelo vai ao site com mais de 5 MB e pode demorar para abrir no celular.',
+    textureQuality: 'Texturas do modelo', texture2048: 'Até 2048 px (mais nítido)', texture1024: 'Até 1024 px (mais leve)',
     modelExt: '{name}: use um arquivo .glb.', modelSize: '{name}: o modelo precisa ter até 15 MB.', modelInvalid: '{name}: este arquivo não é um GLB válido.', modelUploadError: 'Não foi possível enviar o modelo 3D. Tente de novo.',
     savedModel: 'Modelo já salvo', copiedModel: 'Cópia do modelo original', removeModel: 'Remover o modelo 3D', modelAlt: 'Pré-visualização do modelo 3D', has3d: 'Tem modelo 3D',
     uncertain: 'Não foi possível confirmar se o produto foi salvo. Feche esta janela e confira a lista antes de tentar de novo.',
@@ -40,7 +42,9 @@ const languages = {
     viewsOne: '1 view', viewsMany: '{n} views', mostViewed: 'Most viewed', forbidden: 'Your session expired or this account is not allowed. Sign in again on the website.',
     saveError: 'Unable to save. Please try again.', deleteError: 'Unable to delete. Please try again.', toggleError: 'Unable to change the product. Please try again.',
     photoUploadError: 'Unable to upload the photos. Please try again.', copyError: 'Unable to copy the files of the original product. Nothing was saved.',
-    model: '3D model (.glb)', addModel: 'Choose 3D model', replaceModel: 'Replace 3D model', modelHint: 'Optional. GLB up to 15 MB. It becomes the first item of the product on the site and can be rotated.',
+    model: '3D model (.glb)', addModel: 'Choose 3D model', replaceModel: 'Replace 3D model', modelHint: 'Optional. GLB up to 15 MB, made lighter automatically before upload. It becomes the first item of the product on the site and can be rotated.',
+    optimizingModel: 'optimizing model…', modelHeavy: 'This model goes to the site at over 5 MB and may take a while to open on a phone.',
+    textureQuality: 'Model textures', texture2048: 'Up to 2048 px (sharper)', texture1024: 'Up to 1024 px (lighter)',
     modelExt: '{name}: use a .glb file.', modelSize: '{name}: the model must be 15 MB or smaller.', modelInvalid: '{name}: this file is not a valid GLB.', modelUploadError: 'Unable to upload the 3D model. Please try again.',
     savedModel: 'Model already saved', copiedModel: 'Copy of the original model', removeModel: 'Remove the 3D model', modelAlt: '3D model preview', has3d: 'Has a 3D model',
     uncertain: 'Unable to confirm whether the product was saved. Close this window and check the list before trying again.',
@@ -67,7 +71,9 @@ const languages = {
     viewsOne: '1 visualización', viewsMany: '{n} visualizaciones', mostViewed: 'Más visto', forbidden: 'Tu sesión caducó o esta cuenta no tiene permiso. Inicia sesión de nuevo en el sitio.',
     saveError: 'No se pudo guardar. Inténtalo de nuevo.', deleteError: 'No se pudo eliminar. Inténtalo de nuevo.', toggleError: 'No se pudo cambiar el producto. Inténtalo de nuevo.',
     photoUploadError: 'No se pudieron subir las fotos. Inténtalo de nuevo.', copyError: 'No se pudieron copiar los archivos del producto original. No se guardó nada.',
-    model: 'Modelo 3D (.glb)', addModel: 'Elegir modelo 3D', replaceModel: 'Cambiar modelo 3D', modelHint: 'Opcional. GLB de hasta 15 MB. Será el primer elemento del producto en el sitio y se puede girar.',
+    model: 'Modelo 3D (.glb)', addModel: 'Elegir modelo 3D', replaceModel: 'Cambiar modelo 3D', modelHint: 'Opcional. GLB de hasta 15 MB, aligerado automáticamente antes de subirlo. Será el primer elemento del producto en el sitio y se puede girar.',
+    optimizingModel: 'optimizando modelo…', modelHeavy: 'Este modelo llega al sitio con más de 5 MB y puede tardar en abrirse en el móvil.',
+    textureQuality: 'Texturas del modelo', texture2048: 'Hasta 2048 px (más nítido)', texture1024: 'Hasta 1024 px (más ligero)',
     modelExt: '{name}: usa un archivo .glb.', modelSize: '{name}: el modelo debe pesar 15 MB como máximo.', modelInvalid: '{name}: este archivo no es un GLB válido.', modelUploadError: 'No se pudo subir el modelo 3D. Inténtalo de nuevo.',
     savedModel: 'Modelo ya guardado', copiedModel: 'Copia del modelo original', removeModel: 'Quitar el modelo 3D', modelAlt: 'Vista previa del modelo 3D', has3d: 'Tiene modelo 3D',
     uncertain: 'No se pudo confirmar si el producto se guardó. Cierra esta ventana y revisa la lista antes de intentarlo de nuevo.',
@@ -100,6 +106,10 @@ const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const MAX_PHOTO_SOURCE_BYTES = 25 * 1024 * 1024;
 const PHOTO_QUALITY = 0.82;
 const MAX_MODEL_BYTES = 15 * 1024 * 1024;
+// Above this a model takes noticeably longer to open on a phone.
+const HEAVY_MODEL_BYTES = 5 * 1024 * 1024;
+// The optimiser (and the library it downloads) is fetched only when a model is picked.
+const OPTIMIZER = './model-optimize.js';
 const MODEL_TYPE = 'model/gltf-binary';
 // A GLB file starts with the ASCII bytes "glTF". Browsers rarely report a type for .glb files,
 // so the content is what gets checked.
@@ -153,8 +163,10 @@ export function mountProducts({ client, lang }) {
   let hasMore = false;
   let loadingMore = false;
   let observer = null;
-  // view_count arrives with a later migration; without it the list simply shows no views.
-  let withViews = true;
+  // Columns added by later migrations. While one is missing the list is read without it,
+  // and the page simply shows no views or stores no model size.
+  let optionalColumns = ['view_count', 'model_bytes'];
+  const withViews = () => optionalColumns.includes('view_count');
   let mostViewedId = null;
   let editing = null;
   let deleting = null;
@@ -192,7 +204,7 @@ export function mountProducts({ client, lang }) {
     busy = value;
     for (const el of [dialog, deleteDialog, list]) el.setAttribute('aria-busy', String(value));
     scoped('button').forEach((el) => { el.disabled = value; });
-    form.querySelectorAll('input, textarea').forEach((el) => { el.disabled = value; });
+    form.querySelectorAll('input, textarea, select').forEach((el) => { el.disabled = value; });
     if (button) button.textContent = label;
     // Re-enabling everything would also re-enable "move up" on the first photo, and so on.
     if (!value) renderPhotos();
@@ -202,22 +214,28 @@ export function mountProducts({ client, lang }) {
   // One page of products. The order is total (id breaks every tie), so pages never overlap
   // unless something changed in between.
   async function fetchPage(from, to) {
-    const run = () => client.from('products').select(withViews ? `${COLUMNS},view_count` : COLUMNS)
+    const run = () => client.from('products').select([COLUMNS, ...optionalColumns].join(','))
       .order('sort_order', { ascending: true }).order('created_at', { ascending: false }).order('id', { ascending: true })
       .range(from, to);
     try {
       let result = await run();
-      // 42703: the column does not exist yet. Read the list without it instead of failing.
-      if (result.error && withViews && (result.error.code === '42703' || result.status === 400)) {
-        withViews = false;
+      // 42703: a column does not exist yet. Read the list without it instead of failing.
+      while (result.error && optionalColumns.length && (result.error.code === '42703' || result.status === 400)) {
+        dropMissingColumns(result.error);
         result = await run();
       }
       return result;
     } catch { return { data: null, error: {}, status: 0 }; }
   }
+  // Forgets the optional column the database complained about (or all of them when it does
+  // not say which). The message is only inspected, never shown.
+  function dropMissingColumns(error) {
+    const named = optionalColumns.filter((column) => String(error?.message ?? '').includes(column));
+    optionalColumns = named.length ? optionalColumns.filter((column) => !named.includes(column)) : [];
+  }
   // The star goes to the active product with the most views, wherever it is in the list.
   async function fetchMostViewed() {
-    if (!withViews) return null;
+    if (!withViews()) return null;
     try {
       const { data, error } = await client.from('products').select('id,view_count').eq('is_active', true).gt('view_count', 0)
         .order('view_count', { ascending: false }).order('id', { ascending: true }).limit(1);
@@ -311,7 +329,7 @@ export function mountProducts({ client, lang }) {
     star.setAttribute('aria-label', t.mostViewed);
     star.title = t.mostViewed;
     const views = viewCount(product);
-    row.querySelector('.product-views').textContent = !withViews ? '' : views === 1 ? t.viewsOne : fill(t.viewsMany, { n: new Intl.NumberFormat(lang).format(views) });
+    row.querySelector('.product-views').textContent = !withViews() ? '' : views === 1 ? t.viewsOne : fill(t.viewsMany, { n: new Intl.NumberFormat(lang).format(views) });
     row.querySelector('.product-price').textContent = cents === null ? t.onRequest : formatPrice(cents, lang);
     row.querySelector('.product-photos-count').textContent = count > 1 ? fill(t.photoCount, { n: count }) : '';
     row.querySelector('.product-badge').textContent = product.is_active ? t.active : t.inactive;
@@ -494,11 +512,15 @@ export function mountProducts({ client, lang }) {
     modelRemove.setAttribute('aria-label', t.removeModel);
     modelRemove.disabled = busy;
     modelItem.hidden = !model;
-    const src = model ? model.url || publicModelUrl(model.path) : '';
+    $('product-model-warning').textContent = model?.kind === 'new' && !model.optimizing && model.upload.size > HEAVY_MODEL_BYTES ? t.modelHeavy : '';
+    // The preview waits for the optimised file, so what is shown is exactly what goes to the site.
+    const src = model && !model.optimizing ? model.url || publicModelUrl(model.path) : '';
     const current = modelPreview.firstElementChild;
+    if (model) {
+      $('product-model-name').textContent = model.kind === 'new' ? model.file.name : model.kind === 'copy' ? t.copiedModel : t.savedModel;
+      $('product-model-meta').textContent = modelMeta();
+    }
     if (!src) { modelPreview.replaceChildren(); return; }
-    $('product-model-name').textContent = model.kind === 'new' ? model.file.name : model.kind === 'copy' ? t.copiedModel : t.savedModel;
-    $('product-model-meta').textContent = model.kind === 'new' ? formatFileSize(model.file.size, lang) : '';
     if (current && current.getAttribute('src') === src) return;
     loadViewer();
     // Same interaction as the lion on the home page: drag to rotate, no pan or zoom.
@@ -510,6 +532,30 @@ export function mountProducts({ client, lang }) {
     for (const [name, value] of Object.entries(attributes)) viewer.setAttribute(name, value);
     modelPreview.replaceChildren(viewer);
   }
+  // "3,9 MB → 1,4 MB": what was picked and what will actually be uploaded.
+  function modelMeta() {
+    if (model?.kind !== 'new') return '';
+    const original = formatFileSize(model.file.size, lang);
+    if (model.optimizing) return `${original} · ${t.optimizingModel}`;
+    return model.upload !== model.file ? `${original} → ${formatFileSize(model.upload.size, lang)}` : original;
+  }
+  // Tries to make the picked model lighter. Whatever goes wrong, the original file stays.
+  async function prepareModel(item) {
+    let result = null;
+    try {
+      const { optimizeModel } = await import(OPTIMIZER);
+      result = await optimizeModel(item.file, { maxTexture: Number($('product-model-quality').value) });
+    } catch { /* keep the original */ }
+    item.optimizing = false;
+    // Replaced, removed, or the form was closed while it was being processed.
+    if (model !== item) return;
+    if (result) {
+      URL.revokeObjectURL(item.url);
+      item.upload = result.blob;
+      item.url = URL.createObjectURL(result.blob);
+    }
+    renderModel();
+  }
   async function chooseModel(file) {
     const current = ++modelCheck;
     let problem = '';
@@ -519,7 +565,10 @@ export function mountProducts({ client, lang }) {
     // The form was closed or another file was picked while this one was being read.
     if (current !== modelCheck || !dialog.open) return;
     setError(modelInput, problem ? fill(problem, { name: file.name }) : '');
-    if (!problem) setModel({ kind: 'new', file, url: URL.createObjectURL(file) });
+    if (problem) return;
+    const item = { kind: 'new', file, upload: file, url: URL.createObjectURL(file), optimizing: true };
+    setModel(item);
+    item.ready = prepareModel(item);
   }
 
   // Frees what the closed form was holding: photo previews and, above all, the 3D viewer,
@@ -632,7 +681,7 @@ export function mountProducts({ client, lang }) {
     const oldModel = target && publicModelUrl(target.model_path) ? target.model_path : '';
     setBusy(true, saveButton, t.saving);
     // Photos picked a moment ago may still be being optimised.
-    await Promise.all(photos.map((photo) => photo.ready));
+    await Promise.all([...photos.map((photo) => photo.ready), model?.ready]);
     const items = photos.slice();
     if (!items.length) {
       setBusy(false, saveButton, t.save);
@@ -663,10 +712,15 @@ export function mountProducts({ client, lang }) {
         paths.push(path);
       }
       let modelPath = null;
+      // Size of the stored model, so the public pages can decide how to load it.
+      let modelBytes = null;
       if (!failed && modelItemToSave) {
-        if (modelItemToSave.kind === 'saved') modelPath = modelItemToSave.path;
-        else {
-          const body = modelItemToSave.kind === 'copy' ? await fetchModel(modelItemToSave.path) : modelItemToSave.file;
+        if (modelItemToSave.kind === 'saved') {
+          modelPath = modelItemToSave.path;
+          modelBytes = Number.isInteger(target?.model_bytes) ? target.model_bytes : null;
+        } else {
+          // For a picked model this is the optimised file, or the original when that was not better.
+          const body = modelItemToSave.kind === 'copy' ? await fetchModel(modelItemToSave.path) : modelItemToSave.upload;
           if (!body) failed = t.copyError;
           else {
             const path = `${crypto.randomUUID()}.glb`;
@@ -675,18 +729,27 @@ export function mountProducts({ client, lang }) {
             const typed = new Blob([body], { type: MODEL_TYPE });
             const { error } = await client.storage.from(MODEL_BUCKET).upload(path, typed, { contentType: MODEL_TYPE, cacheControl: '31536000', upsert: false });
             if (error) failed = failure(error, null, t.modelUploadError);
-            else { uploaded.push({ bucket: MODEL_BUCKET, path }); modelPath = path; }
+            else { uploaded.push({ bucket: MODEL_BUCKET, path }); modelPath = path; modelBytes = typed.size; }
           }
         }
       }
       if (!failed) {
         const row = { ...values, image_path: paths[0], extra_image_paths: paths.slice(1), model_path: modelPath };
+        if (optionalColumns.includes('model_bytes')) row.model_bytes = modelBytes;
+        const write = () => (target
+          ? client.from('products').update(row).eq('id', target.id).select('id')
+          : client.from('products').insert(row).select('id'));
         writing = true;
         let result;
         try {
-          result = await (target
-            ? client.from('products').update(row).eq('id', target.id).select('id')
-            : client.from('products').insert(row).select('id'));
+          result = await write();
+          // The database does not have the size column yet: a refusal that wrote nothing, so
+          // the same product can be sent again without it.
+          if (result.error && 'model_bytes' in row && ['PGRST204', '42703'].includes(result.error.code) && String(result.error.message ?? '').includes('model_bytes')) {
+            optionalColumns = optionalColumns.filter((column) => column !== 'model_bytes');
+            delete row.model_bytes;
+            result = await write();
+          }
         } catch { result = { error: {}, status: 0 }; }
         const { data, error, status } = result;
         if (error || !Array.isArray(data) || !data.length) {
@@ -833,6 +896,8 @@ export function mountProducts({ client, lang }) {
     photoInput.value = '';
     if (files.length) addFiles(files);
   });
+  // A different texture size means optimising the picked file again, from the original.
+  $('product-model-quality').addEventListener('change', () => { if (model?.kind === 'new' && !busy) chooseModel(model.file); });
   modelInput.addEventListener('change', () => {
     const file = modelInput.files[0];
     modelInput.value = '';

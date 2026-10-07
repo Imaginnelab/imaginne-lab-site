@@ -104,6 +104,44 @@ a[href="#productos"][hidden] { display: none; }
   --progress-bar-height: 2px;
 }
 .products-model[hidden], .products-gallery-controls[hidden] { display: none; }
+.products-model-prompt {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  padding: 1rem;
+  pointer-events: none;
+}
+.products-model-prompt[hidden], .products-model-progress[hidden] { display: none; }
+.products-model-open {
+  min-height: 44px;
+  max-width: 100%;
+  padding: .65rem 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--bg-elevated);
+  font-size: .85rem;
+  font-weight: 600;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.products-model-open:disabled { cursor: wait; }
+.products-model-open:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+.products-model-progress { width: min(75%, 12rem); height: .45rem; accent-color: var(--amber); }
+.products-model-message:not(:empty) {
+  max-width: 100%;
+  padding: .3rem .55rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--ink);
+  font-size: .75rem;
+  text-align: center;
+}
 .products-model:focus-visible { outline: 2px solid var(--ink); outline-offset: -3px; }
 .products-model-badge {
   position: absolute;

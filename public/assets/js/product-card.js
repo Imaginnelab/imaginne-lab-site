@@ -3,6 +3,8 @@ const { priceCents, formatPrice, localized, imageUrl, modelUrl } = format;
 
 const COPY = {
   en: {
+    openModel: 'View in 3D', loadingModel: 'Loading 3D…', queuedModel: 'Waiting to load 3D…',
+    preparingModel: 'Preparing 3D…', readyModel: '3D ready', errorModel: 'Could not load 3D. Try again.',
     empty: 'New pieces are on their way. Check back soon.',
     request: 'Price on request', order: 'Order Now', position: 'Products', mostViewed: 'Most viewed',
     photos: 'Product photos', photo: 'Photo', previousPhoto: 'Previous photo', nextPhoto: 'Next photo',
@@ -12,6 +14,8 @@ const COPY = {
     modelHelp: 'Drag the 3D model or use its arrow keys to rotate. Use the view buttons to switch between 3D and photos. Swipe on photos to browse products.',
   },
   pt: {
+    openModel: 'Ver em 3D', loadingModel: 'Carregando 3D…', queuedModel: 'Aguardando para carregar 3D…',
+    preparingModel: 'Preparando 3D…', readyModel: '3D pronto', errorModel: 'Não foi possível carregar o 3D. Tente de novo.',
     empty: 'Novas peças estão a caminho. Volte em breve.',
     request: 'Sob consulta', order: 'Fazer Pedido', position: 'Produtos', mostViewed: 'Mais visto',
     photos: 'Fotos do produto', photo: 'Foto', previousPhoto: 'Foto anterior', nextPhoto: 'Próxima foto',
@@ -21,6 +25,8 @@ const COPY = {
     modelHelp: 'Arraste o modelo 3D ou use suas setas para girar. Use os botões de vista para alternar entre 3D e fotos. Deslize nas fotos para navegar pelos produtos.',
   },
   es: {
+    openModel: 'Ver en 3D', loadingModel: 'Cargando 3D…', queuedModel: 'Esperando para cargar 3D…',
+    preparingModel: 'Preparando 3D…', readyModel: '3D listo', errorModel: 'No pudimos cargar el 3D. Inténtalo de nuevo.',
     empty: 'Nuevas piezas están en camino. Vuelve pronto.',
     request: 'Precio a consultar', order: 'Hacer Pedido', position: 'Productos', mostViewed: 'Más visto',
     photos: 'Fotos del producto', photo: 'Foto', previousPhoto: 'Foto anterior', nextPhoto: 'Foto siguiente',
@@ -124,6 +130,118 @@ function supportsProductModel() {
   return webGLSupported;
 }
 
+const MAX_MODEL_BYTES = 15 * 1024 * 1024;
+const AUTO_MODEL_BYTES = 2_000_000;
+const modelQueue = [];
+const liveModels = [];
+const modelCards = new Set();
+let activeModel = null;
+let lastModelMotion = 0;
+const modelLimit = () => document.querySelector('[data-hero-model]') ? 1 : 2;
+
+function automaticConnection() {
+  const connection = navigator.connection;
+  return !document.hidden
+    && !(typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 2)
+    && !connection?.saveData
+    && !['slow-2g', '2g', '3g'].includes(connection?.effectiveType)
+    && !(typeof connection?.downlink === 'number' && connection.downlink > 0 && connection.downlink < 1);
+}
+function cancelQueuedModel(job) {
+  const index = modelQueue.indexOf(job);
+  if (index !== -1) { modelQueue.splice(index, 1); job.reset(); }
+}
+async function pumpModels() {
+  if (activeModel) return;
+  const job = modelQueue.shift();
+  if (!job) return;
+  if (!job.eligible() || (!job.explicit && !automaticConnection())) {
+    job.reset();
+    pumpModels();
+    return;
+  }
+  if (liveModels.length >= modelLimit()) {
+    const victim = liveModels.find(item => !item.visible()) || (job.explicit ? liveModels[0] : null);
+    if (!victim) { job.reset(); pumpModels(); return; }
+    victim.dispose();
+  }
+  activeModel = job;
+  job.abort = new AbortController();
+  const timeout = setTimeout(() => job.abort?.abort(), 60000);
+  try {
+    await job.load(job.abort.signal);
+    liveModels.push(job);
+  } catch (error) {
+    job.dispose();
+    if (error?.name !== 'AbortError') job.failed();
+  } finally {
+    clearTimeout(timeout);
+    job.abort = null;
+    activeModel = null;
+    pumpModels();
+    modelCards.forEach(item => item.arm());
+  }
+}
+function queueModel(job, explicit) {
+  if (job.loaded || activeModel === job || modelQueue.includes(job)) return;
+  job.explicit = explicit;
+  if (!explicit) job.autoAttempted = true;
+  job.waiting();
+  modelQueue.push(job);
+  pumpModels();
+}
+async function fetchModelBlob(src, signal, hint, progress) {
+  const response = await fetch(src, { signal, credentials: 'omit', cache: 'force-cache' });
+  if (!response.ok) {
+    await response.body?.cancel?.();
+    throw new Error('Model unavailable');
+  }
+  const header = Number(response.headers.get('content-length'));
+  if (header > MAX_MODEL_BYTES) {
+    await response.body?.cancel?.();
+    throw new Error('Model too large');
+  }
+  const total = header > 0 ? header : hint;
+  if (!response.body?.getReader) {
+    const blob = await response.blob();
+    if (!blob.size || blob.size > MAX_MODEL_BYTES) throw new Error('Model unavailable');
+    progress(100);
+    return blob;
+  }
+  const reader = response.body.getReader();
+  const chunks = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_MODEL_BYTES) { await reader.cancel(); throw new Error('Model too large'); }
+      chunks.push(value);
+      progress(total > 0 ? Math.min(99, Math.floor(size / total * 100)) : null);
+    }
+  } finally { reader.releaseLock(); }
+  if (!size) throw new Error('Model unavailable');
+  progress(100);
+  return new Blob(chunks, { type: 'model/gltf-binary' });
+}
+window.addEventListener('scroll', () => { lastModelMotion = performance.now(); }, { passive: true, capture: true });
+window.addEventListener('pagehide', event => {
+  activeModel?.abort?.abort();
+  modelQueue.splice(0).forEach(job => job.reset());
+  modelCards.forEach(job => job.suspend());
+  if (!event.persisted) {
+    [...liveModels].forEach(job => job.dispose());
+    modelCards.forEach(job => job.cleanup());
+    modelCards.clear();
+  }
+});
+document.addEventListener('visibilitychange', () => {
+  modelCards.forEach(job => { job.rotation(); job.arm(); });
+  if (!document.hidden) pumpModels();
+});
+window.addEventListener('pageshow', () => modelCards.forEach(job => job.arm()));
+
 let gallerySequence = 0;
 function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, interest, priority) {
   const photo = element('div', 'products-photo');
@@ -148,11 +266,9 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
         modelEntry = { src, kind: 'model' };
         entries.unshift(modelEntry);
       }
-    } catch { /* An invalid optional model must not hide the catalogue. */ }
+    } catch { /* Invalid optional models retain their photos. */ }
   }
-  // Cards without a usable model retain the existing photo-only behavior.
   if (entries.length === 1) return photo;
-
   photo.classList.add('products-gallery');
   photo.tabIndex = 0;
   photo.setAttribute('role', 'group');
@@ -173,75 +289,44 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
   photo.append(help, controls);
   const badge = modelEntry ? element('span', 'products-model-badge', '3D') : null;
   if (badge) { badge.setAttribute('aria-hidden', 'true'); photo.append(badge); }
+  const bytes = Number.isInteger(product.model_bytes) && product.model_bytes > 0 && product.model_bytes <= MAX_MODEL_BYTES ? product.model_bytes : null;
+  const sizeText = bytes ? ` · ${new Intl.NumberFormat({ pt: 'pt-BR', en: 'en-CA', es: 'es-ES' }[lang], { maximumFractionDigits: 1 }).format(bytes / 1_000_000)} MB` : '';
+  const prompt = modelEntry ? element('div', 'products-model-prompt') : null;
+  const open = modelEntry ? element('button', 'products-model-open', copy.openModel + sizeText) : null;
+  const message = modelEntry ? element('span', 'products-model-message') : null;
+  const progress = modelEntry ? element('progress', 'products-model-progress') : null;
+  const ready = modelEntry ? element('span', 'products-status') : null;
+  if (prompt) {
+    open.type = 'button';
+    open.setAttribute('aria-label', `${copy.openModel}: ${name}${sizeText}`);
+    message.setAttribute('role', 'status');
+    message.setAttribute('aria-live', 'polite');
+    progress.max = 100;
+    progress.hidden = true;
+    progress.setAttribute('aria-label', copy.loadingModel);
+    prompt.append(open, progress, message);
+    photo.append(prompt);
+    ready.setAttribute('role', 'status');
+    ready.setAttribute('aria-live', 'polite');
+    photo.append(ready);
+  }
   const motion = modelEntry ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-  let modelLoaded = false;
-  let modelVisible = false;
-  let modelObserver;
   let current = 0;
-  const updateRotation = () => {
+  let visible = false;
+  let wellVisible = false;
+  let observer;
+  let automaticTimer;
+  let blobUrl;
+  let lastProgress = -1;
+  let lastAnnouncement = -1;
+  let restoreFocus = false;
+  const selectedModel = () => entries[current] === modelEntry;
+  const rotation = () => {
     const viewer = modelEntry?.node;
     if (!viewer) return;
-    if (entries[current] === modelEntry && modelVisible && !document.hidden && !motion.matches) viewer.setAttribute('auto-rotate', '');
+    viewer.hidden = !selectedModel() || !visible || document.hidden;
+    if (!viewer.hidden && job.loaded && !motion.matches) viewer.setAttribute('auto-rotate', '');
     else viewer.removeAttribute('auto-rotate');
-  };
-  const fallback = () => {
-    if (!modelEntry) return;
-    const selected = entries[current];
-    const hadFocus = document.activeElement === modelEntry.node;
-    modelEntry.node?.remove();
-    entries.shift();
-    modelEntry = null;
-    modelObserver?.disconnect();
-    motion.removeEventListener?.('change', updateRotation);
-    document.removeEventListener('visibilitychange', updateRotation);
-    badge.remove();
-    help.textContent = copy.photoHelp;
-    photo.setAttribute('aria-label', `${copy.photos}: ${name}`);
-    previous.setAttribute('aria-label', `${copy.previousPhoto}: ${name}`);
-    next.setAttribute('aria-label', `${copy.nextPhoto}: ${name}`);
-    controls.hidden = entries.length === 1;
-    // A late failure must not interrupt somebody already viewing an extra photo.
-    show(Math.max(0, entries.indexOf(selected)), true);
-    if (hadFocus) photo.focus({ preventScroll: true });
-  };
-  const createModel = async entry => {
-    if (entry.loading) return;
-    entry.loading = true;
-    try {
-      await ensureModelViewer();
-      if (modelEntry !== entry || !modelVisible || entries[current] !== entry || !photo.isConnected) return;
-      const viewer = element('model-viewer', 'products-model');
-      entry.node = viewer;
-      const attributes = {
-        alt: `${copy.modelAlt}: ${name}`,
-        'camera-controls': '', 'disable-pan': '', 'disable-zoom': '',
-        'interaction-prompt': 'none', 'touch-action': 'none',
-        'auto-rotate-delay': '1500', 'rotation-per-second': '18deg',
-        'shadow-intensity': '0', exposure: '1', 'environment-image': 'neutral',
-        'camera-orbit': '0deg 90deg 105%',
-        'min-camera-orbit': 'auto 55deg auto', 'max-camera-orbit': 'auto 105deg auto',
-        loading: 'lazy', reveal: 'auto', poster: coverUrl,
-      };
-      Object.entries(attributes).forEach(([key, value]) => viewer.setAttribute(key, value));
-      viewer.addEventListener('error', fallback, { once: true });
-      viewer.addEventListener('camera-change', event => {
-        if (event.detail?.source === 'user-interaction') interest();
-      });
-      viewer.addEventListener('load', () => {
-        if (!modelEntry) return;
-        modelLoaded = true;
-        if (entries[current] === modelEntry) show(current, true);
-      }, { once: true });
-      // Shadow DOM camera handlers run first; only their bubbling events are isolated.
-      ['pointerdown', 'pointermove', 'pointerup', 'keydown'].forEach(type => {
-        viewer.addEventListener(type, event => event.stopPropagation());
-      });
-      // Assign the model URL exactly once; retain this element across all view changes.
-      viewer.setAttribute('src', entry.src);
-      photo.append(viewer);
-      show(current, true);
-    } catch { fallback(); }
-    finally { entry.loading = false; }
   };
   const show = (index, force = false) => {
     const target = (index + entries.length) % entries.length;
@@ -249,19 +334,153 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
     entries.forEach(entry => { if (entry.node) entry.node.hidden = true; });
     current = target;
     const selected = entries[current];
-    if (selected.kind === 'model' && !selected.node && modelVisible) createModel(selected);
-    // Extras have no img/src until their first explicit selection: no background downloads.
     if (selected.kind === 'photo' && !selected.node) {
       selected.node = photoImage(name, selected.src);
       photo.append(selected.node);
     }
-    if (selected.node) selected.node.hidden = selected.node.dataset.productsFailed === 'true';
+    if (selected.kind === 'photo') selected.node.hidden = selected.node.dataset.productsFailed === 'true';
+    if (selected.kind === 'model') cover.hidden = job.loaded || cover.dataset.productsFailed === 'true';
     photo.classList.toggle('products-model-active', selected.kind === 'model');
-    // The real img also provides a cover while the custom element is being registered/loading.
-    if (selected.kind === 'model' && (!selected.node || !modelLoaded)) cover.hidden = cover.dataset.productsFailed === 'true';
-    updateRotation();
+    if (prompt) prompt.hidden = selected.kind !== 'model' || job.loaded;
+    if (selected.kind !== 'model' && job) {
+      cancelQueuedModel(job);
+      if (activeModel === job && !job.explicit) job.abort?.abort();
+    }
+    rotation();
+    job?.arm();
     status.textContent = `${selected.kind === 'model' ? '3D' : modelEntry ? copy.view : copy.photo} ${current + 1} / ${entries.length}`;
   };
+  const reportProgress = value => {
+    if (!progress || value === lastProgress) return;
+    lastProgress = value;
+    if (value == null) progress.removeAttribute('value');
+    else progress.value = value;
+    const announcement = value == null ? -1 : Math.floor(value / 10);
+    if (announcement !== lastAnnouncement) {
+      lastAnnouncement = announcement;
+      message.textContent = copy.loadingModel + (value == null ? '' : ` ${value}%`);
+    }
+  };
+  const reset = () => {
+    if (!prompt) return;
+    open.disabled = false;
+    open.textContent = copy.openModel + sizeText;
+    progress.hidden = true;
+    message.textContent = '';
+    ready.textContent = '';
+    photo.removeAttribute('aria-busy');
+    if (selectedModel()) { cover.hidden = cover.dataset.productsFailed === 'true'; prompt.hidden = false; }
+  };
+  const dispose = () => {
+    const index = liveModels.indexOf(job);
+    if (index !== -1) liveModels.splice(index, 1);
+    const viewer = modelEntry.node;
+    const focused = viewer && (document.activeElement === viewer || viewer.contains(document.activeElement));
+    if (viewer) { viewer.removeAttribute('auto-rotate'); viewer.removeAttribute('src'); viewer.remove(); }
+    modelEntry.node = null;
+    job.loaded = false;
+    if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
+    reset();
+    if (focused) open.focus({ preventScroll: true });
+  };
+  const arm = () => {
+    clearTimeout(automaticTimer);
+    if (!job || job.loaded || job.autoAttempted || activeModel === job || modelQueue.includes(job) || !wellVisible || !selectedModel()
+      || !bytes || bytes > AUTO_MODEL_BYTES || !automaticConnection() || activeModel) return;
+    automaticTimer = setTimeout(() => {
+      if (performance.now() - lastModelMotion < 600) { arm(); return; }
+      if (wellVisible && selectedModel() && automaticConnection() && !activeModel) queueModel(job, false);
+    }, 600);
+  };
+  const job = modelEntry ? {
+    loaded: false, explicit: false, autoAttempted: false, abort: null,
+    visible: () => visible && selectedModel(),
+    eligible: () => photo.isConnected && visible && selectedModel() && !document.hidden,
+    arm, rotation, reset, dispose,
+    suspend: () => { clearTimeout(automaticTimer); modelEntry.node?.removeAttribute('auto-rotate'); },
+    cleanup: () => { clearTimeout(automaticTimer); observer?.disconnect(); motion.removeEventListener?.('change', rotation); },
+    waiting: () => {
+      clearTimeout(automaticTimer);
+      restoreFocus = document.activeElement === open;
+      open.disabled = true;
+      open.textContent = copy.loadingModel;
+      message.textContent = copy.queuedModel;
+      progress.hidden = false;
+      progress.removeAttribute('value');
+      photo.setAttribute('aria-busy', 'true');
+      lastProgress = -1;
+      lastAnnouncement = -1;
+    },
+    failed: () => { message.textContent = copy.errorModel; },
+    load: async signal => {
+      message.textContent = copy.loadingModel;
+      await ensureModelViewer();
+      if (signal.aborted || !job.eligible()) throw new DOMException('Cancelled', 'AbortError');
+      const Viewer = window.customElements.get('model-viewer');
+      // Do not retain unused parsed geometry/textures after an element is evicted.
+      Viewer.modelCacheSize = 0;
+      const blob = await fetchModelBlob(modelEntry.src, signal, bytes, reportProgress);
+      if (signal.aborted) throw new DOMException('Cancelled', 'AbortError');
+      message.textContent = copy.preparingModel;
+      blobUrl = URL.createObjectURL(blob);
+      const viewer = element('model-viewer', 'products-model');
+      modelEntry.node = viewer;
+      const attributes = {
+        alt: `${copy.modelAlt}: ${name}`,
+        tabindex: '0',
+        'camera-controls': '', 'disable-pan': '', 'disable-zoom': '',
+        'interaction-prompt': 'none', 'touch-action': 'none',
+        'auto-rotate-delay': '1500', 'rotation-per-second': '18deg',
+        'shadow-intensity': '0', exposure: '1', 'environment-image': 'neutral',
+        'camera-orbit': '0deg 90deg 105%',
+        'min-camera-orbit': 'auto 55deg auto', 'max-camera-orbit': 'auto 105deg auto',
+        loading: 'eager', reveal: 'auto', poster: coverUrl,
+      };
+      Object.entries(attributes).forEach(([key, value]) => viewer.setAttribute(key, value));
+      viewer.addEventListener('camera-change', event => { if (event.detail?.source === 'user-interaction') interest(); });
+      viewer.addEventListener('error', () => { if (modelEntry.node === viewer && job.loaded) { dispose(); job.failed(); } });
+      ['pointerdown', 'pointermove', 'pointerup', 'keydown'].forEach(type => viewer.addEventListener(type, event => event.stopPropagation()));
+      await new Promise((resolve, reject) => {
+        const abort = () => reject(new DOMException('Cancelled', 'AbortError'));
+        const finish = callback => () => { signal.removeEventListener('abort', abort); callback(); };
+        signal.addEventListener('abort', abort, { once: true });
+        viewer.addEventListener('load', finish(resolve), { once: true });
+        viewer.addEventListener('error', finish(() => reject(new Error('Model unavailable'))), { once: true });
+        viewer.setAttribute('src', blobUrl);
+        photo.append(viewer);
+        rotation();
+      });
+      if (signal.aborted || !photo.isConnected) throw new DOMException('Cancelled', 'AbortError');
+      job.loaded = true;
+      photo.removeAttribute('aria-busy');
+      message.textContent = copy.readyModel;
+      ready.textContent = copy.readyModel;
+      if (restoreFocus && selectedModel() && visible) viewer.focus({ preventScroll: true });
+      show(current, true);
+    },
+  } : null;
+  if (job) {
+    modelCards.add(job);
+    open.addEventListener('click', event => {
+      event.stopPropagation();
+      interest();
+      visible = true; // An actual click/keyboard activation is explicit intent even before the first IO callback.
+      queueModel(job, true);
+    });
+    observer = new IntersectionObserver(observations => {
+      const entry = observations[0];
+      visible = entry.isIntersecting && entry.intersectionRatio > 0;
+      wellVisible = visible && entry.intersectionRatio >= .75;
+      if (!visible) {
+        cancelQueuedModel(job);
+        if (activeModel === job && !job.explicit) job.abort?.abort();
+      }
+      rotation();
+      arm();
+    }, { threshold: [0, .01, .75, 1] });
+    observer.observe(photo);
+    motion.addEventListener?.('change', rotation);
+  }
   previous.addEventListener('click', () => { interest(); show(current - 1); });
   next.addEventListener('click', () => { interest(); show(current + 1); });
   photo.addEventListener('keydown', event => {
@@ -275,33 +494,11 @@ function productPhoto(product, name, baseUrl, imageUrl, coverUrl, modelUrl, inte
     else if (event.key === 'End') show(entries.length - 1);
     else show(current + (event.key === 'ArrowRight' ? 1 : -1));
   });
-  if (modelEntry) {
-    modelObserver = new IntersectionObserver(entries => {
-      modelVisible = entries.some(entry => entry.isIntersecting);
-      if (modelVisible && modelEntry && entriesForModel()) show(current, true);
-      updateRotation();
-    }, { threshold: .01 });
-    const entriesForModel = () => entries[current] === modelEntry;
-    modelObserver.observe(photo);
-  }
-  motion?.addEventListener?.('change', updateRotation);
-  if (modelEntry) {
-    document.addEventListener('visibilitychange', updateRotation);
-    window.addEventListener('pagehide', event => {
-      if (event.persisted) return;
-      modelObserver?.disconnect();
-      motion.removeEventListener?.('change', updateRotation);
-      document.removeEventListener('visibilitychange', updateRotation);
-      modelEntry?.node?.removeAttribute('auto-rotate');
-    });
-  }
   show(0, true);
-  // Touch uses the 44px buttons; horizontal swipes stay with the outer scroll-snap rail.
   return photo;
 }
 
-
-export const PRODUCT_FIELDS = 'id,name_pt,name_en,name_es,description_pt,description_en,description_es,price_cad_cents,image_path,extra_image_paths,model_path,sort_order,view_count';
+export const PRODUCT_FIELDS = 'id,name_pt,name_en,name_es,description_pt,description_en,description_es,price_cad_cents,image_path,extra_image_paths,model_path,model_bytes,sort_order,view_count';
 export const NORMAL_ORDER = 'sort_order.asc,created_at.desc,id.asc';
 export const productLanguage = lang;
 export const productCopy = copy;

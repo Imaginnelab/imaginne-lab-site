@@ -157,8 +157,16 @@
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M12 3 4 7.5v9L12 21l8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/></svg>
             <span id="product-model-button">Choose 3D model</span>
           </label>
-          <p class="field-hint" id="product-model-hint" data-i18n="modelHint">Optional. GLB up to 15 MB. It becomes the first item of the product on the site and can be rotated.</p>
+          <p class="field-hint" id="product-model-hint" data-i18n="modelHint">Optional. GLB up to 15 MB, made lighter automatically before upload. It becomes the first item of the product on the site and can be rotated.</p>
+          <p class="field-hint model-warning" id="product-model-warning" role="status"></p>
           <p class="field-error" id="product-model-error"></p>
+          <div class="model-quality">
+            <label for="product-model-quality" data-i18n="textureQuality">Model textures</label>
+            <select id="product-model-quality" name="model_quality">
+              <option value="2048" data-i18n="texture2048">Up to 2048 px (sharper)</option>
+              <option value="1024" data-i18n="texture1024">Up to 1024 px (lighter)</option>
+            </select>
+          </div>
         </div>
         </div>
         <div class="product-meta">
