@@ -95,14 +95,38 @@ function mountTabs() {
     if (total === null) tabs[name].removeAttribute('aria-label');
     else tabs[name].setAttribute('aria-label', t.tabCount.replace('{label}', sections[name].label).replace('{n}', badge.textContent));
   }
+  const bar = document.getElementById('admin-tabs');
+  let selected = '';
+  // The amber underline is one element that slides to the chosen tab.
+  function placeIndicator() {
+    const tab = tabs[selected];
+    if (!tab) return;
+    bar.style.setProperty('--tab-x', `${tab.offsetLeft}px`);
+    bar.style.setProperty('--tab-w', `${tab.offsetWidth}px`);
+  }
+  // Also runs when the dashboard first becomes visible, when the bar finally has a size.
+  // The tabs are watched too: each one widens when its count arrives.
+  if ('ResizeObserver' in window) { const watcher = new ResizeObserver(placeIndicator); [bar, ...Object.values(tabs)].forEach(node => watcher.observe(node)); }
+  else window.addEventListener('resize', placeIndicator);
   function select(name, { focus = false, remember = true } = {}) {
+    const previous = selected;
+    selected = name;
     for (const other of names) {
       const active = other === name;
       tabs[other].setAttribute('aria-selected', String(active));
       // Roving tabindex: Tab leaves the bar and goes into the panel; the arrows move between tabs.
       tabs[other].tabIndex = active ? 0 : -1;
-      document.getElementById(other).hidden = !active;
+      const panel = document.getElementById(other);
+      panel.hidden = !active;
+      panel.classList.remove('admin-panel-in', 'admin-panel-in-back');
+      // The new list slides in from the side its tab is on; the first paint has no animation.
+      if (active && previous && previous !== name) {
+        void panel.offsetWidth;
+        panel.classList.add(names.indexOf(name) > names.indexOf(previous) ? 'admin-panel-in' : 'admin-panel-in-back');
+      }
     }
+    placeIndicator();
+    bar.classList.toggle('is-ready', !!previous);
     if (focus) tabs[name].focus();
     // replaceState: the choice survives a reload without piling up history entries or jumping the page.
     if (remember && location.hash !== `#${name}`) history.replaceState(null, '', `${location.pathname}${location.search}#${name}`);

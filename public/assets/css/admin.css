@@ -440,16 +440,32 @@
 /* The bar clips what leaves it, so the focus ring is drawn inside the tab. */
 .admin-tab:focus-visible { outline-offset: -4px; border-radius: 10px; }
 .admin-tab[aria-selected="true"] { color: var(--ink); }
-.admin-tab::after {
+/* One underline for the whole bar: it slides to the chosen tab (position set by admin.js). */
+.admin-tabs { position: relative; }
+.admin-tabs::after {
   content: '';
   position: absolute;
-  inset: auto 0.75rem 0 0.75rem;
+  left: 0;
+  bottom: 0;
+  width: calc(var(--tab-w, 0px) - 1.5rem);
   height: 3px;
   border-radius: 3px 3px 0 0;
-  background: transparent;
-  transition: background-color 0.2s var(--ease-out);
+  background: var(--amber);
+  transform: translateX(calc(var(--tab-x, 0px) + 0.75rem));
 }
-.admin-tab[aria-selected="true"]::after { background: var(--amber); }
+.admin-tabs.is-ready::after { transition: transform 0.32s var(--ease-out), width 0.32s var(--ease-out); }
+/* The list that was just chosen slides in from the side its tab is on. */
+@keyframes admin-panel-in { from { opacity: 0; transform: translateX(18px); } }
+@keyframes admin-panel-in-back { from { opacity: 0; transform: translateX(-18px); } }
+.admin-panel-in { animation: admin-panel-in 0.28s var(--ease-out) both; }
+.admin-panel-in-back { animation: admin-panel-in-back 0.28s var(--ease-out) both; }
+@media (prefers-reduced-motion: reduce) {
+  .admin-tabs.is-ready::after { transition: none; }
+  .admin-panel-in, .admin-panel-in-back { animation: none; }
+}
+/* A long list has a page scrollbar and a short one does not: reserve its room so switching
+   tabs never moves the content sideways. */
+html { scrollbar-gutter: stable; }
 /* Both weights are laid out, one on top of the other, so choosing a tab never shifts the bar. */
 .admin-tab-label { display: inline-grid; }
 .admin-tab-label::after { content: attr(data-label); grid-area: 1 / 1; font-weight: 700; visibility: hidden; }
