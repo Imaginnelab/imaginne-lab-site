@@ -1,0 +1,41 @@
+{
+  "account": {
+    "login": "Entrar",
+    "signup": "Criar conta",
+    "account": "Minha conta",
+    "close": "Fechar",
+    "name": "Nome",
+    "email": "E-mail",
+    "password": "Senha",
+    "confirm": "Confirme a senha",
+    "invitation": "Não tem uma conta?",
+    "register": "Cadastre-se",
+    "back": "Já tenho uma conta",
+    "wait": "Aguarde…",
+    "logout": "Sair",
+    "admin": "Painel admin",
+    "mismatch": "As senhas não coincidem.",
+    "nameRequired": "Informe seu nome.",
+    "hint": "Use pelo menos 8 caracteres.",
+    "signupDisabled": "O cadastro de novas contas está temporariamente desativado.",
+    "invalidEmail": "Informe um endereço de e-mail válido.",
+    "serverError": "O serviço não conseguiu concluir o cadastro. Tente novamente mais tarde.",
+    "checkEmail": "Se o cadastro puder ser concluído, você receberá um e-mail de confirmação. Confira sua caixa de entrada.",
+    "unavailable": "O acesso à conta está temporariamente indisponível. Tente novamente mais tarde.",
+    "generic": "Não foi possível concluir. Confira os dados e tente novamente.",
+    "credentials": "E-mail ou senha incorretos.",
+    "weak": "A senha não atende aos requisitos de segurança. Use uma senha mais forte.",
+    "rate": "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
+    "emailRate": "O limite temporário de envio de e-mails foi atingido. Aguarde a liberação do serviço antes de tentar cadastrar novamente."
+  },
+  "maintenance": {
+    "eyebrow": "Em manutenção",
+    "title": "Voltamos já.",
+    "text": "Estamos preparando novidades na loja. O site volta ao ar em breve — obrigado pela paciência.",
+    "login": "Entrar como administrador",
+    "notAdmin": "Esta conta não tem acesso durante a manutenção.",
+    "banner": "Modo manutenção ligado: só administradores veem o site.",
+    "bannerLink": "Abrir painel",
+    "bannerLabel": "Aviso de manutenção"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "account": {
+    "login": "Entrar",
+    "signup": "Crear cuenta",
+    "account": "Mi cuenta",
+    "close": "Cerrar",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirm": "Confirmar contraseña",
+    "invitation": "¿No tienes una cuenta?",
+    "register": "Regístrate",
+    "back": "Ya tengo una cuenta",
+    "wait": "Espera…",
+    "logout": "Cerrar sesión",
+    "admin": "Panel admin",
+    "mismatch": "Las contraseñas no coinciden.",
+    "nameRequired": "Introduce tu nombre.",
+    "hint": "Usa al menos 8 caracteres.",
+    "signupDisabled": "El registro de nuevas cuentas está desactivado temporalmente.",
+    "invalidEmail": "Introduce una dirección de correo válida.",
+    "serverError": "El servicio no pudo completar el registro. Inténtalo más tarde.",
+    "checkEmail": "Si se puede completar el registro, recibirás un correo de confirmación. Revisa tu bandeja de entrada.",
+    "unavailable": "El acceso a la cuenta no está disponible temporalmente. Inténtalo más tarde.",
+    "generic": "No se pudo completar la solicitud. Revisa tus datos e inténtalo de nuevo.",
+    "credentials": "Correo o contraseña incorrectos.",
+    "weak": "La contraseña no cumple los requisitos de seguridad. Usa una más segura.",
+    "rate": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+    "emailRate": "Se ha alcanzado el límite temporal de envío de correos. Espera a que se restablezca antes de intentar registrarte de nuevo."
+  },
+  "maintenance": {
+    "eyebrow": "En mantenimiento",
+    "title": "Volvemos enseguida.",
+    "text": "Estamos preparando novedades en la tienda. El sitio volverá pronto — gracias por la paciencia.",
+    "login": "Entrar como administrador",
+    "notAdmin": "Esta cuenta no tiene acceso durante el mantenimiento.",
+    "banner": "Modo mantenimiento activado: solo los administradores ven el sitio.",
+    "bannerLink": "Abrir panel",
+    "bannerLabel": "Aviso de mantenimiento"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "account": {
+    "login": "Sign in",
+    "signup": "Create account",
+    "account": "My account",
+    "close": "Close",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "confirm": "Confirm password",
+    "invitation": "Don’t have an account?",
+    "register": "Sign up",
+    "back": "I already have an account",
+    "wait": "Please wait…",
+    "logout": "Sign out",
+    "admin": "Admin dashboard",
+    "mismatch": "Passwords do not match.",
+    "nameRequired": "Enter your name.",
+    "hint": "Use at least 8 characters.",
+    "signupDisabled": "New account registration is temporarily disabled.",
+    "invalidEmail": "Enter a valid email address.",
+    "serverError": "The service could not complete registration. Please try again later.",
+    "checkEmail": "If registration can be completed, you will receive a confirmation email. Check your inbox.",
+    "unavailable": "Account access is temporarily unavailable. Please try again later.",
+    "generic": "Unable to complete the request. Check your details and try again.",
+    "credentials": "Incorrect email or password.",
+    "weak": "This password does not meet the security requirements. Use a stronger password.",
+    "rate": "Too many attempts. Wait a few minutes and try again.",
+    "emailRate": "The temporary email sending limit has been reached. Wait for the service limit to reset before trying to sign up again."
+  },
+  "maintenance": {
+    "eyebrow": "Under maintenance",
+    "title": "Back in a moment.",
+    "text": "We are getting something new ready in the shop. The site will be back soon — thank you for your patience.",
+    "login": "Sign in as administrator",
+    "notAdmin": "This account has no access during maintenance.",
+    "banner": "Maintenance mode is on: only administrators can see the site.",
+    "bannerLink": "Open dashboard",
+    "bannerLabel": "Maintenance notice"
+  }
+}
