@@ -1,5 +1,4 @@
 // Browser-only port of legacy/public/assets/js/model-optimize.js.
-// Fixed remote versions retained by request; no npm dependency was added.
 import { fitWithin } from '@/lib/products/format';
 import { inspectGlb, MAX_MODEL_BYTES, MODEL_TYPE, type GlbInfo } from './glb';
 export { inspectGlb, MAX_MODEL_BYTES, MODEL_TYPE };
@@ -53,15 +52,15 @@ type Libraries = {
   functions: { listTextureSlots(texture: Texture): unknown; dedup(): unknown; prune(): unknown; weld(): unknown; quantize(): unknown };
 };
 let libraries: Promise<Libraries> | null = null;
+// The three packages are installed from npm (exact versions in package.json) and split into
+// their own chunk, fetched only when an administrator picks a model.
 function loadLibraries() {
-  const version = '4.5.1';
-  const urls = [
-    `https://esm.sh/@gltf-transform/core@${version}`,
-    `https://esm.sh/@gltf-transform/extensions@${version}?deps=@gltf-transform/core@${version}`,
-    `https://esm.sh/@gltf-transform/functions@${version}?deps=@gltf-transform/core@${version},@gltf-transform/extensions@${version}`,
-  ];
-  libraries ??= Promise.all(urls.map((url) => import(/* webpackIgnore: true */ url)))
-    .then(([core, extensions, functions]) => ({ core, extensions, functions }) as Libraries)
+  libraries ??= Promise.all([
+    import('@gltf-transform/core'),
+    import('@gltf-transform/extensions'),
+    import('@gltf-transform/functions'),
+  ])
+    .then(([core, extensions, functions]) => ({ core, extensions, functions }) as unknown as Libraries)
     .catch((error: unknown) => { libraries = null; throw error; });
   return libraries;
 }
