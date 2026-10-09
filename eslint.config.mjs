@@ -12,8 +12,6 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // The previous site, kept only as a reference during the migration.
-    "legacy/**",
     // Local worktrees of other branches and tool state.
     ".claude/**",
     ".maestri/**",

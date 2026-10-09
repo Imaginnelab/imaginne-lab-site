@@ -1,6 +1,6 @@
 # Imaginne Lab — instruções de desenvolvimento
 
-O site é uma aplicação Next.js e a produção sai da `main` (a Vercel publica a cada push). A versão estática anterior foi substituída em 09/10/2026; a pasta `legacy/` é só uma cópia de referência dela, fora do build, e aguarda remoção: não a edite.
+O site é uma aplicação Next.js e a produção sai da `main` (a Vercel publica a cada push). A versão estática anterior foi substituída em 09/10/2026 e existe só no histórico do Git.
 
 ## Stack
 
@@ -15,7 +15,7 @@ Next.js 16 (App Router, `src/`), React 19, TypeScript estrito, Supabase com `@su
 
 ## Comandos
 
-`npm run dev` (Next), `npm run build`, `npm run typecheck`, `npm run lint`, `npm test` (Vitest), `npm run test:e2e` (Playwright). O site antigo: `npm run legacy:dev`.
+`npm run dev` (Next), `npm run build`, `npm run typecheck`, `npm run lint`, `npm test` (Vitest), `npm run test:e2e` (Playwright).
 
 ## Skills e referências obrigatórias
 

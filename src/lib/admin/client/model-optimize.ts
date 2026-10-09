@@ -1,4 +1,4 @@
-// Browser-only port of legacy/public/assets/js/model-optimize.js.
+// Browser-only port of the model optimiser of the previous static site.
 import { fitWithin } from '@/lib/products/format';
 import { inspectGlb, MAX_MODEL_BYTES, MODEL_TYPE, type GlbInfo } from './glb';
 export { inspectGlb, MAX_MODEL_BYTES, MODEL_TYPE };

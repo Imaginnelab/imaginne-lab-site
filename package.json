@@ -10,9 +10,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test",
-    "legacy:dev": "node legacy/scripts/dev-server.js 3000",
-    "legacy:test": "node --test legacy/tests"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@gltf-transform/core": "4.5.1",
