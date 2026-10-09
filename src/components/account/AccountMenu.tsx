@@ -119,9 +119,38 @@ export function AccountMenu({ user, t, locale, adminHref, variant = 'nav', label
         showToast(t[result.message ?? 'checkEmail']);
         field('password')?.focus();
       } else {
-        dialog.current?.close();
+        // Signed in: go straight from the form to the page as that user. The button keeps its
+        // spinner and the brand animation covers the reload, so the screen behind the dialog
+        // (the maintenance notice, for instance) is never shown again in between.
+        await enterSignedIn();
       }
     });
+  }
+
+  function enterSignedIn(): Promise<never> {
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let overlay = document.getElementById('page-transition');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'page-transition';
+      overlay.className = 'page-transition';
+      overlay.setAttribute('aria-hidden', 'true');
+      const text = document.createElement('span');
+      text.className = 'page-transition-text';
+      text.textContent = 'Imaginne Lab';
+      overlay.append(text);
+      document.body.append(overlay);
+    }
+    if (!still) {
+      overlay.classList.remove('is-fading');
+      overlay.classList.add('is-visible', 'is-writing');
+      try { sessionStorage.setItem('imaginne-transition', 'out'); } catch { /* The reload still works. */ }
+      // A modal dialog sits above everything, so it leaves once the animation covers the page.
+      dialog.current?.close();
+    }
+    setTimeout(() => window.location.reload(), still ? 0 : 900);
+    // Never resolves: the form stays busy until the new page replaces this one.
+    return new Promise<never>(() => {});
   }
 
   function leave() {

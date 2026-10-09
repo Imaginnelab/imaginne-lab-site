@@ -12,6 +12,10 @@ setup('sign in as the test administrator', async ({ page }) => {
   await dialog.locator('input[name="email"]').fill(process.env.E2E_ADMIN_EMAIL ?? '');
   await dialog.locator('input[name="password"]').fill(process.env.E2E_ADMIN_PASSWORD ?? '');
   await dialog.locator('button[type="submit"]').click();
+  // From the form straight to the site: the brand animation covers the reload, and the
+  // maintenance notice behind the dialog is never left showing on its own.
+  await expect(page.locator('#page-transition.is-visible')).toBeVisible({ timeout: 20_000 });
+  await expect(dialog).toBeHidden();
   // Signed in: the header shows the avatar, and an administrator sees the site itself.
   await expect(page.locator('[data-auth-open].is-authenticated')).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('main section').first()).toBeVisible();
