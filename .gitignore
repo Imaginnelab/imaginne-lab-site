@@ -12,3 +12,14 @@ docs/maestri/
 # Worktrees e configuração local do Claude Code
 .claude/worktrees/
 .claude/settings.local.json
+
+# Next.js
+/.next/
+/out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Tests
+/test-results/
+/playwright-report/
+/coverage/

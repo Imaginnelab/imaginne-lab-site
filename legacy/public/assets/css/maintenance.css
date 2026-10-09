@@ -1,0 +1,96 @@
+/* Maintenance curtain (see assets/js/maintenance.js). Nothing here hides the site on its own:
+   every rule depends on an attribute that only the script sets, so the site shows without JS. */
+
+/* While the state is unknown, and while the curtain is up, the page behind is not shown. */
+html[data-maintenance="pending"] body,
+html[data-maintenance="curtain"] body { visibility: hidden; }
+html[data-maintenance="curtain"] { overflow: hidden; }
+html[data-maintenance="curtain"] .maintenance-curtain,
+html[data-maintenance="curtain"] .auth-dialog { visibility: visible; }
+
+.maintenance-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  padding: 2rem var(--gutter, 1.25rem);
+  overflow-y: auto;
+  background: var(--bg);
+  color: var(--ink);
+  outline: none;
+}
+.maintenance-card {
+  width: min(100%, 30rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.maintenance-logo { width: 72px; height: 72px; border-radius: 50%; margin-bottom: 1.75rem; }
+.maintenance-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.maintenance-title {
+  margin: 0.9rem 0 0;
+  font-size: clamp(2.2rem, 7vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.maintenance-text {
+  margin-top: 1rem;
+  font-size: clamp(1rem, 2.6vw, 1.12rem);
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+.maintenance-notice { margin-top: 1.25rem; font-size: 0.92rem; color: #b3261e; }
+.maintenance-notice:empty { display: none; }
+[data-theme="dark"] .maintenance-notice { color: #ffb4ab; }
+.maintenance-login {
+  margin-top: 2.5rem;
+  min-height: 44px;
+  padding: 0.5rem 0.9rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-faint);
+  font: inherit;
+  font-size: 0.88rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.maintenance-login:hover { color: var(--ink); }
+.maintenance-login:focus-visible,
+.maintenance-banner a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* Thin fixed strip for administrators browsing the site while it is closed to the public. */
+.maintenance-banner {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 1rem;
+  flex-wrap: wrap;
+  padding: 0.5rem var(--gutter, 1.25rem);
+  background: var(--forest-deep);
+  color: #FBF9F2;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.14);
+}
+.maintenance-banner a { color: var(--amber); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+/* The script measures the strip, so the footer is never left underneath it. */
+html[data-maintenance="admin"] body { padding-bottom: var(--maintenance-banner, 2.75rem); }
