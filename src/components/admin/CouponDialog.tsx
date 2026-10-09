@@ -65,7 +65,7 @@ export function CouponDialog({ source, copy, close, done }: {
       <p className="field-hint" id={id + '-hint'}>{field.hint}</p><p className="field-error" id={id + '-error'}>{errors[field.key]}</p>
     </div>;
   };
-  return <Dialog id="coupon-dialog" title={title} close={close} busy={pending} size="admin-dialog-medium">
+  return <Dialog id="coupon-dialog" title={title} close={close} busy={pending} size="admin-dialog-medium" initialFocus="#coupon-code">
     <form ref={form} id="coupon-form" className="product-form" noValidate onSubmit={(event) => {
       event.preventDefault(); if (lock.current || uncertain) return;
       const input = validate(); if (!input) return; lock.current = true;

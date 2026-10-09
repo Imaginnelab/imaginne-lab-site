@@ -7,8 +7,13 @@ import { AdminTabs } from '@/components/admin/AdminTabs';
 import { ProductsPanel } from '@/components/admin/ProductsPanel';
 import { CouponsPanel } from '@/components/admin/CouponsPanel';
 import { MaintenanceCard } from '@/components/admin/MaintenanceCard';
+import { AdminSessionRefresh } from '@/components/admin/AdminSessionRefresh';
 
 type Props = { params: Promise<{ locale: string }>; searchParams: Promise<{ lang?: string | string[] }> };
+
+// The instant of this request, read as data: the coupon states of the first paint are computed
+// from it on both sides, so server and browser agree.
+const requestTime = async () => Date.now();
 
 export default async function AdminPage({ params, searchParams }: Props) {
   const [{ locale }, { lang }] = await Promise.all([params, searchParams]);
@@ -18,13 +23,14 @@ export default async function AdminPage({ params, searchParams }: Props) {
   // The layout already refuses visitors; a page must not depend on that alone.
   const user = await getAdmin();
   if (!user) redirect(localePath(locale));
-  const [t, products, coupons, maintenance, star] = await Promise.all([
+  const [t, products, coupons, maintenance, star, now] = await Promise.all([
     getAdminDictionary(locale), listProducts().catch(() => null), listCoupons().catch(() => null),
-    maintenanceState().catch(() => null), mostViewedProductId().catch(() => null),
+    maintenanceState().catch(() => null), mostViewedProductId().catch(() => null), requestTime(),
   ]);
   const m = t.interface;
   return (
     <>
+      <AdminSessionRefresh />
       <header className="nav"><div className="wrap">
         <a className="brand" data-home="" href={localePath(locale)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -50,7 +56,7 @@ export default async function AdminPage({ params, searchParams }: Props) {
           <AdminTabs locale={locale} copy={{ tabs: m.tabs, tabProducts: m.tabProducts, tabCoupons: m.tabCoupons, tabCount: m.tabCount }}
             initialCounts={{ products: products?.total ?? null, coupons: coupons?.total ?? null }}
             products={<ProductsPanel locale={locale} copy={t.products} initial={products} mostViewedId={star} />}
-            coupons={<CouponsPanel locale={locale} copy={t.coupons} initial={coupons} initialNow={Date.now()} />} />
+            coupons={<CouponsPanel locale={locale} copy={t.coupons} initial={coupons} initialNow={now} />} />
         </section>
       </main>
     </>

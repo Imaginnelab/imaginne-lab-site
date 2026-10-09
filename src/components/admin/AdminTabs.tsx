@@ -18,7 +18,10 @@ export function AdminTabs({ copy, locale, initialCounts, products, coupons }: {
   const transition = useRef<{ skipTransition(): void; ready: Promise<void>; finished: Promise<void> } | null>(null);
   const publish = useCallback((name: PanelName, count: number) => setCounts((before) => ({ ...before, [name]: count })), []);
   const productCount = initialCounts.products, couponCount = initialCounts.coupons;
-  useEffect(() => { setCounts({ products: productCount, coupons: couponCount }); }, [productCount, couponCount]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setCounts({ products: productCount, coupons: couponCount }));
+    return () => cancelAnimationFrame(frame);
+  }, [productCount, couponCount]);
   function select(name: PanelName, focus = false, remember = true) {
     const previous = current.current;
     if (previous === name) { if (focus) buttons.current[name]?.focus(); return; }
@@ -51,8 +54,8 @@ export function AdminTabs({ copy, locale, initialCounts, products, coupons }: {
       if (element && button) { element.style.setProperty('--tab-x', button.offsetLeft + 'px'); element.style.setProperty('--tab-w', button.offsetWidth + 'px'); }
     };
     const initial = location.hash === '#coupons' ? 'coupons' : 'products';
-    current.current = initial; setSelected(initial);
-    let frame = requestAnimationFrame(() => { place(); element?.classList.add('is-ready'); });
+    current.current = initial;
+    let frame = requestAnimationFrame(() => { setSelected(initial); place(); element?.classList.add('is-ready'); });
     const changed = () => { const name = location.hash.slice(1); if (name === 'products' || name === 'coupons') selectRef.current(name, false, false); };
     const observer = window.ResizeObserver ? new ResizeObserver(place) : null;
     if (element) observer?.observe(element);

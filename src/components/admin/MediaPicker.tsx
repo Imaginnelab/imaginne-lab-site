@@ -32,13 +32,12 @@ export function MediaPicker({ locale, copy, photos, setPhotos, model, setModel, 
     const used = new Set(photos.filter((item) => item.kind === 'new').map((item) => item.url));
     owned.current.forEach((url) => { if (!used.has(url)) { URL.revokeObjectURL(url); owned.current.delete(url); } });
   }, [photos]);
-  useEffect(() => { processing(photoBusy || modelBusy); }, [photoBusy, modelBusy, processing]);
   async function addPhotos(files: File[]) {
-    if (photoBusy || disabled) return;
+    if (photoBusy || modelBusy || disabled) return;
     error('photo', '');
     const room = 6 - photos.length;
     if (files.length > room) error('photo', copy.photoMax);
-    setPhotoBusy(true);
+    processing(true); setPhotoBusy(true);
     try {
       for (const file of files.slice(0, room)) {
         if (!isPhotoType(file.type)) { error('photo', fill(copy.photoType, { name: file.name })); continue; }
@@ -46,7 +45,7 @@ export function MediaPicker({ locale, copy, photos, setPhotos, model, setModel, 
         if (!alive.current) return;
         const url = URL.createObjectURL(file), id = crypto.randomUUID();
         owned.current.add(url);
-        setPhotos((items) => [...items, { id, kind: 'new', name: file.name, url, optimizing: true }]);
+        setPhotos((items) => [...items, { id, kind: 'new', name: file.name, url, sourceBytes: file.size, optimizing: true }]);
         const blob = await preparePhoto(file);
         if (!alive.current) return;
         if (!blob) {
@@ -54,28 +53,29 @@ export function MediaPicker({ locale, copy, photos, setPhotos, model, setModel, 
           error('photo', fill(copy.photoSize, { name: file.name }));
         } else setPhotos((items) => items.map((item) => item.id === id ? { ...item, blob, optimizing: false } : item));
       }
-    } finally { if (alive.current) setPhotoBusy(false); }
+    } finally { if (alive.current) { setPhotoBusy(false); processing(false); } }
   }
   async function chooseModel(file: File, maxTexture = quality) {
-    if (disabled) return;
+    if (disabled || modelBusy || photoBusy) return;
     const stamp = ++modelVersion.current;
     error('model', '');
     if (!/\.glb$/i.test(file.name)) { error('model', fill(copy.modelExt, { name: file.name })); return; }
     if (!file.size || file.size > MAX_MODEL_BYTES) { error('model', fill(copy.modelSize, { name: file.name })); return; }
-    setModelBusy(true);
+    processing(true); setModelBusy(true);
     try {
       const info = inspectGlb(new Uint8Array(await file.arrayBuffer()));
       if (!alive.current || stamp !== modelVersion.current) return;
       if (!info.ok) { error('model', fill(info.external ? copy.modelExternal : copy.modelInvalid, { name: file.name })); return; }
-      const { optimizeModel } = await import('@/lib/admin/client/model-optimize');
-      const optimized = await optimizeModel(file, { maxTexture });
+      setModel({ kind: 'new', name: file.name, bytes: file.size, blob: file.slice(0, file.size, MODEL_TYPE), original: file });
+      const optimizer = await import('@/lib/admin/client/model-optimize').catch(() => null);
+      const optimized = optimizer ? await optimizer.optimizeModel(file, { maxTexture }).catch(() => null) : null;
       if (!alive.current || stamp !== modelVersion.current) return;
       // Original fallback is safe only because inspectGlb succeeded above.
       const blob = optimized?.blob ?? file.slice(0, file.size, MODEL_TYPE);
       if (!inspectGlb(new Uint8Array(await blob.arrayBuffer())).ok) { error('model', fill(copy.modelInvalid, { name: file.name })); return; }
       if (alive.current && stamp === modelVersion.current) setModel({ kind: 'new', name: file.name, bytes: blob.size, blob, original: file });
     } catch { if (alive.current && stamp === modelVersion.current) error('model', fill(copy.modelInvalid, { name: file.name })); }
-    finally { if (alive.current && stamp === modelVersion.current) setModelBusy(false); }
+    finally { if (alive.current && stamp === modelVersion.current) { setModelBusy(false); processing(false); } }
   }
   const lock = disabled || photoBusy || modelBusy;
   function reorder(id: string, target: number) {
@@ -93,7 +93,7 @@ export function MediaPicker({ locale, copy, photos, setPhotos, model, setModel, 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="photo-thumb" src={item.url} alt={fill(copy.photoThumbAlt, { n: index + 1 })} width={56} height={56} decoding="async" />
           <div className="photo-info"><p className="photo-name">{item.kind === 'saved' ? copy.savedPhoto : item.kind === 'copy' ? copy.copiedPhoto : item.name}</p>
-            <p className="photo-meta">{item.optimizing ? copy.optimizing : item.blob ? formatFileSize(item.blob.size, locale) : ''}</p></div>
+            <p className="photo-meta">{item.optimizing ? copy.optimizing : item.blob ? (item.sourceBytes && item.blob.size < item.sourceBytes ? formatFileSize(item.sourceBytes, locale) + ' → ' : '') + formatFileSize(item.blob.size, locale) : ''}</p></div>
           <div className="photo-actions">
             <button className="photo-btn" type="button" disabled={lock || !index} aria-label={fill(copy.makeCoverLabel, { n: index + 1 })} onClick={() => reorder(item.id, 0)}>{index ? copy.makeCover : copy.cover}</button>
             <button className="photo-btn photo-btn-icon" type="button" disabled={lock || !index} aria-label={fill(copy.moveUpLabel, { n: index + 1 })} onClick={() => reorder(item.id, index - 1)}><Icon kind="up" /></button>
@@ -113,7 +113,7 @@ export function MediaPicker({ locale, copy, photos, setPhotos, model, setModel, 
       {model ? <div className="photo-item model-item" id="product-model-item">
         {!modelBusy ? <ModelPreview item={model} label={copy.modelAlt} /> : null}
         <div className="photo-info"><p className="photo-name">{model.kind === 'saved' ? copy.savedModel : model.kind === 'copy' ? copy.copiedModel : model.name}</p>
-          <p className="photo-meta">{modelBusy ? copy.optimizingModel : formatFileSize(model.bytes, locale)}</p></div>
+          <p className="photo-meta">{model.kind === 'new' && model.original ? formatFileSize(model.original.size, locale) + (modelBusy ? ' · ' + copy.optimizingModel : model.bytes && model.bytes < model.original.size ? ' → ' + formatFileSize(model.bytes, locale) : '') : ''}</p></div>
         <div className="photo-actions"><button className="photo-btn photo-btn-icon photo-btn-remove" type="button" disabled={lock} aria-label={copy.removeModel}
           onClick={() => { modelVersion.current++; setModel(null); error('model', ''); }}><Icon kind="remove" /></button></div>
       </div> : null}
@@ -122,7 +122,7 @@ export function MediaPicker({ locale, copy, photos, setPhotos, model, setModel, 
         onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void chooseModel(file); }} />
       <label className="btn btn-ghost btn-sm file-button" htmlFor="product-model" aria-busy={modelBusy ? 'true' : undefined}><Icon kind="model" /><span>{model ? copy.replaceModel : copy.addModel}</span></label>
       <p className="field-hint" id="product-model-hint">{copy.modelHint}</p>
-      <p className="field-hint model-warning" role="status">{model?.bytes && model.bytes > 5 * 1024 * 1024 && !modelBusy ? copy.modelHeavy : ''}</p>
+      <p className="field-hint model-warning" role="status">{model?.kind === 'new' && model.bytes && model.bytes > 5 * 1024 * 1024 && !modelBusy ? copy.modelHeavy : ''}</p>
       <p className="field-error" id="product-model-error">{errors.model}</p>
       <div className="model-quality"><label htmlFor="product-model-quality">{copy.textureQuality}</label>
         <select id="product-model-quality" disabled={lock} value={quality} onChange={(event) => { const next = Number(event.target.value); setQuality(next); if (model?.original) void chooseModel(model.original, next); }}>
@@ -131,4 +131,3 @@ export function MediaPicker({ locale, copy, photos, setPhotos, model, setModel, 
     </div>
   </div>;
 }
-

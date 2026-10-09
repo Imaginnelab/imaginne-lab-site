@@ -40,7 +40,7 @@ export function CouponsPanel({ locale, copy, initial, initialNow }: {
       </div></div>
     <p className={'products-notice' + (notice.error ? ' is-error' : '')} role="status" aria-live="polite">{notice.text}</p>
     <ListFeedback active={active} size={list.rows.length} term={list.term} loading={list.loading} failed={list.failed} hasMore={list.hasMore} more={list.more} retry={list.retry} copy={copy}>
-      <ul className="products-list" id="coupons-list" aria-busy={list.loading ? 'true' : undefined}>
+      <ul className="products-list" id="coupons-list" tabIndex={-1} aria-busy={list.loading ? 'true' : undefined}>
         {list.rows.map((row) => {
           const period = row.starts_at && row.expires_at ? fill(copy.periodBoth, { start: dates(row.starts_at), end: dates(row.expires_at) }) :
             row.starts_at ? fill(copy.periodFrom, { start: dates(row.starts_at) }) : row.expires_at ? fill(copy.periodUntil, { end: dates(row.expires_at) }) : copy.periodNone;
@@ -71,6 +71,6 @@ export function CouponsPanel({ locale, copy, initial, initialNow }: {
     {editing ? <CouponDialog source={editing.row} copy={copy} close={() => setEditing(null)} done={(message) => { setEditing(null); setNotice({ text: message, error: false }); router.refresh(); void list.reload(); }} /> : null}
     {deleting ? <ConfirmDialog id="coupon-delete" title={copy.deleteTitle} text={fill(copy.deleteText, { code: deleting.code })} cancel={copy.cancel} confirm={copy.delete} waiting={copy.deleting}
       action={() => deleteCoupon(deleting.id)} message={(result) => failureMessage(result.code, copy, copy.deleteError)} close={() => setDeleting(null)}
-      done={() => { list.remove(deleting.id); onCount(Math.max(0, list.total - 1)); setDeleting(null); setNotice({ text: copy.deleted, error: false }); router.refresh(); void list.reload(); }} /> : null}
+      done={() => { list.remove(deleting.id); if (!list.term) onCount(Math.max(0, list.total - 1)); setDeleting(null); setNotice({ text: copy.deleted, error: false }); router.refresh(); void list.reload(); }} /> : null}
   </>;
 }

@@ -42,8 +42,8 @@ export function inspectGlb(bytes: Uint8Array): GlbInfo {
         if ('uri' in resource && (typeof resource.uri !== 'string' || !/^data:/i.test(resource.uri))) return { ok: false, external: true };
       }
     }
-    const count = (key: string) => Array.isArray(data[key]) ? data[key].length : 0;
-    const list = (key: string): string[] => Array.isArray(data[key]) ? data[key].filter((item: unknown): item is string => typeof item === 'string') : [];
+    const count = (key: string) => { const value = data[key]; return Array.isArray(value) ? value.length : 0; };
+    const list = (key: string): string[] => { const value = data[key]; return Array.isArray(value) ? value.filter((item: unknown): item is string => typeof item === 'string') : []; };
     const meshes: unknown[] = Array.isArray(data.meshes) ? data.meshes : [];
     return {
       ok: true, bytes: bytes.byteLength, meshes: count('meshes'), materials: count('materials'),

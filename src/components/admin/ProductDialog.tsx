@@ -38,8 +38,10 @@ export function ProductDialog({ source, duplicate, locale, copy, close, done }: 
   const [uncertain, setUncertain] = useState(false);
   const [pending, start] = useTransition();
   const lock = useRef(false);
+  const mediaLock = useRef(false);
   const form = useRef<HTMLFormElement>(null);
   const setMediaError = useCallback((key: string, message: string) => setErrors((current) => ({ ...current, [key]: message })), []);
+  const processing = useCallback((busy: boolean) => { mediaLock.current = busy; setMediaBusy(busy); }, []);
   const title = duplicate ? copy.copyTitle : source ? copy.editTitle : copy.newTitle;
   function validate(): Omit<ProductInput, 'image_path' | 'extra_image_paths' | 'model_path' | 'model_bytes'> | null {
     const invalid: Record<string, string> = {};
@@ -65,10 +67,10 @@ export function ProductDialog({ source, duplicate, locale, copy, close, done }: 
       description_pt: translated.description_pt, description_en: translated.description_en, description_es: translated.description_es,
       price_cad_cents: cents, sort_order: order, is_active: active };
   }
-  return <Dialog id="product-dialog" title={title} close={close} busy={pending}>
+  return <Dialog id="product-dialog" title={title} close={close} busy={pending} initialFocus="#product-name-pt">
     <form ref={form} id="product-form" className="product-form" noValidate onSubmit={(event) => {
       event.preventDefault();
-      if (lock.current || mediaBusy || uncertain) return;
+      if (lock.current || mediaLock.current || uncertain) return;
       const input = validate(); if (!input) return;
       lock.current = true;
       start(async () => {
@@ -107,7 +109,7 @@ export function ProductDialog({ source, duplicate, locale, copy, close, done }: 
       </fieldset>)}</div>
       <div className="product-details">
         <MediaPicker locale={locale} copy={copy} photos={photos} setPhotos={setPhotos} model={model} setModel={setModel}
-          disabled={pending} processing={setMediaBusy} error={setMediaError} errors={errors} />
+          disabled={pending} processing={processing} error={setMediaError} errors={errors} />
         <div className="product-meta">
           {(['price', 'sort_order'] as const).map((key) => {
             const id = key === 'price' ? 'product-price' : 'product-order';

@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import { retryWithFocus } from '@/components/catalogue/retry-focus';
 type Copy = { loading: string; loadingMore: string; loadError: string; moreError: string; empty: string; noResults: string; retry: string };
 export function ListFeedback({ active, size, term, loading, failed, hasMore, more, retry, copy, children }: {
   active: boolean; size: number; term: string; loading: boolean; failed: boolean; hasMore: boolean;
@@ -19,19 +20,20 @@ export function ListFeedback({ active, size, term, loading, failed, hasMore, mor
     return () => { cancelAnimationFrame(frame); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', schedule); };
   }, [active, hasMore, failed, loading, more]);
   const mode = loading ? 'loading' : failed ? 'error' : hasMore ? 'ready' : 'end';
+  const retryClick = (button: HTMLButtonElement) => retryWithFocus(async () => { await retry(); return true; }, button,
+    () => button.closest('section')?.querySelector<HTMLUListElement>('.products-list') ?? null);
   return <>
     <div className="products-state" hidden={size > 0}>
       <p role="status">{loading ? copy.loading : failed ? copy.loadError : term ? copy.noResults.replace('{term}', term) : copy.empty}</p>
       <button className="btn btn-ghost btn-sm" type="button" hidden={!failed} disabled={loading}
-        aria-busy={loading ? 'true' : undefined} onClick={() => { void retry(); }}>{copy.retry}</button>
+        aria-busy={loading ? 'true' : undefined} onClick={(event) => { void retryClick(event.currentTarget); }}>{copy.retry}</button>
     </div>
     {children}
     <div ref={sentinel} className="list-more" data-mode={mode}>
       <span className="list-spinner" aria-hidden="true" />
       <span className="list-more-text" role="status">{size ? loading ? copy.loadingMore : failed ? copy.moreError : '' : ''}</span>
       <button className="btn btn-ghost btn-sm" type="button" hidden={!failed || !size} disabled={loading}
-        aria-busy={loading ? 'true' : undefined} onClick={() => { void retry(); }}>{copy.retry}</button>
+        aria-busy={loading ? 'true' : undefined} onClick={(event) => { void retryClick(event.currentTarget); }}>{copy.retry}</button>
     </div>
   </>;
 }
-

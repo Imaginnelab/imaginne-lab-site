@@ -7,10 +7,9 @@ export function useCouponClock(initialNow: number) {
   const [now, setNow] = useState(initialNow);
   const timeZone = useSyncExternalStore(subscribe, zone, serverZone);
   useEffect(() => {
-    setNow(Date.now());
+    const refresh = setTimeout(() => setNow(Date.now()), 0);
     const timer = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(timer);
+    return () => { clearTimeout(refresh); clearInterval(timer); };
   }, []);
   return { now, timeZone };
 }
-

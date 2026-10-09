@@ -4,7 +4,7 @@ import { imageUrl, modelUrl } from '@/lib/products/format';
 import { inspectGlb, MAX_MODEL_BYTES, MODEL_TYPE } from './glb';
 import { isPhotoType, MAX_PHOTO_BYTES, PHOTO_TYPES } from './photos';
 export type Uploaded = { bucket: 'product-images' | 'product-models'; path: string };
-export type PhotoItem = { id: string; kind: 'saved' | 'copy' | 'new'; path?: string; name: string; url: string; blob?: Blob; optimizing?: boolean };
+export type PhotoItem = { id: string; kind: 'saved' | 'copy' | 'new'; path?: string; name: string; url: string; blob?: Blob; sourceBytes?: number; optimizing?: boolean };
 export type ModelItem = { kind: 'saved' | 'copy' | 'new'; path?: string; name: string; bytes: number | null; blob?: Blob; original?: File };
 export async function fetchStored(url: string, max: number, signal?: AbortSignal): Promise<Blob> {
   if (!url) throw Error('Invalid storage path');
@@ -38,9 +38,10 @@ export async function uploadPhotos(items: PhotoItem[], uploaded: Uploaded[]): Pr
     const blob = item.blob ?? await fetchStored(imageUrl(SUPABASE_URL, item.path), MAX_PHOTO_BYTES);
     if (!isPhotoType(blob.type) || blob.size > MAX_PHOTO_BYTES) throw Error('Invalid photo');
     const path = crypto.randomUUID() + '.' + PHOTO_TYPES[blob.type];
+    uploaded.push({ bucket: 'product-images', path });
     const { error } = await client.storage.from('product-images').upload(path, blob, { contentType: blob.type, upsert: false });
     if (error) throw Error('Photo upload failed');
-    uploaded.push({ bucket: 'product-images', path }); paths.push(path);
+    paths.push(path);
   }
   return paths;
 }
@@ -49,15 +50,20 @@ export async function uploadModel(item: ModelItem | null, uploaded: Uploaded[]):
   if (item.kind === 'saved' && item.path) return { path: item.path, bytes: item.bytes };
   const blob = await validatedModel(item);
   const path = crypto.randomUUID() + '.glb';
+  uploaded.push({ bucket: 'product-models', path });
   const { error } = await createClient().storage.from('product-models').upload(path, blob, { contentType: MODEL_TYPE, upsert: false });
   if (error) throw Error('Model upload failed');
-  uploaded.push({ bucket: 'product-models', path });
   return { path, bytes: blob.size };
 }
 export async function discardUploads(uploaded: Uploaded[]) {
-  const client = createClient();
-  await Promise.allSettled(['product-images', 'product-models'].map((bucket) => {
-    const paths = uploaded.filter((item) => item.bucket === bucket).map((item) => item.path);
-    return paths.length ? client.storage.from(bucket).remove(paths) : Promise.resolve();
-  }));
+  try {
+    const client = createClient();
+    const results = await Promise.allSettled(['product-images', 'product-models'].map(async (bucket) => {
+      const paths = uploaded.filter((item) => item.bucket === bucket).map((item) => item.path);
+      if (!paths.length) return true;
+      const { error } = await client.storage.from(bucket).remove(paths);
+      return !error;
+    }));
+    return results.every((result) => result.status === 'fulfilled' && result.value);
+  } catch { return false; }
 }

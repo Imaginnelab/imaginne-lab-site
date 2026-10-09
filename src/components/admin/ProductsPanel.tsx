@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type { AdminDictionary } from '@/i18n/admin-dictionaries';
@@ -22,6 +22,10 @@ export function ProductsPanel({ locale, copy, initial, mostViewedId }: {
 }) {
   const { active, onCount } = usePanel('products');
   const [star, setStar] = useState(mostViewedId);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setStar(mostViewedId));
+    return () => cancelAnimationFrame(frame);
+  }, [mostViewedId]);
   const reader = useCallback(async (input: Parameters<typeof readProducts>[0]) => {
     const result = await readProducts(input);
     if (result.ok) { if (!input.search) onCount(result.page.total); if ('mostViewedId' in result) setStar(result.mostViewedId ?? null); }
@@ -44,7 +48,7 @@ export function ProductsPanel({ locale, copy, initial, mostViewedId }: {
       </div></div>
     <p className={'products-notice' + (notice.error ? ' is-error' : '')} role="status" aria-live="polite">{notice.text}</p>
     <ListFeedback active={active} size={list.rows.length} term={list.term} loading={list.loading} failed={list.failed} hasMore={list.hasMore} more={list.more} retry={list.retry} copy={copy}>
-      <ul className="products-list" id="products-list" aria-busy={list.loading ? 'true' : undefined}>
+      <ul className="products-list" id="products-list" tabIndex={-1} aria-busy={list.loading ? 'true' : undefined}>
         {list.rows.map((row) => {
           const name = localized(row, 'name', locale), count = viewCount(row), photos = imagePaths(row).length, waiting = pending && busyId === row.id;
           return <li className={'product-row' + (!row.is_active ? ' is-inactive' : '')} key={row.id}>
@@ -82,6 +86,6 @@ export function ProductsPanel({ locale, copy, initial, mostViewedId }: {
     {editing ? <ProductDialog source={editing.row} duplicate={editing.duplicate} locale={locale} copy={copy} close={() => setEditing(null)} done={saved} /> : null}
     {deleting ? <ConfirmDialog id="product-delete" title={copy.deleteTitle} text={fill(copy.deleteText, { name: localized(deleting, 'name', locale) })} cancel={copy.cancel} confirm={copy.delete} waiting={copy.deleting}
       action={() => deleteProduct(deleting.id)} message={(result) => failureMessage(result.code, copy, copy.deleteError)} close={() => setDeleting(null)}
-      done={() => { list.remove(deleting.id); onCount(Math.max(0, list.total - 1)); setDeleting(null); setNotice({ text: copy.deleted, error: false }); router.refresh(); void list.reload(); }} /> : null}
+      done={() => { list.remove(deleting.id); if (!list.term) onCount(Math.max(0, list.total - 1)); setDeleting(null); setNotice({ text: copy.deleted, error: false }); router.refresh(); void list.reload(); }} /> : null}
   </>;
 }
