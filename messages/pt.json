@@ -252,5 +252,63 @@
     "heading": "Essa página se perdeu por aí.",
     "lede": "A página que você procura não existe, ou o link está quebrado. Vamos te levar de volta.",
     "cta": "Voltar para o início"
+  },
+  "store": {
+    "card": {
+      "loadingImage": "Carregando imagem…",
+      "waitingModel": "O 3D será carregado em instantes…",
+      "openModel": "Ver em 3D",
+      "loadingModel": "Carregando 3D…",
+      "queuedModel": "Aguardando para carregar 3D…",
+      "preparingModel": "Preparando 3D…",
+      "readyModel": "3D pronto",
+      "errorModel": "Não foi possível carregar o 3D. Tente de novo.",
+      "request": "Sob consulta",
+      "order": "Fazer Pedido",
+      "mostViewed": "Mais visto",
+      "photos": "Fotos do produto",
+      "photo": "Foto",
+      "previousPhoto": "Foto anterior",
+      "nextPhoto": "Próxima foto",
+      "photoHelp": "Use as setas esquerda e direita, Home ou End, ou toque nos botões de foto. Deslize na horizontal para navegar pelos produtos.",
+      "views": "Vistas do produto",
+      "view": "Vista",
+      "previousView": "Vista anterior",
+      "nextView": "Próxima vista",
+      "modelAlt": "Modelo 3D interativo do produto",
+      "modelHelp": "Arraste o modelo 3D ou use suas setas para girar. Use os botões de vista para alternar entre 3D e fotos. Deslize nas fotos para navegar pelos produtos.",
+      "modelBadge": "3D",
+      "modelSize": " · {size} MB"
+    },
+    "search": {
+      "open": "Pesquisar produtos",
+      "field": "Pesquisar produtos",
+      "clear": "Limpar busca",
+      "searching": "Pesquisando produtos…",
+      "noResults": "Nenhum produto encontrado para “{term}”. Tente outra busca."
+    },
+    "list": {
+      "loading": "Carregando produtos…",
+      "empty": "Novas peças estão a caminho. Volte em breve.",
+      "maintenance": "Nosso catálogo está em uma breve pausa. Volte em breve.",
+      "error": "Não foi possível carregar os produtos. Tente de novo.",
+      "retry": "Tentar de novo",
+      "count": "Produtos carregados",
+      "loadingMore": "Carregando mais produtos…",
+      "retryMore": "Não foi possível carregar mais produtos. Tente de novo.",
+      "position": "Produtos"
+    },
+    "page": {
+      "back": "Voltar ao início",
+      "heading": "Pequenas peças. Infinitas possibilidades.",
+      "lede": "Veja todas as peças do nosso estúdio, explore os detalhes e faça seu pedido diretamente com a gente.",
+      "region": "Nossos produtos"
+    },
+    "carousel": {
+      "region": "Catálogo de produtos",
+      "previous": "Página anterior de produtos",
+      "next": "Próxima página de produtos",
+      "all": "Ver todos os produtos"
+    }
   }
 }

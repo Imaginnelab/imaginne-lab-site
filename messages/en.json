@@ -252,5 +252,63 @@
     "heading": "This page wandered off.",
     "lede": "The page you're looking for doesn't exist, or the link is broken. Let's get you back on track.",
     "cta": "Back to Home"
+  },
+  "store": {
+    "card": {
+      "loadingImage": "Loading image…",
+      "waitingModel": "3D will load shortly…",
+      "openModel": "View in 3D",
+      "loadingModel": "Loading 3D…",
+      "queuedModel": "Waiting to load 3D…",
+      "preparingModel": "Preparing 3D…",
+      "readyModel": "3D ready",
+      "errorModel": "Could not load 3D. Try again.",
+      "request": "Price on request",
+      "order": "Order Now",
+      "mostViewed": "Most viewed",
+      "photos": "Product photos",
+      "photo": "Photo",
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "photoHelp": "Use Left and Right arrow keys, Home or End, or tap the photo buttons. Swipe horizontally to browse products.",
+      "views": "Product views",
+      "view": "View",
+      "previousView": "Previous view",
+      "nextView": "Next view",
+      "modelAlt": "Interactive 3D model of the product",
+      "modelHelp": "Drag the 3D model or use its arrow keys to rotate. Use the view buttons to switch between 3D and photos. Swipe on photos to browse products.",
+      "modelBadge": "3D",
+      "modelSize": " · {size} MB"
+    },
+    "search": {
+      "open": "Search products",
+      "field": "Search products",
+      "clear": "Clear search",
+      "searching": "Searching products…",
+      "noResults": "No products found for “{term}”. Try another search."
+    },
+    "list": {
+      "loading": "Loading products…",
+      "empty": "New pieces are on their way. Check back soon.",
+      "maintenance": "Our catalogue is taking a short break. Please check back soon.",
+      "error": "We could not load the products. Please try again.",
+      "retry": "Try again",
+      "count": "Products loaded",
+      "loadingMore": "Loading more products…",
+      "retryMore": "Could not load more products. Try again.",
+      "position": "Products"
+    },
+    "page": {
+      "back": "Back to home",
+      "heading": "Small pieces. Endless possibilities.",
+      "lede": "Browse every piece from our studio, explore the details, and order directly with us.",
+      "region": "Our products"
+    },
+    "carousel": {
+      "region": "Product catalogue",
+      "previous": "Previous page of products",
+      "next": "Next page of products",
+      "all": "View all products"
+    }
   }
 }

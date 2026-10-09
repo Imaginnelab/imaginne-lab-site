@@ -29,7 +29,7 @@ export default async function HomePage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: organizationJsonLd(t.metadata) }} />
       <Hero locale={locale} anchors={t.anchors} copy={t.home.hero} />
       <Advantages copy={t.home.advantages} />
-      <Products locale={locale} anchors={t.anchors} copy={t.home.products} />
+      <Products locale={locale} anchors={t.anchors} copy={t.home.products} storeCopy={{ card: t.store.card, search: t.store.search, list: t.store.list, carousel: t.store.carousel }} />
       <Process locale={locale} anchors={t.anchors} copy={t.home.process} />
       <Customization locale={locale} anchors={t.anchors} copy={t.home.customization} />
       <Contact locale={locale} anchors={t.anchors} copy={t.home.contact} />

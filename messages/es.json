@@ -252,5 +252,63 @@
     "heading": "Esta página se perdió por ahí.",
     "lede": "La página que buscas no existe, o el enlace está roto. Vamos a llevarte de vuelta.",
     "cta": "Volver al inicio"
+  },
+  "store": {
+    "card": {
+      "loadingImage": "Cargando imagen…",
+      "waitingModel": "El 3D se cargará en unos instantes…",
+      "openModel": "Ver en 3D",
+      "loadingModel": "Cargando 3D…",
+      "queuedModel": "Esperando para cargar 3D…",
+      "preparingModel": "Preparando 3D…",
+      "readyModel": "3D listo",
+      "errorModel": "No pudimos cargar el 3D. Inténtalo de nuevo.",
+      "request": "Precio a consultar",
+      "order": "Hacer Pedido",
+      "mostViewed": "Más visto",
+      "photos": "Fotos del producto",
+      "photo": "Foto",
+      "previousPhoto": "Foto anterior",
+      "nextPhoto": "Foto siguiente",
+      "photoHelp": "Usa las flechas izquierda y derecha, Home o End, o toca los botones de foto. Desliza horizontalmente para recorrer los productos.",
+      "views": "Vistas del producto",
+      "view": "Vista",
+      "previousView": "Vista anterior",
+      "nextView": "Vista siguiente",
+      "modelAlt": "Modelo 3D interactivo del producto",
+      "modelHelp": "Arrastra el modelo 3D o usa sus flechas para girar. Usa los botones de vista para alternar entre 3D y fotos. Desliza sobre las fotos para recorrer los productos.",
+      "modelBadge": "3D",
+      "modelSize": " · {size} MB"
+    },
+    "search": {
+      "open": "Buscar productos",
+      "field": "Buscar productos",
+      "clear": "Limpiar búsqueda",
+      "searching": "Buscando productos…",
+      "noResults": "No encontramos productos para “{term}”. Prueba otra búsqueda."
+    },
+    "list": {
+      "loading": "Cargando productos…",
+      "empty": "Nuevas piezas están en camino. Vuelve pronto.",
+      "maintenance": "Nuestro catálogo está tomando una breve pausa. Vuelve pronto.",
+      "error": "No pudimos cargar los productos. Inténtalo de nuevo.",
+      "retry": "Intentar de nuevo",
+      "count": "Productos cargados",
+      "loadingMore": "Cargando más productos…",
+      "retryMore": "No pudimos cargar más productos. Inténtalo de nuevo.",
+      "position": "Productos"
+    },
+    "page": {
+      "back": "Volver al inicio",
+      "heading": "Pequeñas piezas. Infinitas posibilidades.",
+      "lede": "Descubre todas las piezas de nuestro estudio, explora los detalles y haz tu pedido directamente con nosotros.",
+      "region": "Nuestros productos"
+    },
+    "carousel": {
+      "region": "Catálogo de productos",
+      "previous": "Página anterior de productos",
+      "next": "Página siguiente de productos",
+      "all": "Ver todos los productos"
+    }
   }
 }
