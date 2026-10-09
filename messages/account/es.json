@@ -20,6 +20,7 @@
     "signupDisabled": "El registro de nuevas cuentas está desactivado temporalmente.",
     "invalidEmail": "Introduce una dirección de correo válida.",
     "serverError": "El servicio no pudo completar el registro. Inténtalo más tarde.",
+    "signedUp": "Registro recibido. Si este correo aún no tenía cuenta, se ha creado: inicia sesión con tu correo y contraseña.",
     "checkEmail": "Si se puede completar el registro, recibirás un correo de confirmación. Revisa tu bandeja de entrada.",
     "unavailable": "El acceso a la cuenta no está disponible temporalmente. Inténtalo más tarde.",
     "generic": "No se pudo completar la solicitud. Revisa tus datos e inténtalo de nuevo.",

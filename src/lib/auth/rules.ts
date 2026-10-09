@@ -19,7 +19,7 @@ export const signUpSchema = z
 
 // Keys of messages/account/*.json that an action may answer with.
 export type AccountMessage =
-  | 'credentials' | 'checkEmail' | 'weak' | 'rate' | 'emailRate' | 'signupDisabled' | 'invalidEmail'
+  | 'credentials' | 'checkEmail' | 'signedUp' | 'weak' | 'rate' | 'emailRate' | 'signupDisabled' | 'invalidEmail'
   | 'serverError' | 'unavailable' | 'generic' | 'mismatch' | 'nameRequired';
 
 export type AccountState = { ok: boolean; message?: AccountMessage; email?: string };

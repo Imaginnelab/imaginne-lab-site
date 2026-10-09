@@ -20,6 +20,7 @@
     "signupDisabled": "O cadastro de novas contas está temporariamente desativado.",
     "invalidEmail": "Informe um endereço de e-mail válido.",
     "serverError": "O serviço não conseguiu concluir o cadastro. Tente novamente mais tarde.",
+    "signedUp": "Cadastro recebido. Se este e-mail ainda não tinha conta, ela foi criada: entre com seu e-mail e senha.",
     "checkEmail": "Se o cadastro puder ser concluído, você receberá um e-mail de confirmação. Confira sua caixa de entrada.",
     "unavailable": "O acesso à conta está temporariamente indisponível. Tente novamente mais tarde.",
     "generic": "Não foi possível concluir. Confira os dados e tente novamente.",

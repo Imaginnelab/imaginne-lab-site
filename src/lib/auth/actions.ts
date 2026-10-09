@@ -40,6 +40,11 @@ export async function signUp(form: FormData): Promise<AccountState> {
     name: text(form, 'name'), email, password: text(form, 'password'), confirm: text(form, 'confirm'),
   });
   if (!parsed.success) return { ok: false, message: signUpProblem(parsed.error.issues), email };
+  // Whether the project asks new accounts to confirm their e-mail is a Supabase setting. The
+  // answer tells the truth for either case and never says whether the address already had an
+  // account (audit SEC-003): with confirmation off both "created" and "already registered" lead
+  // to "sign in"; with it on both lead to "check your inbox".
+  let confirmsByEmail = false;
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signUp({
@@ -48,15 +53,14 @@ export async function signUp(form: FormData): Promise<AccountState> {
       options: { data: { name: parsed.data.name }, emailRedirectTo: await confirmationUrl(text(form, 'locale')) },
     });
     if (error && !isExistingAccount(error.code)) return { ok: false, message: signUpFailure(error.code), email };
+    confirmsByEmail = !error && !data.session;
     // Registration always ends at the sign-in form, even when no confirmation e-mail is needed.
     if (data.session) await supabase.auth.signOut({ scope: 'local' });
   } catch {
     return { ok: false, message: 'unavailable', email };
   }
-  // One answer for "created" and for "already registered" (audit SEC-003).
-  return { ok: true, message: 'checkEmail', email: parsed.data.email };
+  return { ok: true, message: confirmsByEmail ? 'checkEmail' : 'signedUp', email: parsed.data.email };
 }
-
 export async function signOut(): Promise<AccountState> {
   try {
     const supabase = await createClient();

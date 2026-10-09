@@ -20,6 +20,7 @@
     "signupDisabled": "New account registration is temporarily disabled.",
     "invalidEmail": "Enter a valid email address.",
     "serverError": "The service could not complete registration. Please try again later.",
+    "signedUp": "Registration received. If this email had no account yet, it has been created: sign in with your email and password.",
     "checkEmail": "If registration can be completed, you will receive a confirmation email. Check your inbox.",
     "unavailable": "Account access is temporarily unavailable. Please try again later.",
     "generic": "Unable to complete the request. Check your details and try again.",
