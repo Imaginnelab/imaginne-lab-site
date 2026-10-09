@@ -1,17 +1,17 @@
 # Imaginne Lab — instruções de desenvolvimento
 
-**Branch `next-migration`: o site está sendo portado para Next.js.** A versão em produção continua na `main` (HTML/CSS/JS estático) e está preservada aqui em `legacy/` só como referência: não edite `legacy/`, e não faça merge/push para a `main` até o gerente fechar a paridade.
+O site é uma aplicação Next.js e a produção sai da `main` (a Vercel publica a cada push). A versão estática anterior foi substituída em 09/10/2026; a pasta `legacy/` é só uma cópia de referência dela, fora do build, e aguarda remoção: não a edite.
 
-## Stack desta branch
+## Stack
 
 Next.js 16 (App Router, `src/`), React 19, TypeScript estrito, Supabase com `@supabase/ssr` (sessão em cookie), Zod, Vitest e Playwright. Idiomas pelo esquema nativo do Next: `src/app/[locale]/…`, textos em `messages/{en,pt,es}.json` lidos no servidor por `getDictionary` (`src/i18n/`). Inglês fica na raiz (`/`, `/products/`); `/pt/` e `/es/` mantêm o prefixo; o `src/proxy.ts` faz esse roteamento e renova a sessão.
 
 - **Esta versão do Next mudou bastante.** Antes de escrever código, leia o guia correspondente em `node_modules/next/dist/docs/` (o `middleware` agora se chama `proxy`; `params` é assíncrono; etc.).
-- `cacheComponents` está desligado nesta migração; páginas que leem sessão são dinâmicas.
+- `cacheComponents` está desligado; páginas que leem sessão são dinâmicas.
 - Server Components por padrão; `'use client'` só no que é interativo, recebendo por props apenas os textos e dados que usa.
 - Toda escrita passa por Server Action que confere a identidade (`getAdmin`/`getCurrentUser` em `src/lib/dal.ts`) e valida a entrada com Zod. As regras do banco (RLS) continuam sendo a autorização de verdade: nunca use chave de serviço para contornar.
 - CSS: os arquivos atuais em `src/styles/`, importados globalmente. Sem redesenho, sem Tailwind.
-- Mesmas URLs e mesmos textos do site atual. Funcionalidades novas estão congeladas até a troca.
+- As URLs públicas (`/`, `/pt/`, `/es/`, `/products/`, `/admin/`) são as do site anterior: não as mude sem redirecionar.
 
 ## Comandos
 
