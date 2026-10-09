@@ -4,9 +4,9 @@ import { htmlLang, isLocale, locales } from '@/i18n/config';
 import { getDictionary } from '@/i18n/dictionaries';
 import '@/styles/styles.css';
 
-// Sets the theme before the first paint, so a dark-mode visitor never sees a light flash.
-const themeScript = `(function(){try{var s=localStorage.getItem('imaginne-theme');document.documentElement.setAttribute('data-theme',s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))}catch(e){}})()`;
-
+// The site always opens in the light theme; dark is only used when the visitor chose it with
+// the toggle (remembered in localStorage). Runs before the first paint, so there is no flash.
+const themeScript = `(function(){var t='light';try{if(localStorage.getItem('imaginne-theme')==='dark')t='dark'}catch(e){}document.documentElement.setAttribute('data-theme',t)})()`;
 type Props = { children: React.ReactNode; params: Promise<{ locale: string }> };
 
 export function generateStaticParams() {
