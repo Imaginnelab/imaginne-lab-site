@@ -547,126 +547,86 @@ html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
   flex-wrap: wrap;
 }
 
-/* Ambient hero: the product photo is the room behind the whole section, header included. */
+/* Ambient hero: the product photo is the room on the right of the section, running up behind
+   the header and melting into the page on the side of the text. It is never shown larger
+   than the picture can stay sharp, so it does not fill the whole width. */
 .hero-ambient {
   position: relative;
   isolation: isolate;
   /* Pulled up under the sticky header (76px), which is transparent until the page scrolls. */
   margin-top: -76px;
-  padding-top: calc(76px + clamp(3rem, 8vw, 6.5rem));
-  padding-bottom: clamp(5.5rem, 11vw, 9rem);
-  min-height: clamp(600px, 45vw, 900px);
+  padding-top: calc(76px + clamp(3rem, 7vw, 5.5rem));
+  padding-bottom: clamp(4.5rem, 9vw, 7.5rem);
+  min-height: clamp(600px, 46vw, 860px);
   display: flex;
   align-items: center;
+  /* The same fade as the bottom of the photo, so the whole section lands on the value strip. */
+  background: linear-gradient(to top, var(--bg-sunken) 0%, color-mix(in srgb, var(--bg-sunken) 55%, var(--bg)) 7%, var(--bg) 19%);
 }
 .hero-ambient .wrap { display: block; width: 100%; }
-.hero-ambient .hero-copy { max-width: min(34rem, 46%); }
-.hero-media { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.hero-ambient .hero-copy { max-width: min(34rem, 44%); }
+/* The title is two lines in every language. A line may run past the text column: what is
+   behind it there is the faded edge of the photo. */
+.hero-ambient .hero-copy h1 { font-size: clamp(2.5rem, 4.5vw, 4rem); }
+.hero-line { display: block; white-space: nowrap; }
+.hero-media {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(58%, 1180px);
+  /* Its lower edge is already the colour of the strip below; this hides the seam between them. */
+  box-shadow: 0 1px 0 var(--bg-sunken);
+  z-index: -1;
+  overflow: hidden;
+}
+.hero-media picture { display: block; width: 100%; height: 100%; }
 .hero-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 70% 50%;
+  object-position: 58% 50%;
 }
-/* The page colour comes in from the side of the text and from below, where the value
-   strip continues it, so the copy stays readable over any part of the photo. */
 .hero-media::after {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to top, var(--bg-sunken) 0%, color-mix(in srgb, var(--bg-sunken) 62%, transparent) 8%, transparent 21%),
-    linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 94%, transparent) 24%, color-mix(in srgb, var(--bg) 62%, transparent) 42%, transparent 60%),
-    linear-gradient(to bottom, color-mix(in srgb, var(--bg) 55%, transparent) 0%, transparent 18%);
+    linear-gradient(to top, var(--bg-sunken) 0%, color-mix(in srgb, var(--bg-sunken) 55%, transparent) 7%, transparent 19%),
+    linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 78%, transparent) 9%, color-mix(in srgb, var(--bg) 30%, transparent) 20%, transparent 32%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--bg) 45%, transparent) 0%, transparent 15%);
   pointer-events: none;
 }
-[data-theme="dark"] .hero-media img { filter: brightness(0.78) saturate(0.92); }
+[data-theme="dark"] .hero-media img { filter: brightness(0.8) saturate(0.94); }
 [data-theme="dark"] .hero-media::after {
   background:
-    linear-gradient(to top, var(--bg-sunken) 0%, color-mix(in srgb, var(--bg-sunken) 62%, transparent) 8%, transparent 21%),
-    linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 94%, transparent) 26%, color-mix(in srgb, var(--bg) 70%, transparent) 44%, color-mix(in srgb, var(--bg) 18%, transparent) 66%, color-mix(in srgb, var(--bg) 18%, transparent) 100%),
-    linear-gradient(to bottom, color-mix(in srgb, var(--bg) 70%, transparent) 0%, transparent 20%);
+    linear-gradient(to top, var(--bg-sunken) 0%, color-mix(in srgb, var(--bg-sunken) 55%, transparent) 7%, transparent 19%),
+    linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 10%, color-mix(in srgb, var(--bg) 40%, transparent) 22%, color-mix(in srgb, var(--bg) 12%, transparent) 36%, color-mix(in srgb, var(--bg) 12%, transparent) 100%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--bg) 65%, transparent) 0%, transparent 18%);
 }
-.hero-ambient + .value-strip { border-top: 0; }
 
-.hero-tag {
+.hero-badge {
   position: absolute;
+  left: calc(100% - min(58%, 1180px) + clamp(1.5rem, 4vw, 4rem));
+  bottom: clamp(4.75rem, 9.5vw, 8rem);
   z-index: 2;
-  top: calc(76px + clamp(1.25rem, 3.2vw, 2.75rem));
-  right: clamp(1.25rem, 6.5vw, 6.5rem);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 0.95rem 0.55rem 0.8rem;
-  border-radius: var(--radius-pill);
   background: var(--forest);
   color: #FBF9F2;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  box-shadow: 0 14px 30px -14px rgba(var(--shadow-color), 0.55);
-}
-.hero-tag .icon { width: 16px; height: 16px; color: var(--amber); flex-shrink: 0; }
-
-.hero-note {
-  position: absolute;
-  z-index: 2;
-  left: 46%;
-  bottom: clamp(6.25rem, 13vw, 11.25rem);
-  width: min(17rem, 44vw);
-  padding: 1rem 1.15rem 1.05rem;
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--bg-elevated) 72%, transparent);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--bg-elevated) 70%, transparent),
-    0 22px 44px -22px rgba(var(--shadow-color), 0.45);
-}
-.hero-note-kicker {
+  padding: 1rem 1.2rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
+  gap: 0.75rem;
+  box-shadow: 0 20px 40px -16px rgba(var(--shadow-color), 0.45);
+  max-width: 230px;
 }
-.hero-note-kicker::before {
-  content: "";
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--amber);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 30%, transparent);
-  flex-shrink: 0;
-}
-.hero-note strong {
-  display: block;
-  margin-top: 0.55rem;
-  font-size: 0.98rem;
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--ink);
-}
-.hero-note a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 0.6rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 0.22em;
-  text-decoration-thickness: 1px;
-}
-.hero-note a .icon { width: 14px; height: 14px; transition: transform 0.2s var(--ease-out); }
-.hero-note a:hover .icon { transform: translateX(3px); }
+.hero-badge .icon { width: 22px; height: 22px; color: var(--amber); flex-shrink: 0; }
+.hero-badge strong { display: block; font-size: 0.85rem; font-weight: 600; line-height: 1.3; }
+.hero-badge span { display: block; font-family: var(--font-mono); font-size: 0.68rem; color: rgba(251,249,242,0.65); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
 
+@media (min-width: 901px) {
+  .hero-ambient + .value-strip { border-top: 0; }
+}
 @media (max-width: 900px) {
   /* The text keeps the plain page, and the room becomes a picture below it. */
   .hero-ambient {
@@ -674,36 +634,26 @@ html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
     align-items: stretch;
     min-height: 0;
     padding-top: calc(76px + 2rem);
-    padding-bottom: 5rem;
-    overflow: visible;
-    background: linear-gradient(to top, var(--bg-sunken) 0, var(--bg-sunken) 8rem, var(--bg) 20rem);
+    padding-bottom: 3.5rem;
+    background: none;
   }
   .hero-ambient .hero-copy { max-width: none; }
+  .hero-ambient .hero-copy h1 { font-size: clamp(1.6rem, 8.2vw, 3.6rem); }
   .hero-media {
     position: relative;
-    inset: auto;
     order: 2;
     z-index: 0;
-    margin-top: 2.5rem;
-    aspect-ratio: 4 / 4.8;
-    max-height: 640px;
-    width: 100%;
-    overflow: visible;
+    width: auto;
+    margin: 2.5rem var(--gutter) 0;
+    aspect-ratio: 4 / 4.7;
+    max-height: 620px;
+    border-radius: clamp(1.5rem, 5vw, 2.25rem);
+    box-shadow: 0 30px 60px -32px rgba(var(--shadow-color), 0.5);
   }
-  .hero-media picture { display: block; width: 100%; height: 100%; }
   .hero-media img { object-position: 50% 50%; }
   .hero-media::after,
-  [data-theme="dark"] .hero-media::after {
-    background:
-      linear-gradient(to bottom, var(--bg) 0%, transparent 16%),
-      linear-gradient(to top, var(--bg-sunken) 0%, transparent 14%);
-  }
-  .hero-tag { top: 1.5rem; right: var(--gutter); }
-  /* The card hangs over the lower edge of the picture, clear of the photo inside the frame. */
-  .hero-note { left: var(--gutter); right: var(--gutter); bottom: -3.5rem; width: auto; max-width: 22rem; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-note a .icon { transition: none; }
+  [data-theme="dark"] .hero-media::after { background: none; }
+  .hero-badge { left: calc(var(--gutter) - 0.4rem); bottom: 1.75rem; }
 }
 
 /* ---------------------------------------------------------
