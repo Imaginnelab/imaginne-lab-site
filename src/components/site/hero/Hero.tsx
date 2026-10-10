@@ -13,9 +13,9 @@ export function Hero({ locale, anchors, copy }: Props) {
       <div className="hero-media">
         <picture>
           <source media="(max-width: 900px)" type="image/webp" sizes="(max-width: 900px) 92vw, 1px"
-            srcSet="/assets/img/hero-room-tall-480.webp 480w, /assets/img/hero-room-tall-800.webp 800w, /assets/img/hero-room-tall-1200.webp 1200w" />
-          <img src="/assets/img/hero-scene-1300.webp"
-            srcSet="/assets/img/hero-scene-900.webp 900w, /assets/img/hero-scene-1300.webp 1300w, /assets/img/hero-scene-1950.webp 1950w"
+            srcSet="/assets/img/hero-brown-tall-480.webp 480w, /assets/img/hero-brown-tall-800.webp 800w, /assets/img/hero-brown-tall-1200.webp 1200w" />
+          <img src="/assets/img/hero-brown-1300.webp"
+            srcSet="/assets/img/hero-brown-900.webp 900w, /assets/img/hero-brown-1300.webp 1300w, /assets/img/hero-brown-1950.webp 1950w"
             sizes="min(62vw, 1180px)" width={1300} height={941} alt={copy.alt001} fetchPriority="high" decoding="async" />
         </picture>
       </div>
