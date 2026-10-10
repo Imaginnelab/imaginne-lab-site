@@ -547,20 +547,23 @@ html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
   flex-wrap: wrap;
 }
 
-/* Ambient hero: the product photo is the room on the right of the section, running up behind
-   the header and melting into the page on the side of the text. It is never shown larger
-   than the picture can stay sharp, so it does not fill the whole width. */
+/* Ambient hero: the product photo is a room on the right of the section, melting into the
+   page on every side but the screen edge. It is kept small on purpose: the picture is only
+   941 pixels tall, and shown larger than this it goes soft on high-density screens. */
 .hero-ambient {
+  --hero-photo-top: clamp(1rem, 2.6vw, 2.75rem);
+  --hero-photo-h: clamp(420px, 33vw, 620px);
+  --hero-photo-w: calc(var(--hero-photo-h) * 1.3);
   position: relative;
   isolation: isolate;
   /* Pulled up under the sticky header (76px), which is transparent until the page scrolls. */
   margin-top: -76px;
-  padding-top: calc(76px + clamp(3rem, 7vw, 5.5rem));
-  padding-bottom: clamp(4.5rem, 9vw, 7.5rem);
-  min-height: clamp(600px, 46vw, 860px);
+  padding-top: calc(76px + clamp(2.5rem, 6vw, 4.5rem));
+  padding-bottom: clamp(4.5rem, 9vw, 7rem);
+  min-height: clamp(580px, 43vw, 800px);
   display: flex;
   align-items: center;
-  /* The same fade as the bottom of the photo, so the whole section lands on the value strip. */
+  /* Lands on the colour of the value strip that follows. */
   background: linear-gradient(to top, var(--bg-sunken) 0%, color-mix(in srgb, var(--bg-sunken) 55%, var(--bg)) 7%, var(--bg) 19%);
 }
 .hero-ambient .wrap { display: block; width: 100%; }
@@ -571,44 +574,30 @@ html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
 .hero-line { display: block; white-space: nowrap; }
 .hero-media {
   position: absolute;
-  top: 0;
+  top: var(--hero-photo-top);
   right: 0;
-  bottom: 0;
-  width: min(58%, 1180px);
-  /* Its lower edge is already the colour of the strip below; this hides the seam between them. */
-  box-shadow: 0 1px 0 var(--bg-sunken);
+  width: var(--hero-photo-w);
+  height: var(--hero-photo-h);
   z-index: -1;
-  overflow: hidden;
 }
 .hero-media picture { display: block; width: 100%; height: 100%; }
 .hero-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 58% 50%;
+  object-position: 60% 50%;
+  /* Fades out to the left, top and bottom, so the page shows through in either theme. */
+  -webkit-mask-image: linear-gradient(to right, transparent 2%, #000 32%), linear-gradient(to bottom, transparent 2%, #000 12%, #000 90%, transparent 98%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent 2%, #000 32%), linear-gradient(to bottom, transparent 2%, #000 12%, #000 90%, transparent 98%);
+  mask-composite: intersect;
 }
-.hero-media::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(to top, var(--bg-sunken) 0%, color-mix(in srgb, var(--bg-sunken) 55%, transparent) 7%, transparent 19%),
-    linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 78%, transparent) 9%, color-mix(in srgb, var(--bg) 30%, transparent) 20%, transparent 32%),
-    linear-gradient(to bottom, color-mix(in srgb, var(--bg) 45%, transparent) 0%, transparent 15%);
-  pointer-events: none;
-}
-[data-theme="dark"] .hero-media img { filter: brightness(0.8) saturate(0.94); }
-[data-theme="dark"] .hero-media::after {
-  background:
-    linear-gradient(to top, var(--bg-sunken) 0%, color-mix(in srgb, var(--bg-sunken) 55%, transparent) 7%, transparent 19%),
-    linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 10%, color-mix(in srgb, var(--bg) 40%, transparent) 22%, color-mix(in srgb, var(--bg) 12%, transparent) 36%, color-mix(in srgb, var(--bg) 12%, transparent) 100%),
-    linear-gradient(to bottom, color-mix(in srgb, var(--bg) 65%, transparent) 0%, transparent 18%);
-}
+[data-theme="dark"] .hero-media img { filter: brightness(0.82) saturate(0.94); }
 
 .hero-badge {
   position: absolute;
-  left: calc(100% - min(58%, 1180px) + clamp(1.5rem, 4vw, 4rem));
-  bottom: clamp(4.75rem, 9.5vw, 8rem);
+  left: calc(100% - var(--hero-photo-w) * 0.95);
+  top: calc(var(--hero-photo-top) + var(--hero-photo-h) * 0.79);
   z-index: 2;
   background: var(--forest);
   color: #FBF9F2;
@@ -641,19 +630,19 @@ html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
   .hero-ambient .hero-copy h1 { font-size: clamp(1.6rem, 8.2vw, 3.6rem); }
   .hero-media {
     position: relative;
+    top: auto;
     order: 2;
     z-index: 0;
-    width: auto;
-    margin: 2.5rem var(--gutter) 0;
-    aspect-ratio: 4 / 4.7;
-    max-height: 620px;
+    width: min(100% - 2 * var(--gutter), 420px);
+    height: auto;
+    margin: 2.5rem auto 0;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
     border-radius: clamp(1.5rem, 5vw, 2.25rem);
     box-shadow: 0 30px 60px -32px rgba(var(--shadow-color), 0.5);
   }
-  .hero-media img { object-position: 50% 50%; }
-  .hero-media::after,
-  [data-theme="dark"] .hero-media::after { background: none; }
-  .hero-badge { left: calc(var(--gutter) - 0.4rem); bottom: 1.75rem; }
+  .hero-media img { object-position: 50% 50%; -webkit-mask-image: none; mask-image: none; }
+  .hero-badge { top: auto; left: max(var(--gutter) - 0.4rem, 50% - 210px - 0.4rem); bottom: 1.75rem; }
 }
 
 /* ---------------------------------------------------------
