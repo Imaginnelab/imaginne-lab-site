@@ -1,7 +1,6 @@
 import type { Locale } from '@/i18n/config';
 import { localePath } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries';
-import { LionModel } from '@/components/three/LionModel';
 type Props = { locale: Locale; anchors: Dictionary['anchors']; copy: Dictionary['home']['hero']  };
 
 export function Hero({ locale, anchors, copy }: Props) {
@@ -36,8 +35,12 @@ export function Hero({ locale, anchors, copy }: Props) {
           </div>
         </div>
         <div className="hero-visual">
-          <div className="frame">
-            <LionModel alt={copy.alt001} />
+          <div className="frame frame-photo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/img/hero-lithophane-753.webp"
+              srcSet="/assets/img/hero-lithophane-480.webp 480w, /assets/img/hero-lithophane-753.webp 753w"
+              sizes="(max-width: 900px) min(420px, 92vw), 40vw" width={753} height={941}
+              alt={copy.alt001} fetchPriority="high" decoding="async" />
           </div>
           <div className="hero-badge">
             <svg className="icon" viewBox="0 0 256 256">

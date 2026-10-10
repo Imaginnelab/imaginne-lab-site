@@ -572,6 +572,31 @@ html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
   background: radial-gradient(closest-side, var(--bg-sunken) 0%, transparent 72%);
   z-index: 1;
 }
+/* The hero photo: a product shot with straight edges, so it keeps soft corners instead of
+   the blob, and the organic shape moves behind it as an amber accent. */
+.hero-visual .frame-photo img {
+  position: relative;
+  z-index: 2;
+  display: block;
+  border-radius: clamp(1.5rem, 3vw, 2.25rem);
+  box-shadow:
+    0 0 0 1px rgba(var(--shadow-color), 0.06),
+    0 36px 70px -34px rgba(var(--shadow-color), 0.5);
+}
+.hero-visual .frame-photo::before {
+  inset: -5% -7% 16% 22%;
+  border-radius: 42% 58% 65% 35% / 45% 40% 60% 55%;
+  background: var(--amber);
+  transform: rotate(-4deg);
+}
+.hero-visual .frame-photo::after {
+  content: "";
+  position: absolute;
+  inset: 34% 30% -5% -6%;
+  border-radius: 58% 42% 38% 62% / 52% 60% 40% 48%;
+  background: var(--bg-sunken);
+  z-index: 0;
+}
 .hero-visual .frame model-viewer {
   position: absolute;
   top: -4%;
