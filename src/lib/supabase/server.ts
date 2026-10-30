@@ -1,7 +1,7 @@
 import 'server-only';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import type { Database } from '@/types/database';
+import type { Database } from '@/types/database-with-product-specifications';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/lib/env';
 
 // Server client for Server Components, Server Actions and Route Handlers. It acts as the

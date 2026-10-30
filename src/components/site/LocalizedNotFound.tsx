@@ -1,4 +1,5 @@
 'use client';
+import { NavigationLink } from '@/components/navigation/NavigationLink';
 
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
@@ -21,7 +22,7 @@ export function LocalizedNotFound({ copies }: { copies: Record<Locale, Copy> }) 
     <>
       <FlagSprite />
       <header className="nav"><div className="wrap">
-        <a className="brand" href={localePath(locale)}><img src="/assets/img/logo-icon.svg" alt={copy.brand} /><span>{copy.brand}<small>{copy.error.tagline}</small></span></a>
+        <NavigationLink className="brand" href={localePath(locale)}><img src="/assets/img/logo-icon.svg" alt={copy.brand} /><span>{copy.brand}<small>{copy.error.tagline}</small></span></NavigationLink>
         <div className="nav-actions"><LanguageSwitcher locale={locale} copy={copy.language} homeOnly /><ThemeToggle label={copy.theme.toggle} /></div>
       </div></header>
       <main><section className="error-page"><div className="wrap">
@@ -29,7 +30,7 @@ export function LocalizedNotFound({ copies }: { copies: Record<Locale, Copy> }) 
         <span className="eyebrow">{copy.error.eyebrow}</span>
         <h1 className="heading">{copy.error.heading}</h1>
         <p className="lede">{copy.error.lede}</p>
-        <a className="btn btn-primary" href={localePath(locale)} id="error-home-link"><span>{copy.error.cta}</span><svg className="icon" viewBox="0 0 256 256"><path fill="currentColor" d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path></svg></a>
+        <NavigationLink className="btn btn-primary" href={localePath(locale)} id="error-home-link"><span>{copy.error.cta}</span><svg className="icon" viewBox="0 0 256 256"><path fill="currentColor" d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path></svg></NavigationLink>
       </div></section></main>
       <SiteEffects />
     </>

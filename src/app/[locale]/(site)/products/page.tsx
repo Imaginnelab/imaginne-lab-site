@@ -1,3 +1,4 @@
+import { BackLink } from '@/components/navigation/BackLink';
 import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import { isLocale, localePath } from '@/i18n/config';
@@ -31,7 +32,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
         <CatalogueGrid key={locale + ':' + term} locale={locale} initial={initial} initialTerm={term}
           copy={{ card: t.store.card, search: t.store.search, list: t.store.list, page: { lede: t.store.page.lede, region: t.store.page.region } }}
           heading={<>
-            <a className="btn btn-ghost btn-sm catalogue-back" href={localePath(locale)} data-transition="">{t.store.page.back}</a>
+            <BackLink href={localePath(locale)} label={t.store.page.back} />
             <h1 className="heading" id="catalogue-title">{t.store.page.heading}</h1>
           </>} />
       </section>

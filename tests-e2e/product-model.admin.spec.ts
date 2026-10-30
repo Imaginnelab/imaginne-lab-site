@@ -45,6 +45,7 @@ test('create a product with a 3D model, edit it and delete it', async ({ page })
   await page.locator('#product-new').click();
   const dialog = page.locator('#product-dialog');
   for (const lang of ['pt', 'en', 'es']) {
+    await dialog.locator('.product-language-buttons button').nth(['pt', 'en', 'es'].indexOf(lang)).click();
     await dialog.locator(`#product-name-${lang}`).fill(name);
     await dialog.locator(`#product-description-${lang}`).fill('Produto com modelo 3D criado por teste automático; pode ser apagado.');
   }

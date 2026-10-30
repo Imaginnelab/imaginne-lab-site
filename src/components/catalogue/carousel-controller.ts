@@ -102,7 +102,7 @@ export function enableCarousel(track: HTMLUListElement, previous: HTMLButtonElem
   listen(track, 'pointerdown', event => {
     navigationIntent++;
     if (event.pointerType !== 'mouse' || event.button !== 0 || !event.isPrimary) return;
-    if ((event.target instanceof Element && event.target.closest('button, a, model-viewer, input, textarea, select'))) return;
+    if ((event.target instanceof Element && event.target.closest('button, a:not(.products-photo-link), model-viewer, input, textarea, select'))) return;
     stop();
     pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, start: track.scrollLeft, last: track.scrollLeft, time: performance.now(), velocity: 0, dragging: false };
   });

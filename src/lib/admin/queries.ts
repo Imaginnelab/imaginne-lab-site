@@ -3,11 +3,16 @@ import { getAdmin } from '@/lib/dal';
 import { searchFilter } from '@/lib/search';
 import { createClient } from '@/lib/supabase/server';
 import { type ListInput, listSchema } from './schemas';
+import { specificationColumns } from '@/lib/products/specifications';
+import { productSpecificationsSchema } from '@/lib/products/specifications-schema';
+import { missingProductSpecifications } from '@/lib/products/schema-compatibility';
+import { orderedLocalizedProductColors } from '@/lib/products/colors';
 
 // Reads for the admin pages. Each one checks the caller next to the data (the layout's check
 // is a convenience, not the protection) and names its columns, so nothing extra comes along.
 
-const PRODUCT_COLUMNS = 'id, name_pt, name_en, name_es, description_pt, description_en, description_es, price_cad_cents, image_path, extra_image_paths, model_path, model_bytes, is_active, sort_order, view_count';
+const LEGACY_PRODUCT_COLUMNS = 'id, name_pt, name_en, name_es, description_pt, description_en, description_es, price_cad_cents, image_path, extra_image_paths, model_path, model_bytes, is_active, sort_order, view_count' as const;
+const PRODUCT_COLUMNS = `${LEGACY_PRODUCT_COLUMNS},${specificationColumns},colors:cor(name,hex,locale,sort_order)` as const;
 const COUPON_COLUMNS = 'id, code, discount_type, percent_off, amount_off_cad_cents, starts_at, expires_at, max_uses, used_count, is_active';
 
 export type AdminPage<Row> = { rows: Row[]; total: number };
@@ -23,12 +28,17 @@ export async function listProducts(input: ListInput = {}) {
   const { offset, limit, search } = parsed.data;
   const supabase = await createClient();
   const filter = orFilter(search, ['name_pt', 'name_en', 'name_es']);
-  const query = supabase.from('products').select(PRODUCT_COLUMNS, { count: 'exact' });
-  const { data, count, error } = await (filter ? query.or(filter) : query)
-    .order('sort_order', { ascending: true }).order('created_at', { ascending: false }).order('id', { ascending: true })
-    .range(offset, offset + limit - 1);
+  const read = async <const Columns extends string>(selected: Columns) => {
+    const query = supabase.from('products').select(selected, { count: 'exact' });
+    return (filter ? query.or(filter) : query)
+      .order('sort_order', { ascending: true }).order('created_at', { ascending: false }).order('id', { ascending: true })
+      .range(offset, offset + limit - 1);
+  };
+  const full = await read(PRODUCT_COLUMNS);
+  const { data, count, error } = missingProductSpecifications(full.error) ? await read(LEGACY_PRODUCT_COLUMNS) : full;
   if (error) return null;
-  return { rows: data ?? [], total: count ?? 0 };
+  const defaults = productSpecificationsSchema.parse({});
+  return { rows: (data ?? []).map((row) => ({ ...defaults, ...row, colors: orderedLocalizedProductColors('colors' in row ? row.colors : []) })), total: count ?? 0 };
 }
 
 export async function listCoupons(input: ListInput = {}) {

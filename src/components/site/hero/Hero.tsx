@@ -1,3 +1,4 @@
+import { NavigationLink } from '@/components/navigation/NavigationLink';
 import type { Locale } from '@/i18n/config';
 import { localePath } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries';
@@ -62,9 +63,9 @@ export function Hero({ locale, anchors, copy }: Props) {
                 </path>
               </svg>
             </a>
-            <a className="btn btn-ghost" href={localePath(locale) + "#"+anchors.products}>
+            <NavigationLink className="btn btn-ghost" href={localePath(locale) + "#"+anchors.products}>
               {copy.text007}
-            </a>
+            </NavigationLink>
           </div>
         </div>
       </div>

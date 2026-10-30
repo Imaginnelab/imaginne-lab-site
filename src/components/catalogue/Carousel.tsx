@@ -1,4 +1,5 @@
 'use client';
+import { NavigationLink } from '@/components/navigation/NavigationLink';
 
 import { useCallback, useEffect, useId, useRef } from 'react';
 import { localePath, type Locale } from '@/i18n/config';
@@ -63,7 +64,7 @@ export function Carousel({ locale, initial, copy }: { locale: Locale; initial: P
   return (
     <div className="products-carousel" role="region" aria-label={copy.carousel.region}>
       <div className="products-controls">
-        <a className="btn btn-ghost btn-sm products-all-link" href={localePath(locale, '/products')} data-transition="">{copy.carousel.all}</a>
+        <NavigationLink className="btn btn-ghost btn-sm products-all-link" href={localePath(locale, '/products')}>{copy.carousel.all}</NavigationLink>
         <div data-products-search=""><SearchBox copy={copy.search} onSearch={onSearch} /></div>
         <button ref={previous} type="button" className="products-arrow is-icon" data-products-previous="" aria-label={copy.carousel.previous} aria-controls={trackId} disabled><span aria-hidden="true" /></button>
         <button ref={next} type="button" className="products-arrow is-icon" data-products-next="" aria-label={copy.carousel.next} aria-controls={trackId} disabled={empty}><span aria-hidden="true" /></button>

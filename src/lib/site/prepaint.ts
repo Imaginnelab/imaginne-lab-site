@@ -1,2 +1,2 @@
-// Constant script only: no URL, database, or storage value is interpolated into code.
-export const sitePrepaint = "(function(){var d=document.documentElement;try{var p=performance.getEntriesByType('navigation')[0],n=p&&p.type,h=location.hash,f=(n==='reload'||n==='back_forward')?sessionStorage.getItem('imaginne-nav-scrolled:'+location.pathname):null;if(f?f==='1':(h&&h!=='#'&&h!=='#top'&&h!=='#inicio'))d.setAttribute('data-nav','scrolled');}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;if(sessionStorage.getItem('imaginne-transition')==='out')d.classList.add('incoming-transition');else if(!localStorage.getItem('imaginne-intro-seen'))d.classList.add('pending-intro');}catch(e){}})();";
+// A React-managed async script resource is loaded once per document, including locale navigation.
+export const PREPAINT_SCRIPT_SRC = '/assets/js/prepaint.js';

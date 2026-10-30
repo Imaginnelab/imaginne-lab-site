@@ -1,4 +1,5 @@
 'use client';
+import { NavigationLink } from '@/components/navigation/NavigationLink';
 
 import { type FormEvent, useEffect, useRef, useState, useTransition } from 'react';
 import type { AccountDictionary } from '@/i18n/account-dictionaries';
@@ -246,12 +247,12 @@ export function AccountMenu({ user, t, locale, adminHref, variant = 'nav', label
             </div>
           </div>
           <div className="auth-account-actions">
-            <a className="btn btn-primary auth-admin" href={adminHref} hidden={!user?.isAdmin}>
+            <NavigationLink className="btn btn-primary auth-admin" href={adminHref} hidden={!user?.isAdmin}>
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M4 5h7v8H4zM13 5h7v5h-7zM13 12h7v7h-7zM4 15h7v4H4z" />
               </svg>
               <span>{t.admin}</span>
-            </a>
+            </NavigationLink>
             <button ref={logout} className="btn btn-ghost" type="button" disabled={busy} aria-busy={leaving || undefined} onClick={leave}>
               {leaving ? t.wait : t.logout}
             </button>

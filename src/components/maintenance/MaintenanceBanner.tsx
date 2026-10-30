@@ -1,4 +1,5 @@
 'use client';
+import { NavigationLink } from '@/components/navigation/NavigationLink';
 
 import { useEffect, useRef } from 'react';
 
@@ -23,7 +24,7 @@ export function MaintenanceBanner({ label, text, link, href }: { label: string; 
   return (
     <aside ref={banner} className="maintenance-banner" aria-label={label}>
       <span>{text}</span>
-      <a href={href}>{link}</a>
+      <NavigationLink href={href}>{link}</NavigationLink>
     </aside>
   );
 }

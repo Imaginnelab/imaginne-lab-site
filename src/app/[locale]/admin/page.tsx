@@ -1,3 +1,4 @@
+import { NavigationLink } from '@/components/navigation/NavigationLink';
 import { notFound, redirect } from 'next/navigation';
 import { getAdminDictionary } from '@/i18n/admin-dictionaries';
 import { isLocale, localePath } from '@/i18n/config';
@@ -32,11 +33,11 @@ export default async function AdminPage({ params, searchParams }: Props) {
     <>
       <AdminSessionRefresh />
       <header className="nav"><div className="wrap">
-        <a className="brand" data-home="" href={localePath(locale)}>
+        <NavigationLink className="brand" data-home="" href={localePath(locale)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/img/logo-icon.svg" alt={t.brand} /><span>{t.brand}<small>{t.pageHeading}</small></span>
-        </a>
-        <a className="btn btn-ghost btn-sm" data-home="" data-back="" href={localePath(locale)}>{m.back}</a>
+        </NavigationLink>
+        <NavigationLink className="btn btn-ghost btn-sm" data-home="" data-back="" href={localePath(locale)}>{m.back}</NavigationLink>
       </div></header>
       <main className="wrap admin-main" data-admin-root>
         <p id="admin-status" role="status" aria-live="polite" />

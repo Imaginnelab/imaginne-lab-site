@@ -1,13 +1,18 @@
 import 'server-only';
+import { cache } from 'react';
 
 import { createClient } from '@/lib/supabase/server';
 import { getAdmin, isUnderMaintenance } from '@/lib/dal';
 import { SUPABASE_URL } from '@/lib/env';
 import { formatPrice, imageUrl, localized, modelUrl, priceCents } from './format';
 import { searchFilter, searchTerm } from '@/lib/search';
-import { MAX_OFFSET, PAGE_SIZE, pageSchema, productIdSchema } from './input';
-import type { Locale } from '@/i18n/config';
-import type { ProductDTO, ProductPage, PageResult } from './types';
+import { MAX_OFFSET, PAGE_SIZE, pageSchema, productIdSchema, cartProductsSchema } from './input';
+import { isLocale, type Locale } from '@/i18n/config';
+import { specificationColumns, specificationFields, type SpecificationField } from './specifications';
+import { productSpecificationsSchema } from './specifications-schema';
+import { missingProductSpecifications } from './schema-compatibility';
+import { localizedProductColors, productColorOptions } from './colors';
+import type { ProductDTO, CartProductDTO, ProductPage, PageResult, ProductResult, ProductsResult } from './types';
 
 const fields = 'id,name_pt,name_en,name_es,description_pt,description_en,description_es,price_cad_cents,image_path,extra_image_paths,model_path,model_bytes,view_count' as const;
 const columns = ['name_pt', 'name_en', 'name_es', 'description_pt', 'description_en', 'description_es'];
@@ -24,16 +29,65 @@ function dto(row: PublicRow, locale: Locale, featured = false): ProductDTO | nul
   const name = localized(row, 'name', locale);
   const description = localized(row, 'description', locale);
   if (!productIdSchema.safeParse(row.id).success || !name.trim() || !description || !validPath(row.image_path)) return null;
-  const paths = [row.image_path, ...row.extra_image_paths.slice(0, 5).filter(validPath)];
+  const paths = [row.image_path, ...(Array.isArray(row.extra_image_paths) ? row.extra_image_paths.slice(0, 5).filter(validPath) : [])];
   const photos = Array.from(new Set(paths)).map((path) => imageUrl(SUPABASE_URL, path));
   const model = modelUrl(SUPABASE_URL, row.model_path);
   const cents = priceCents(row);
   return {
-    id: row.id, name, description, price: cents === null ? null : formatPrice(cents, locale),
+    id: row.id, name, description, price: cents === null ? null : formatPrice(cents, locale), priceCents: cents,
     photos, modelUrl: model || null,
     modelBytes: typeof row.model_bytes === 'number' && Number.isInteger(row.model_bytes) && row.model_bytes > 0 ? row.model_bytes : null,
     featured,
   };
+}
+
+// Request-local memoization shares the read between metadata and the page, without caching sessions.
+export const getProduct = cache(async (locale: Locale, id: string): Promise<ProductResult> => {
+  if (!isLocale(locale) || !productIdSchema.safeParse(id).success) return { ok: false };
+  try {
+    if (!(await catalogueAllowed())) return { ok: true, product: null };
+    const supabase = await createClient();
+    // Only verified administrators can preview inactive products. RLS remains authoritative.
+    const admin = await getAdmin();
+    const read = async <const Columns extends string>(selected: Columns) => {
+      let query = supabase.from('products').select(selected).in('id', [id]);
+      if (!admin) query = query.eq('is_active', true);
+      return query.abortSignal(AbortSignal.timeout(12_000));
+    };
+    const full = await read(`${fields},${specificationColumns},colors:cor(id,name,hex,locale,sort_order)`);
+    const { data, error } = missingProductSpecifications(full.error) ? await read(fields) : full;
+    if (error || !data) return { ok: false };
+    const row = data[0] ? { ...productSpecificationsSchema.parse({}), colors: [], ...data[0] } : null;
+    const product = row ? dto(row, locale) : null;
+    if (!row || !product) return { ok: true, product: null };
+    const positive = (value: unknown) => typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
+    return { ok: true, product: {
+      ...product,
+      colors: localizedProductColors(row.colors, locale),
+      specifications: Object.fromEntries(specificationFields.map((field) => [field, localized(row, field, locale)])) as Record<SpecificationField, string>,
+      widthCm: positive(row.width_cm), heightCm: positive(row.height_cm), depthCm: positive(row.depth_cm),
+      weightGrams: positive(row.weight_g),
+      stockQuantity: typeof row.stock_quantity === 'number' && Number.isInteger(row.stock_quantity) && row.stock_quantity >= 0 ? row.stock_quantity : null,
+    } };
+  } catch { return { ok: false }; }
+});
+
+// A read-only, bounded lookup. Stored cart data supplies IDs only, never authoritative prices.
+export async function getCartProducts(input: unknown): Promise<ProductsResult> {
+  const parsed = cartProductsSchema.safeParse(input);
+  if (!parsed.success) return { ok: false };
+  try {
+    if (!(await catalogueAllowed())) return { ok: true, products: [] };
+    if (!parsed.data.ids.length) return { ok: true, products: [] };
+    const supabase = await createClient();
+    const { data, error } = await supabase.from('products').select(`${fields},stock_quantity,colors:cor(id,name,hex,locale,sort_order)`).eq('is_active', true)
+      .in('id', Array.from(new Set(parsed.data.ids))).abortSignal(AbortSignal.timeout(12_000));
+    if (error || !data) return { ok: false };
+    return { ok: true, products: data.flatMap((row): CartProductDTO[] => {
+      const product = dto(row, parsed.data.locale);
+      return product ? [{ ...product, colors: productColorOptions(row.colors), stockQuantity: row.stock_quantity }] : [];
+    }) };
+  } catch { return { ok: false }; }
 }
 
 export async function catalogueAllowed(): Promise<boolean> {

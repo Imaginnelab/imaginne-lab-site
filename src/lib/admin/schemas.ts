@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { productSpecificationsSchema } from '@/lib/products/specifications-schema';
+import { productColorsSchema } from '@/lib/products/colors';
 
 // What the admin may write, with exactly the limits the database enforces (supabase/migrations).
 // These schemas are the gate of every admin Server Action: the objects are strict, so a field
@@ -22,6 +24,8 @@ export const activeSchema = z.boolean();
 
 export const productSchema = z
   .strictObject({
+    ...productSpecificationsSchema.shape,
+    colors: productColorsSchema.default([]),
     name_pt: name,
     name_en: name,
     name_es: name,
@@ -76,5 +80,5 @@ export type ListInput = z.input<typeof listSchema>;
 
 // Result of every admin action. The code is all the browser learns about a failure:
 // no database message, constraint name or path ever travels with it.
-export type AdminFailure = 'unauthorized' | 'invalid' | 'duplicate' | 'not_found' | 'files' | 'failed';
+export type AdminFailure = 'unauthorized' | 'invalid' | 'duplicate' | 'not_found' | 'files' | 'schema' | 'failed';
 export type AdminResult = { ok: true } | { ok: false; code: AdminFailure };

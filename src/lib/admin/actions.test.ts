@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, test, vi } from 'vitest';
+import { productSpecificationsSchema } from '@/lib/products/specifications-schema';
 
 // The actions are exercised against a simulated database: nothing here reaches Supabase.
 const state = vi.hoisted(() => ({
@@ -11,6 +12,7 @@ const state = vi.hoisted(() => ({
   inspected: [] as unknown[],
   removed: [] as { photos: string[]; models: string[] }[],
   revalidated: [] as string[],
+  colorCalls: [] as unknown[],
 }));
 
 vi.mock('next/cache', () => ({ revalidatePath: (path: string) => { state.revalidated.push(path); } }));
@@ -23,6 +25,11 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => {
     state.clients += 1;
     return {
+      rpc: async (_name: string, args: { p_id: string | null; p_product: unknown; p_colors: unknown }) => {
+        state.calls.push({ table: 'products', op: 'save', payload: args.p_product, filter: ['id', args.p_id] });
+        state.colorCalls.push(args.p_colors);
+        return { data: null, error: null, status: 200, ...(state.answers['products.save'] ?? {}) };
+      },
       from(table: string) {
         const call = { table, op: 'select', payload: undefined as unknown, filter: undefined as unknown[] | undefined };
         const done = () => {
@@ -50,18 +57,19 @@ import {
 
 const ID = '0b1c2d3e-0000-4000-8000-000000000001';
 const product = {
+  ...productSpecificationsSchema.parse({}),
   name_pt: 'Vaso', name_en: 'Vase', name_es: 'Jarrón', description_pt: 'd', description_en: 'd', description_es: 'd',
   price_cad_cents: 4990, image_path: 'nova-capa.webp', extra_image_paths: ['extra-1.webp'], model_path: 'novo.glb', model_bytes: 5,
   is_active: true, sort_order: 0,
 };
 const coupon = { code: 'VERAO10', discount_type: 'percent', percent_off: 10, amount_off_cad_cents: null, starts_at: null, expires_at: null, max_uses: null, is_active: true };
-const PRODUCT_COLUMNS = ['description_en', 'description_es', 'description_pt', 'extra_image_paths', 'image_path', 'is_active', 'model_bytes', 'model_path', 'name_en', 'name_es', 'name_pt', 'price_cad_cents', 'sort_order'];
+const PRODUCT_COLUMNS = [...Object.keys(productSpecificationsSchema.parse({})), 'description_en', 'description_es', 'description_pt', 'extra_image_paths', 'image_path', 'is_active', 'model_bytes', 'model_path', 'name_en', 'name_es', 'name_pt', 'price_cad_cents', 'sort_order'].sort();
 const COUPON_COLUMNS = ['amount_off_cad_cents', 'code', 'discount_type', 'expires_at', 'is_active', 'max_uses', 'percent_off', 'starts_at'];
 const writes = () => state.calls.filter((call) => call.op !== 'select');
 const keys = (value: unknown) => Object.keys(value as object).sort();
 
 beforeEach(() => {
-  Object.assign(state, { admin: { id: 'admin' }, clients: 0, calls: [], answers: {}, files: { modelBytes: 777 }, inspected: [], removed: [], revalidated: [] });
+  Object.assign(state, { admin: { id: 'admin' }, clients: 0, calls: [], answers: {}, files: { modelBytes: 777 }, inspected: [], removed: [], revalidated: [], colorCalls: [] });
 });
 
 test('every action stops before touching the database when the caller is not an administrator', async () => {
@@ -78,10 +86,10 @@ test('every action stops before touching the database when the caller is not an 
 });
 
 test('createProduct writes only the allowed columns, with the size read from storage', async () => {
-  state.answers['products.insert'] = { data: [{ id: ID }] };
+  state.answers['products.save'] = { data: ID };
   assert.deepEqual(await createProduct(product), { ok: true });
   const [insert] = writes();
-  assert.equal(insert.op, 'insert');
+  assert.equal(insert.op, 'save');
   assert.deepEqual(keys(insert.payload), PRODUCT_COLUMNS);
   // What the browser said about the size (5) is replaced by what storage reports.
   assert.equal((insert.payload as typeof product).model_bytes, 777);
@@ -106,6 +114,20 @@ test('invalid input never reaches the database or storage', async () => {
   assert.equal(state.inspected.length, 0);
 });
 
+test('product actions save product and colour rows in one RPC without writing per-language colour columns', async () => {
+  state.answers['products.save'] = { data: ID };
+  state.answers['products.select'] = { data: { image_path: product.image_path, extra_image_paths: product.extra_image_paths, model_path: product.model_path } };
+  const input = { ...product, colors: [{ name: 'Verde', hex: '#556b2f', locale: 'pt' }, { name: 'Green', hex: '#556B2F', locale: 'en' }, { name: 'Verde', hex: '#556B2F', locale: 'es' }] };
+  assert.deepEqual(await createProduct(input), { ok: true });
+  assert.deepEqual(await updateProduct(ID, input), { ok: true });
+  for (const write of writes()) {
+    assert.equal(keys(write.payload).some((key) => key.startsWith('colors')), false);
+    assert.equal((write.payload as typeof input).name_en, product.name_en);
+  }
+  assert.deepEqual(state.colorCalls, Array(2).fill(input.colors.map((color) => ({ ...color, hex: color.hex.toUpperCase() }))));
+  assert.deepEqual(writes().map((write) => write.filter), [['id', null], ['id', ID]]);
+});
+
 test('a product is not written when one of its files is not in storage', async () => {
   state.files = false;
   assert.deepEqual(await createProduct(product), { ok: false, code: 'files' });
@@ -115,8 +137,14 @@ test('a product is not written when one of its files is not in storage', async (
   assert.equal(state.removed.length, 0);
 });
 
+test('missing optional columns return a clear migration failure without silently dropping product data', async () => {
+  state.answers['products.save'] = { error: { code: 'PGRST204', message: "Could not find the 'category_pt' column in the schema cache" }, status: 400 };
+  assert.deepEqual(await createProduct(product), { ok: false, code: 'schema' });
+  assert.equal(state.revalidated.length, 0);
+});
+
 test('a refused insert answers with a code only and clears the files just uploaded', async () => {
-  state.answers['products.insert'] = { error: { code: '42501', message: 'new row violates row-level security policy for table "products"' }, status: 403 };
+  state.answers['products.save'] = { error: { code: '42501', message: 'new row violates row-level security policy for table "products"' }, status: 403 };
   const result = await createProduct(product);
   assert.deepEqual(result, { ok: false, code: 'unauthorized' });
   assert.equal(JSON.stringify(result).includes('policy'), false);
@@ -124,18 +152,18 @@ test('a refused insert answers with a code only and clears the files just upload
   assert.equal(state.revalidated.length, 0);
   // A write that comes back empty was filtered by a policy.
   state.removed = [];
-  state.answers['products.insert'] = { data: [] };
+  state.answers['products.save'] = { data: null };
   assert.deepEqual(await createProduct(product), { ok: false, code: 'unauthorized' });
   // Other refusals keep their meaning without their text.
-  state.answers['products.insert'] = { error: { code: '23514', message: 'violates check constraint "products_model_path_check"' }, status: 400 };
+  state.answers['products.save'] = { error: { code: '23514', message: 'violates check constraint "products_model_path_check"' }, status: 400 };
   assert.deepEqual(await createProduct(product), { ok: false, code: 'invalid' });
-  state.answers['products.insert'] = { error: { code: 'XX000', message: 'internal' }, status: 500 };
+  state.answers['products.save'] = { error: { code: 'XX000', message: 'internal' }, status: 500 };
   assert.deepEqual(await createProduct(product), { ok: false, code: 'failed' });
 });
 
 test('updateProduct removes the old files only after the write is confirmed', async () => {
   state.answers['products.select'] = { data: { image_path: 'antiga.webp', extra_image_paths: ['extra-1.webp', 'sai.png'], model_path: 'velho.glb' } };
-  state.answers['products.update'] = { data: [{ id: ID }] };
+  state.answers['products.save'] = { data: ID };
   assert.deepEqual(await updateProduct(ID, product), { ok: true });
   const [update] = writes();
   assert.deepEqual(keys(update.payload), PRODUCT_COLUMNS);
@@ -147,11 +175,11 @@ test('updateProduct removes the old files only after the write is confirmed', as
 
 test('a refused update keeps the old files and clears only the new ones', async () => {
   state.answers['products.select'] = { data: { image_path: 'antiga.webp', extra_image_paths: ['extra-1.webp'], model_path: 'velho.glb' } };
-  state.answers['products.update'] = { error: { code: '42501' }, status: 403 };
+  state.answers['products.save'] = { error: { code: '42501' }, status: 403 };
   assert.deepEqual(await updateProduct(ID, product), { ok: false, code: 'unauthorized' });
   assert.deepEqual(state.removed, [{ photos: ['nova-capa.webp'], models: ['novo.glb'] }]);
   state.removed = [];
-  state.answers['products.update'] = { data: [] };
+  state.answers['products.save'] = { data: null };
   assert.deepEqual(await updateProduct(ID, product), { ok: false, code: 'not_found' });
   assert.deepEqual(state.removed, [{ photos: ['nova-capa.webp'], models: ['novo.glb'] }]);
   state.answers['products.select'] = { data: null };

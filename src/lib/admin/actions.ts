@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { getAdmin } from '@/lib/dal';
 import { imagePaths } from '@/lib/products/format';
+import { productSpecificationsSchema } from '@/lib/products/specifications-schema';
+import { missingProductSpecifications } from '@/lib/products/schema-compatibility';
 import { createClient } from '@/lib/supabase/server';
 import {
   type AdminFailure, type AdminResult, type CouponInput, type ProductInput,
@@ -24,14 +26,17 @@ const denied: AdminResult = { ok: false, code: 'unauthorized' };
 const invalid: AdminResult = { ok: false, code: 'invalid' };
 const fail = (code: AdminFailure): AdminResult => ({ ok: false, code });
 
-type DatabaseError = { code?: string } | null;
+type DatabaseError = { code?: string; message?: string } | null;
 
 // Turns a database refusal into the code the interface is allowed to see.
 function failure(error: DatabaseError, status?: number): AdminResult {
   const code = error?.code;
   if (code === '23505') return fail('duplicate');
-  if (code === '23514' || code === '22P02' || code === '23502') return fail('invalid');
+  if (code === '23514' || code === '22P02' || code === '23502' || code === '22023') return fail('invalid');
+  if (code === 'P0002') return fail('not_found');
   if (code === '42501' || code === 'PGRST301' || status === 401 || status === 403) return fail('unauthorized');
+  if (missingProductSpecifications(error)) return fail('schema');
+  if (code === 'PGRST202' && error?.message?.includes('save_product_with_colors')) return fail('schema');
   return fail('failed');
 }
 
@@ -43,6 +48,7 @@ const filesOf = (row: unknown) => {
   return { photos: imagePaths(row), models: typeof model === 'string' && model ? [model] : [] };
 };
 const productColumns = (product: ProductInput, modelBytes: number | null) => ({
+  ...productSpecificationsSchema.parse(product),
   name_pt: product.name_pt,
   name_en: product.name_en,
   name_es: product.name_es,
@@ -81,8 +87,10 @@ export async function createProduct(input: unknown): Promise<AdminResult> {
 
   const files = await inspectFiles(uploaded.photos, product.model_path);
   if (!files) return fail('files');
-  const { data, error, status } = await supabase.from('products').insert(productColumns(product, files.modelBytes)).select('id');
-  if (error || !data?.length) {
+  const { data, error, status } = await supabase.rpc('save_product_with_colors', {
+    p_id: null, p_product: productColumns(product, files.modelBytes), p_colors: product.colors,
+  });
+  if (error || !data) {
     // Nothing was written, so nothing points at the files that were just uploaded.
     await removeUnreferenced(supabase, uploaded.photos, uploaded.models);
     return error ? failure(error, status) : denied;
@@ -112,8 +120,10 @@ export async function updateProduct(id: unknown, input: unknown): Promise<AdminR
   // Every file is checked, kept ones included: the model's size is read again from Storage.
   const files = await inspectFiles(after.photos, product.model_path);
   if (!files) return fail('files');
-  const { data, error, status } = await supabase.from('products').update(productColumns(product, files.modelBytes)).eq('id', parsedId.data).select('id');
-  if (error || !data?.length) {
+  const { data, error, status } = await supabase.rpc('save_product_with_colors', {
+    p_id: parsedId.data, p_product: productColumns(product, files.modelBytes), p_colors: product.colors,
+  });
+  if (error || !data) {
     await removeUnreferenced(supabase, added.photos, added.models);
     return error ? failure(error, status) : fail('not_found');
   }

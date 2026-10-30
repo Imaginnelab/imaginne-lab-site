@@ -187,6 +187,7 @@ test.describe('product', () => {
     const dialog = page.locator('#product-dialog');
     await expect(dialog.locator('#product-name-pt')).toBeFocused();
     for (const lang of ['pt', 'en', 'es']) {
+      await dialog.locator('.product-language-buttons button').nth(['pt', 'en', 'es'].indexOf(lang)).click();
       await dialog.locator(`#product-name-${lang}`).fill(productName);
       await dialog.locator(`#product-description-${lang}`).fill('Item criado por teste automático; pode ser apagado.');
     }

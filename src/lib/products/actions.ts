@@ -2,12 +2,16 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser } from '@/lib/dal';
-import { catalogueAllowed, getProductPage } from './queries';
+import { catalogueAllowed, getProductPage, getCartProducts } from './queries';
 import { productIdSchema } from './input';
-import type { PageResult } from './types';
+import type { PageResult, ProductsResult } from './types';
 
 export async function loadProductPage(input: unknown): Promise<PageResult> {
   return getProductPage(input);
+}
+
+export async function loadCartProducts(input: unknown): Promise<ProductsResult> {
+  return getCartProducts(input);
 }
 
 export async function recordProductView(input: unknown): Promise<void> {

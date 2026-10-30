@@ -9,7 +9,6 @@ export function usePageTransition(pathname: string | null) {
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const timers: ReturnType<typeof setTimeout>[] = [];
     const frames: number[] = [];
-    let leaving = false;
     const later = (callback: () => void, delay: number) => timers.push(setTimeout(callback, delay));
     const nextFrame = (callback: () => void) => frames.push(requestAnimationFrame(callback));
     const clear = () => {
@@ -39,29 +38,12 @@ export function usePageTransition(pathname: string | null) {
       }, 1250);
       later(() => overlay.classList.remove('is-visible', 'is-fading'), 1700);
     }
-    const onClick = (event: MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || motion.matches) return;
-      const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[data-transition]') : null;
-      if (!link || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
-      const url = new URL(link.href, location.href);
-      if (!['http:', 'https:'].includes(url.protocol) || url.origin !== location.origin) return;
-      if (url.pathname === location.pathname && url.search === location.search) return;
-      event.preventDefault();
-      if (leaving) return;
-      leaving = true;
-      overlay.classList.remove('is-fading');
-      overlay.classList.add('is-visible', 'is-writing');
-      try { sessionStorage.setItem('imaginne-transition', 'out'); } catch { /* Navigation still works. */ }
-      later(() => location.assign(url.href), 1250);
-    };
-    const onMotion = () => { if (motion.matches && !leaving) { remove(); clear(); } };
-    const onPageShow = (event: PageTransitionEvent) => { if (event.persisted) { leaving = false; remove(); clear(); } };
-    document.addEventListener('click', onClick);
+    const onMotion = () => { if (motion.matches) { remove(); clear(); } };
+    const onPageShow = (event: PageTransitionEvent) => { if (event.persisted) { remove(); clear(); } };
     window.addEventListener('pageshow', onPageShow);
     motion.addEventListener('change', onMotion);
     return () => {
       clear();
-      document.removeEventListener('click', onClick);
       window.removeEventListener('pageshow', onPageShow);
       motion.removeEventListener('change', onMotion);
     };

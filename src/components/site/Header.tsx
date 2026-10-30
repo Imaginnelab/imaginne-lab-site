@@ -1,3 +1,4 @@
+import { NavigationLink } from '@/components/navigation/NavigationLink';
 import type { Locale } from '@/i18n/config';
 import { localePath } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries';
@@ -5,13 +6,14 @@ import { AccountButton } from '@/components/account/AccountButton';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { MobileNav } from './MobileNav';
-type Props = { locale: Locale; anchors: Dictionary['anchors']; copy: Dictionary['site']['header'] ; language: Dictionary['site']['language']; theme: Dictionary['site']['theme']; mobile: Dictionary['site']['mobile'] };
+import { CartButton } from '@/components/cart/CartButton';
+type Props = { locale: Locale; anchors: Dictionary['anchors']; copy: Dictionary['site']['header'] ; language: Dictionary['site']['language']; theme: Dictionary['site']['theme']; mobile: Dictionary['site']['mobile']; cartLabel: string };
 
-export function Header({ locale, anchors, copy, language, theme, mobile }: Props) {
+export function Header({ locale, anchors, copy, language, theme, mobile, cartLabel }: Props) {
   return (
     <header className="nav">
       <div className="wrap">
-        <a className="brand" href={localePath(locale) + "#"+anchors.top}>
+        <NavigationLink className="brand" href={localePath(locale) + "#"+anchors.top}>
           <img src="/assets/img/logo-icon.svg" alt={copy.alt001} />
           <span>
             {' '}{copy.text001}{' '}
@@ -19,24 +21,25 @@ export function Header({ locale, anchors, copy, language, theme, mobile }: Props
               {copy.text002}
             </small>
           </span>
-        </a>
+        </NavigationLink>
         <nav className="nav-links">
-          <a href={localePath(locale) + "#"+anchors.products}>
+          <NavigationLink href={localePath(locale, '/products')}>
             {copy.text003}
-          </a>
-          <a href={localePath(locale) + "#"+anchors.process}>
+          </NavigationLink>
+          <NavigationLink href={localePath(locale) + "#"+anchors.process}>
             {copy.text004}
-          </a>
-          <a href={localePath(locale) + "#"+anchors.customization}>
+          </NavigationLink>
+          <NavigationLink href={localePath(locale) + "#"+anchors.customization}>
             {copy.text005}
-          </a>
-          <a href={localePath(locale) + "#"+anchors.contact}>
+          </NavigationLink>
+          <NavigationLink href={localePath(locale) + "#"+anchors.contact}>
             {copy.text006}
-          </a>
+          </NavigationLink>
         </nav>
         <div className="nav-actions">
           <LanguageSwitcher locale={locale} copy={language} />
           <ThemeToggle label={theme.toggle} />
+          <CartButton label={cartLabel} />
           <AccountButton locale={locale} />
           <MobileNav label={mobile.toggle} />
         </div>

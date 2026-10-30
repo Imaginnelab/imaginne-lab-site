@@ -1,11 +1,12 @@
 import type { AdminFailure } from '@/lib/admin/schemas';
 export const fill = (text: string, values: Record<string, string | number>) =>
   text.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ''));
-export function failureMessage(code: AdminFailure, copy: { forbidden: string; fixErrors: string; saveError: string; duplicate?: string; photoUploadError?: string }, fallback = copy.saveError) {
+export function failureMessage(code: AdminFailure, copy: { forbidden: string; fixErrors: string; saveError: string; duplicate?: string; photoUploadError?: string; schemaMissing?: string }, fallback = copy.saveError) {
   if (code === 'unauthorized') return copy.forbidden;
   if (code === 'invalid') return copy.fixErrors;
   if (code === 'duplicate') return copy.duplicate ?? fallback;
   if (code === 'files') return copy.photoUploadError ?? fallback;
+  if (code === 'schema') return copy.schemaMissing ?? fallback;
   return fallback;
 }
 export function isoToLocal(iso: string | null) {

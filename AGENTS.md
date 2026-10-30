@@ -28,3 +28,19 @@ O Dev Brain pessoal está em C:/Users/gabri/OneDrive/Área de Trabalho/Pessoal/O
 Não publique, faça push/merge ou landing de floor apenas por concluir a implementação. Execute essas ações quando fizerem parte do pedido autorizado. Atualize evidências e limites em vez de afirmar verificações não executadas.
 
 Segurança: consulte a seção de segurança de docs/maestri/Guia.md e Guias/Revisar seguranca.md no Dev Brain. Setup faz revisão inicial por leitura; feature/fix verificam os controles afetados, usando os devs existentes. Auditoria usa security e relata por padrão; correções exigem escopo autorizado. Testes ativos precisam de ambiente isolado, inclusive backend Supabase/pagamentos. Registre cobertura e lacunas; não guarde credenciais nem declare ausência de brechas.
+
+## Padrão de navegação
+
+- Use `NavigationLink` (`src/components/navigation/NavigationLink.tsx`) para links internos que abrem outra página. Ele mostra o loading nativo do Next durante a navegação; não adicione esperas artificiais.
+- Use `BackLink` para voltar no catálogo e nos detalhes: uma única seta acessível, no topo. Âncoras dentro da mesma página podem continuar como `<a>`.
+- Fotos no carrossel, no catálogo e na lista administrativa abrem os detalhes do produto; preserve os controles da galeria e a interação com o modelo 3D.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

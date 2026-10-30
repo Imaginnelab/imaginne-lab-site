@@ -11,9 +11,13 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Browser tests use a separate build directory and synthetic backend, alongside local development.
+  distDir: process.env.IMAGINNE_STORE_TEST === '1' ? '.next-store' : '.next',
+  typescript: { tsconfigPath: process.env.IMAGINNE_STORE_TEST === '1' ? 'tsconfig.store.json' : 'tsconfig.json' },
   // Same URLs as the previous site: /, /pt/, /es/, /products/, /admin/.
   trailingSlash: true,
   poweredByHeader: false,
+  devIndicators: false,
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },

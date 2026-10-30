@@ -3,10 +3,10 @@ import { notFound } from 'next/navigation';
 import { htmlLang, isLocale, locales } from '@/i18n/config';
 import { getDictionary } from '@/i18n/dictionaries';
 import '@/styles/styles.css';
+import '@/styles/navigation.css';
+import { NavigationProvider } from '@/components/navigation/NavigationLink';
+import { PREPAINT_SCRIPT_SRC } from '@/lib/site/prepaint';
 
-// The site always opens in the light theme; dark is only used when the visitor chose it with
-// the toggle (remembered in localStorage). Runs before the first paint, so there is no flash.
-const themeScript = `(function(){var t='light';try{if(localStorage.getItem('imaginne-theme')==='dark')t='dark'}catch(e){}document.documentElement.setAttribute('data-theme',t)})()`;
 type Props = { children: React.ReactNode; params: Promise<{ locale: string }> };
 
 export function generateStaticParams() {
@@ -23,12 +23,13 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>): Promi
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
+  const t = await getDictionary(locale);
   return (
-    <html lang={htmlLang[locale]} suppressHydrationWarning>
+    <html lang={htmlLang[locale]} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script src={PREPAINT_SCRIPT_SRC} async />
       </head>
-      <body>{children}</body>
+      <body><NavigationProvider loading={t.navigation.loading}>{children}</NavigationProvider></body>
     </html>
   );
 }

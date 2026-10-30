@@ -1,3 +1,4 @@
+import { NavigationLink } from '@/components/navigation/NavigationLink';
 import type { Locale } from '@/i18n/config';
 import { localePath } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries';
@@ -10,12 +11,12 @@ export function Footer({ locale, anchors, copy }: Props) {
       <div className="wrap">
         <div className="footer-grid">
           <div className="footer-brand">
-            <a className="brand" href={localePath(locale) + "#"+anchors.top}>
+            <NavigationLink className="brand" href={localePath(locale) + "#"+anchors.top}>
               <img src="/assets/img/logo-icon.svg" alt={copy.alt001} />
               <span>
                 {copy.text001}
               </span>
-            </a>
+            </NavigationLink>
             <p>
               {copy.text002}
             </p>
@@ -33,19 +34,19 @@ export function Footer({ locale, anchors, copy }: Props) {
             </h4>
             <ul>
               <li>
-                <a href={localePath(locale) + "#"+anchors.products}>
+                <NavigationLink href={localePath(locale) + "#"+anchors.products}>
                   {copy.text005}
-                </a>
+                </NavigationLink>
               </li>
               <li>
-                <a href={localePath(locale) + "#"+anchors.process}>
+                <NavigationLink href={localePath(locale) + "#"+anchors.process}>
                   {copy.text006}
-                </a>
+                </NavigationLink>
               </li>
               <li>
-                <a href={localePath(locale) + "#"+anchors.customization}>
+                <NavigationLink href={localePath(locale) + "#"+anchors.customization}>
                   {copy.text007}
-                </a>
+                </NavigationLink>
               </li>
             </ul>
           </div>
@@ -55,9 +56,9 @@ export function Footer({ locale, anchors, copy }: Props) {
             </h4>
             <ul>
               <li>
-                <a href={localePath(locale) + "#"+anchors.products}>
+                <NavigationLink href={localePath(locale) + "#"+anchors.products}>
                   {copy.text009}
-                </a>
+                </NavigationLink>
               </li>
             </ul>
           </div>

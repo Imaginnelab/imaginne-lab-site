@@ -1,4 +1,5 @@
 // Shared, DOM-free helpers for store products (used by the admin, the carousel and the catalogue).
+import { specificationFields } from './specifications';
 // Inputs come from the database and from what people type, so they are read defensively:
 // most parameters are `unknown` on purpose and anything unexpected yields a safe empty value.
 
@@ -79,7 +80,7 @@ function isGrouped(digits: string, mark: string): boolean {
 
 // Name or description in the given language, falling back to Portuguese.
 export function localized(product: unknown, name: unknown, lang?: unknown): string {
-  if (name !== 'name' && name !== 'description') return '';
+  if (name !== 'name' && name !== 'description' && !specificationFields.includes(name as (typeof specificationFields)[number])) return '';
   const pick = (code: string): string => {
     const value = field(product, `${name}_${code}`);
     return typeof value === 'string' && value.trim() ? value : '';

@@ -1,4 +1,5 @@
 'use client';
+import { NavigationLink } from '@/components/navigation/NavigationLink';
 
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
@@ -19,10 +20,10 @@ export function LanguageList({ locale, copy, homeOnly = false }: { locale: Local
   return (
     <div className="lang-list" role="group" aria-label={copy.group}>
       {order.map((language) => (
-        <a key={language} href={localePath(language, path)} className={'lang-link' + (language === locale ? ' is-active' : '')}
-          aria-current={language === locale ? 'true' : undefined} lang={htmlLang[language]} hrefLang={htmlLang[language]} data-transition="">
+        <NavigationLink key={language} href={localePath(language, path)} className={'lang-link' + (language === locale ? ' is-active' : '')}
+          aria-current={language === locale ? 'true' : undefined} lang={htmlLang[language]} hrefLang={htmlLang[language]}>
           <Flag locale={language} /><span>{copy[language]}</span>
-        </a>
+        </NavigationLink>
       ))}
     </div>
   );

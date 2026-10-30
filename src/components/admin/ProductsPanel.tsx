@@ -3,7 +3,8 @@ import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type { AdminDictionary } from '@/i18n/admin-dictionaries';
-import type { Locale } from '@/i18n/config';
+import { localePath, type Locale } from '@/i18n/config';
+import { NavigationLink } from '@/components/navigation/NavigationLink';
 import type { AdminPage, AdminProduct } from '@/lib/admin/queries';
 import { deleteProduct, setProductActive } from '@/lib/admin/actions';
 import { readProducts } from '@/lib/admin/client/read-actions';
@@ -52,8 +53,10 @@ export function ProductsPanel({ locale, copy, initial, mostViewedId }: {
         {list.rows.map((row) => {
           const name = localized(row, 'name', locale), count = viewCount(row), photos = imagePaths(row).length, waiting = pending && busyId === row.id;
           return <li className={'product-row' + (!row.is_active ? ' is-inactive' : '')} key={row.id}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="product-thumb" src={imageUrl(SUPABASE_URL, row.image_path)} alt={fill(copy.photoAlt, { name })} loading="lazy" decoding="async" width={64} height={64} />
+            <NavigationLink href={localePath(locale, '/products/' + row.id)} className="product-thumb-link" aria-label={fill(copy.photoAlt, { name })}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="product-thumb" src={imageUrl(SUPABASE_URL, row.image_path)} alt="" loading="lazy" decoding="async" width={64} height={64} />
+            </NavigationLink>
             <div className="product-info"><p className="product-name"><span className="product-name-text">{name}</span>
               {row.is_active && row.id === star ? <span className="product-star" role="img" aria-label={copy.mostViewed}><svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 2.6 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5L2.5 9.5l6.6-.9z" /></svg></span> : null}</p>
               <p className="product-price">{row.price_cad_cents === null ? copy.onRequest : formatPrice(row.price_cad_cents, locale)}</p>

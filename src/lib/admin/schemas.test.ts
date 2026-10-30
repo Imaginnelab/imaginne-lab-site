@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
 import { couponSchema, idSchema, listSchema, productSchema } from './schemas';
+import { productSpecificationsSchema } from '@/lib/products/specifications-schema';
 
 const product = {
+  colors: [],
+  ...productSpecificationsSchema.parse({}),
   name_pt: 'Vaso', name_en: 'Vase', name_es: 'Jarrón',
   description_pt: 'Feito sob encomenda', description_en: 'Made to order', description_es: 'Hecho a pedido',
   price_cad_cents: 4990, image_path: '0b1c2d3e-0000-4000-8000-000000000001.webp', extra_image_paths: ['extra-1.webp', 'dir/extra-2.png'],
@@ -28,6 +31,13 @@ test('a complete product passes and comes out trimmed', () => {
   assert.ok(okProduct({ sort_order: -100_000 }));
   assert.ok(okProduct({ sort_order: 100_000 }));
   assert.ok(okProduct({ name_en: 'x'.repeat(120), description_en: 'y'.repeat(600) }));
+});
+
+test('technical and media fields never accept locale variants or obsolete optional fields', () => {
+  for (const field of ['colors', 'sizes', 'personalization', 'width_cm', 'height_cm', 'depth_cm', 'weight_g', 'stock_quantity', 'price_cad_cents', 'image_path', 'model_path']) {
+    for (const locale of ['pt', 'en', 'es']) assert.equal(okProduct({ [field + '_' + locale]: 'invalid' }), false);
+  }
+  assert.ok(okProduct({ colors: [{ name: 'Verde', hex: '#556B2F', locale: 'pt' }, { name: 'Branco', hex: '#FFFFFF', locale: 'pt' }] }));
 });
 
 test('product texts respect the limits of the database', () => {
