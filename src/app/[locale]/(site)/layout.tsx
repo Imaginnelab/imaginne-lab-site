@@ -25,10 +25,12 @@ export default async function SiteLayout({ children, params }: Props) {
       <div className="page-transition" id="page-transition" aria-hidden="true"><span className="page-transition-text">{t.site.brand.name}</span></div>
       <FlagSprite />
       <CartProvider locale={locale} copy={t.store.cart}>
-        <Header locale={locale} anchors={t.anchors} copy={t.site.header} language={t.site.language} theme={t.site.theme} mobile={t.site.mobile} cartLabel={t.store.cart.open} />
-        <MobilePanel locale={locale} anchors={t.anchors} copy={t.site.mobilePanel} language={t.site.language} />
-        <main id={t.anchors.top}>{children}</main>
-        <Footer locale={locale} anchors={t.anchors} copy={t.site.footer} />
+        <div className="site-shell">
+          <Header locale={locale} anchors={t.anchors} copy={t.site.header} language={t.site.language} theme={t.site.theme} mobile={t.site.mobile} cartLabel={t.store.cart.open} />
+          <MobilePanel locale={locale} anchors={t.anchors} copy={t.site.mobilePanel} language={t.site.language} />
+          <main id={t.anchors.top}>{children}</main>
+          <Footer locale={locale} anchors={t.anchors} copy={t.site.footer} />
+        </div>
         <SiteEffects />
       </CartProvider>
     </MaintenanceGate>

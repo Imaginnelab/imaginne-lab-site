@@ -24,8 +24,9 @@ export function ProductPurchase({ id, price, copy, quantityCopy, unavailable, st
   const errorId = useId();
   return <aside className="product-purchase">
     <p className="product-purchase-price">{price ?? copy.onRequest}</p>
-    <div className="product-quantity-heading"><p className="product-quantity-label">{copy.quantity}</p><p className="product-stock">{stockLabel}</p></div>
+    <p className="product-quantity-label">{copy.quantity}</p>
     <QuantityControl value={quantity} onChange={setQuantity} copy={quantityCopy} allowInvalid invalid={quantityError} describedBy={quantityError ? errorId : undefined} />
+    <p className="product-stock">{stockLabel}</p>
     {quantityError ? <p className="product-field-error" id={errorId} role="alert">{copy.quantityInvalid}</p> : null}
     <ProductColorList label={copy.colorLabel} error={attempted && needsColor ? copy.chooseColor : undefined} />
     <button type="button" className="btn btn-primary" disabled={unavailable} onClick={() => {
