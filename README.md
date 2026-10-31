@@ -77,5 +77,7 @@ than twelve products to exist.
 
 ## Deployment
 
-Connected to Vercel through GitHub: pushing to `main` deploys to production,
-and other branches get a preview. `vercel.json` selects the Next.js preset.
+Pushing to `main` deploys to production through
+`.github/workflows/deploy.yml`, using the `VERCEL_TOKEN` repository secret. The
+Vercel GitHub integration is off for `main` in `vercel.json`, and other branches
+still get a preview from it. `vercel.json` also selects the Next.js preset.

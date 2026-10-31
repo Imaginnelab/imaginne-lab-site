@@ -1,0 +1,39 @@
+name: Deploy to production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_ORG_ID: team_oE6BNzH79wPoH8uONycQtm6H
+      VERCEL_PROJECT_ID: prj_wz7DcBO2rVmDSiws1p49Twqf71pS
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      # Without Git metadata the deployment belongs to the token's owner, so
+      # Vercel does not block it because of who wrote the commit.
+      - name: Remove Git metadata
+        run: rm -rf .git
+
+      - name: Deploy
+        run: npx --yes vercel@65.8.0 deploy --prod --yes --token "$VERCEL_TOKEN" --meta commit="$GITHUB_SHA"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

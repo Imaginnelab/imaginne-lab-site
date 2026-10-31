@@ -1,6 +1,6 @@
 # Imaginne Lab — instruções de desenvolvimento
 
-O site é uma aplicação Next.js e a produção sai da `main` (a Vercel publica a cada push). A versão estática anterior foi substituída em 09/10/2026 e existe só no histórico do Git.
+O site é uma aplicação Next.js e a produção sai da `main` (o GitHub Actions publica na Vercel a cada push, por `.github/workflows/deploy.yml`). A versão estática anterior foi substituída em 09/10/2026 e existe só no histórico do Git.
 
 ## Stack
 
