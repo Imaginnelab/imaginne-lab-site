@@ -39,6 +39,12 @@ export function Header({ locale, anchors, copy, language, theme, mobile, cartLab
         <div className="nav-actions">
           <LanguageSwitcher locale={locale} copy={language} />
           <ThemeToggle label={theme.toggle} />
+          <NavigationLink className="header-orders" href={localePath(locale, '/orders')} aria-label={copy.orders} title={copy.orders}>
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M7 4h10l4 5v11H3V9Zm-4 5h18M12 4v5M8 13h8m-8 4h5" />
+            </svg>
+            <span className="header-orders-label">{copy.orders}</span>
+          </NavigationLink>
           <CartButton label={cartLabel} />
           <AccountButton locale={locale} />
           <MobileNav label={mobile.toggle} />

@@ -1,0 +1,19 @@
+{
+  "title": "Meus pedidos", "intro": "Acompanhe suas compras, do nosso estúdio até sua casa.", "testNotice": "Pedidos de teste. Nenhum produto é enviado automaticamente.", "moreResults": "Continue para consultar as compras anteriores.",
+  "number": "Pedido #{number}", "placedOn": "Pedido realizado em", "total": "Total", "details": "Ver detalhes do pedido", "back": "Voltar para meus pedidos", "browse": "Explorar a coleção",
+  "empty": "Você ainda não tem pedidos", "emptyHelp": "Suas compras concluídas vão aparecer aqui, com o acompanhamento de cada etapa.",
+  "signIn": "Entre na sua conta no topo da página para ver seus pedidos.", "configuration": "O histórico de pedidos ainda não está configurado neste ambiente.", "unavailable": "Não foi possível carregar seus pedidos. Tente novamente.",
+  "retry": "Tentar novamente", "older": "Pedidos anteriores", "newest": "Pedidos mais recentes", "items": "Itens", "quantity": "Quantidade", "progress": "Acompanhamento do pedido",
+  "shippingAddress": "Endereço de entrega", "addressUnavailable": "O endereço de entrega não está disponível para este pedido.",
+  "subtotal": "Subtotal dos produtos", "shipping": "Frete", "tax": "Impostos", "summary": "Resumo do pedido",
+  "estimatedDelivery": "Previsão de entrega: {date}", "estimatePending": "O estúdio informará uma previsão de entrega quando ela estiver disponível.",
+  "tracking": "Código de rastreio", "track": "Rastrear na Canada Post", "trackingPending": "O rastreio aparecerá aqui assim que for informado pelo estúdio.",
+  "manualUpdates": "As etapas de produção e entrega são atualizadas pelo estúdio. O rastreio da transportadora abre na Canada Post.",
+  "status": { "payment_pending": "Aguardando pagamento", "confirmed": "Pagamento confirmado", "in_production": "Em produção", "packing": "Preparando envio", "shipped": "Enviado", "delivered": "Entregue", "canceled": "Cancelado" },
+  "admin": {
+    "filters": { "title": "Filtrar pedidos", "status": "Status", "all": "Todos os status", "from": "Criados a partir de", "to": "Criados até", "apply": "Aplicar filtros", "clear": "Limpar filtros", "timezone": "Datas de criação no horário de São Paulo. O dia final está incluído.", "invalid": "Confira o status e as datas. A data inicial deve ser anterior ou igual à final.", "empty": "Nenhum pedido encontrado", "emptyHelp": "Altere ou limpe os filtros para ver outros pedidos." },
+    "title": "Pedidos", "intro": "Gerencie as etapas de produção, envio e entrega.", "back": "Voltar para o painel", "edit": "Gerenciar pedido", "status": "Status do pedido", "tracking": "Código de rastreio da Canada Post (opcional)",
+    "estimate": "Previsão de entrega (opcional)", "save": "Salvar atualização", "saving": "Salvando…", "saved": "Pedido atualizado.", "refresh": "Recarregar pedido", "note": "Alterar o status não compra frete, não envia uma encomenda e não estorna o pagamento.",
+    "forbidden": "Somente administradores podem atualizar pedidos.", "invalid": "Confira os dados do pedido e o código de rastreio.", "conflict": "Este pedido foi alterado em outra aba. Recarregue antes de salvar.", "transition": "Uma etapa concluída não pode retroceder e pedidos não pagos não podem avançar.", "unavailable": "Não foi possível salvar a atualização. Tente novamente."
+  }
+}

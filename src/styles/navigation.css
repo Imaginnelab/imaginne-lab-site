@@ -12,3 +12,8 @@
 .page-back:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 @keyframes navigation-progress { from { transform: translateX(-110%); } to { transform: translateX(390%); } }
 @media (prefers-reduced-motion: reduce) { .navigation-spinner > [aria-hidden] { width: 100%; animation: none; } }
+.header-orders { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none; gap: .45rem; min-width: 42px; height: 42px; padding-inline: .8rem; border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--bg-elevated); color: var(--ink); font-size: .8rem; white-space: nowrap; }
+.header-orders:hover { border-color: var(--ink); }
+.header-orders:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.header-orders svg { flex: none; }
+@media (max-width: 1100px) { .header-orders { width: 42px; padding: 0; border-radius: 50%; } .header-orders-label { display: none; } }

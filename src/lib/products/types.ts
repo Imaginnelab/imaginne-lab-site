@@ -22,7 +22,8 @@ export type ProductPage = {
 };
 export type PageInput = { locale: Locale; term?: string; offset?: number; featuredId?: string | null };
 export type PageResult = { ok: true; page: ProductPage } | { ok: false };
-export type CartProductDTO = ProductDTO & { colors: ProductColorOption[]; stockQuantity: number | null };
+export type CartProductDTO = ProductDTO & { colors: ProductColorOption[]; stockQuantity: number | null;
+  widthCm?: number | null; heightCm?: number | null; depthCm?: number | null; weightGrams?: number | null };
 export type ProductsResult = { ok: true; products: CartProductDTO[] } | { ok: false };
 export type ProductDetailDTO = ProductDTO & {
   colors: ProductColorOption[];

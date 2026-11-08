@@ -37,6 +37,7 @@
       "tagline": "3D Printing"
     },
     "header": {
+      "orders": "Your orders",
       "alt001": "Imaginne Lab",
       "text001": "Imaginne Lab",
       "text002": "3D Printing",
@@ -353,6 +354,48 @@
       "previous": "Previous image",
       "next": "Next image",
       "quantityInvalid": "Quantity must be a whole number greater than 0, up to 99."
+    },
+    "checkout": {
+      "title": "Checkout",
+      "description": "Review your pieces before continuing to payment.",
+      "testNotice": "Test checkout. No real payment will be collected and no products will be shipped.",
+      "items": "Your pieces",
+      "summary": "Order summary",
+      "shipping": "Test shipping",
+      "tax": "Tax",
+      "taxAtPayment": "Calculated at payment",
+      "taxNotConfigured": "Not configured for this test",
+      "totalBeforeTax": "Total before tax",
+      "total": "Total",
+      "deliveryNote": "Simulated shipping within Canada. Final test amounts appear on Stripe before you pay.",
+      "signInNote": "Use Sign in at the top of the page to continue. Your cart will be kept.",
+      "pay": "Continue to test payment",
+      "redirecting": "Opening secure payment…",
+      "secure": "Payment details are entered securely on Stripe.",
+      "canceled": "Payment was canceled. Your cart is still here; you can try again.",
+      "backToCheckout": "Back to checkout",
+      "checkStatus": "Check payment status",
+      "errors": {
+        "invalid": "Check the items and quantities in your cart.",
+        "signIn": "Sign in again to continue with payment.",
+        "unavailable": "We could not open payment. Try again in a moment.",
+        "configuration": "Test payment is not configured on this local environment yet.",
+        "productUnavailable": "Remove unavailable items and items that need a quote before continuing.",
+        "colorUnavailable": "Choose a valid colour on the product page before continuing.",
+        "stock": "One or more quantities exceed available stock. Reduce the quantity to continue.",
+        "priceChanged": "A price changed. Review the updated summary and continue again.",
+        "taxConfiguration": "Stripe Tax needs an active Canadian test registration and completed test settings."
+      },
+      "result": {
+        "paid": "Test payment confirmed",
+        "pending": "Waiting for payment confirmation",
+        "expired": "This test payment session has expired",
+        "failed": "Test payment failed",
+        "unknown": "We could not verify this payment",
+        "paidDescription": "Stripe confirmed the simulated payment. This test does not create a shipment or reserve inventory. Your cart has been kept for further testing.",
+        "pendingDescription": "The payment has not been confirmed yet. Check its status again before starting another payment.",
+        "unknownDescription": "Sign in with the account used for checkout and open the original return link, or return to your cart."
+      }
     },
     "cart": {
       "open": "Open cart",

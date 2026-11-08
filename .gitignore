@@ -4,6 +4,7 @@ Thumbs.db
 
 .vercel
 .env*
+!.env.example
 
 # Maestri: estado da equipe e guia local
 .maestri/

@@ -2,6 +2,8 @@
 
 Implementado em 30/10/2026, somente no checkout local.
 
+Atualização em 08/11/2026: o carrinho e o botão Comprar agora abrem o checkout local de teste. O comportamento e os limites da integração Stripe estão em [stripe-checkout.md](stripe-checkout.md); as referências abaixo à ausência de checkout descrevem a entrega original.
+
 ## Comportamento
 
 - Rotas: `/products/{id}/`, `/pt/products/{id}/` e `/es/products/{id}/`. Os links do catálogo e do carrossel abrem os detalhes.

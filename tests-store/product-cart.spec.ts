@@ -14,7 +14,7 @@ test('catalogue opens localized product details, shows all public fields and def
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Vaso escultural');
   await expect(page.locator('.product-description')).toContainText('Impressa camada por camada');
   await expect(page.locator('.product-purchase-price')).toContainText('49,90');
-  await expect(page.getByRole('button', { name: 'Comprar agora', exact: true })).toBeDisabled();
+  await expect(page.getByRole('link', { name: 'Comprar agora', exact: true })).toHaveAttribute('href', '/pt/checkout/');
   await page.getByRole('button', { name: 'Foto 2: Vaso escultural', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Foto 2: Vaso escultural', exact: true })).toHaveAttribute('aria-pressed', 'true');
   expect(models).toEqual([]);
