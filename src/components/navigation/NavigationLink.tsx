@@ -28,7 +28,8 @@ export function NavigationProgress() {
   return <ProgressLine className="navigation-progress" />;
 }
 
-// Shoots forward, then slows down while the page loads; runs to the end when it arrives, then fades.
+// A print nozzle laying a line of filament: it shoots forward, slows down while the page loads,
+// finishes the line when the page arrives, then lifts away while the filament cools and fades.
 function ProgressLine({ className }: { className: string }) {
   const { active, label } = useContext(NavigationState);
   const [wasActive, setWasActive] = useState(active);
@@ -44,7 +45,14 @@ function ProgressLine({ className }: { className: string }) {
   }, [finishing]);
   const phase = active ? 'loading' : finishing ? 'done' : 'idle';
   return <div className={className} data-phase={phase} role="status" aria-live="polite">
-    <span aria-hidden="true" /><span className="navigation-sr-only">{phase === 'loading' ? label : ''}</span>
+    <span className="navigation-run" aria-hidden="true">
+      <span className="navigation-filament" />
+      <svg className="navigation-nozzle" viewBox="0 0 14 16" focusable="false">
+        <path className="navigation-nozzle-body" d="M1 0h12v8H1zM4 8h6l-3 5z" />
+        <circle className="navigation-nozzle-tip" cx="7" cy="14.2" r="1.6" />
+      </svg>
+    </span>
+    <span className="navigation-sr-only">{phase === 'loading' ? label : ''}</span>
   </div>;
 }
 

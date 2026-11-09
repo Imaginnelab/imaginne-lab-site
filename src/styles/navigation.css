@@ -1,22 +1,36 @@
-/* One progress line for page navigation, inside the site header: it spans the header's content
-   (or the floating pill once the page scrolls) and sits right under it. Pages without the header
-   get it at the top of the screen. It shoots forward, slows down while the page loads, then
-   finishes and fades. */
-.navigation-progress { position: absolute; top: calc(100% - 4px); left: var(--gutter); right: var(--gutter); z-index: 1; height: 3px; pointer-events: none; }
+/* Page loading, drawn as a print: a nozzle runs under the site header laying a line of amber
+   filament (it spans the header's content, or the floating pill once the page scrolls). It
+   shoots forward and slows down while the page loads; when the page arrives it finishes the
+   line and lifts away, and the filament cools to forest green and fades. Pages without the
+   header get it at the top of the screen. */
+.navigation-progress { position: absolute; top: calc(100% - 4px); left: var(--gutter); right: var(--gutter); z-index: 1; height: 3px; pointer-events: none; clip-path: inset(-24px -12px -6px 0); }
 .nav.is-ready .navigation-progress { transition: left .45s var(--nav-ease), right .45s var(--nav-ease); }
 .nav.is-scrolled .navigation-progress, html[data-nav="scrolled"] .nav:not(.is-synced) .navigation-progress { left: 14px; right: 14px; }
-.navigation-progress.is-detached { position: fixed; inset: 0 0 auto; z-index: 70; }
-.navigation-progress > [aria-hidden] { display: block; height: 100%; background: var(--amber); border-radius: 999px; transform: scaleX(0); transform-origin: left; opacity: 0; }
-.navigation-progress[data-phase="loading"] > [aria-hidden] { opacity: 1; transform: scaleX(.94); transition: transform 10s cubic-bezier(.05, .85, .1, 1), opacity .12s linear; }
-.navigation-progress[data-phase="done"] > [aria-hidden] { opacity: 0; transform: scaleX(1); transition: transform .25s var(--ease-out), opacity .3s linear .2s; }
+.navigation-progress.is-detached { position: fixed; inset: 0 0 auto; top: 16px; z-index: 70; }
+.navigation-run { position: absolute; inset: 0; transform: translateX(-100%); opacity: 0; }
+.navigation-filament { position: absolute; inset: 0; border-radius: 999px; background: var(--amber); }
+.navigation-nozzle { position: absolute; right: -7px; bottom: 2px; width: 14px; height: 16px; overflow: visible; }
+.navigation-nozzle-body { fill: var(--forest); }
+.navigation-nozzle-tip { fill: var(--amber); }
+[data-theme="dark"] .navigation-nozzle-body { fill: var(--ink); }
+
+.navigation-progress[data-phase="loading"] .navigation-run { opacity: 1; transform: translateX(-5%); transition: transform 10s cubic-bezier(.05, .85, .1, 1), opacity .12s linear; }
+.navigation-progress[data-phase="loading"] .navigation-nozzle { animation: navigation-print .14s ease-in-out infinite alternate; }
+
+.navigation-progress[data-phase="done"] .navigation-run { opacity: 1; transform: translateX(0); transition: transform .25s var(--ease-out); }
+.navigation-progress[data-phase="done"] .navigation-nozzle { opacity: 0; transform: translateY(-10px); transition: transform .3s var(--ease-out) .1s, opacity .25s linear .12s; }
+.navigation-progress[data-phase="done"] .navigation-filament { opacity: 0; background: var(--forest); transition: background-color .25s linear .15s, opacity .3s linear .25s; }
+[data-theme="dark"] .navigation-progress[data-phase="done"] .navigation-filament { background: var(--ink-soft); }
+@keyframes navigation-print { from { transform: translate(-.5px, 0); } to { transform: translate(.5px, -1px); } }
 html:has(.navigation-progress[data-phase="loading"]) { cursor: progress; }
 .navigation-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .page-back { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 50%; color: var(--ink); background: var(--bg-elevated); }
 .page-back:hover { border-color: var(--ink); }
 .page-back:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
-  .navigation-progress > [aria-hidden] { transform: none; }
-  .navigation-progress[data-phase] > [aria-hidden] { transform: none; transition: opacity .2s linear; }
+  .navigation-progress[data-phase] .navigation-run { transform: none; transition: opacity .2s linear; }
+  .navigation-progress[data-phase] .navigation-nozzle { display: none; }
+  .navigation-progress[data-phase="done"] .navigation-run { opacity: 0; }
 }
 .header-orders { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none; gap: .45rem; min-width: 42px; height: 42px; padding-inline: .8rem; border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--bg-elevated); color: var(--ink); font-size: .8rem; white-space: nowrap; }
 .header-orders:hover { border-color: var(--ink); }
