@@ -114,8 +114,10 @@ test('photo navigation shows loading while the new page is loading and back cont
   await page.route(new RegExp('/pt/products/' + id + '/'), async (route) => { await gate; await route.continue(); });
   const photo = page.locator('.products-photo-link').first();
   const navigating = photo.click();
-  await expect(photo.locator('.navigation-spinner')).toBeVisible();
-  expect((await photo.locator('.navigation-spinner').boundingBox())!.height).toBeLessThanOrEqual(3);
+  const progress = page.locator('.navigation-progress[data-phase="loading"]');
+  await expect(progress).toBeVisible();
+  expect((await progress.boundingBox())!.height).toBeLessThanOrEqual(3);
+  await expect(photo.locator('.navigation-progress')).toHaveCount(0);
   await page.screenshot({ path: 'test-results/store-navigation-loading.png' });
   release();
   await navigating;

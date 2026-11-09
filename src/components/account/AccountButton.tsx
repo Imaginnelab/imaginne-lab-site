@@ -3,10 +3,15 @@ import type { Locale } from '@/i18n/config';
 import { accountView } from '@/lib/auth/profile';
 import { getCurrentUser } from '@/lib/dal';
 import { AccountMenu } from './AccountMenu';
+import { AccountPopover } from './AccountPopover';
 
-// Header button: "Sign in" for visitors, the avatar with initials for whoever is signed in.
-// The state comes from the server with the page, so there is nothing to wait for or to flash.
+// Header button: "Sign in" for visitors (opens the sign-in dialog), the avatar with initials for
+// whoever is signed in (opens the account menu). The state comes from the server with the page,
+// so there is nothing to wait for or to flash.
 export async function AccountButton({ locale }: { locale: Locale }) {
   const [user, dictionary] = await Promise.all([getCurrentUser(), getAccountDictionary(locale)]);
-  return <AccountMenu user={accountView(user)} t={dictionary.account} locale={locale} adminHref={`/admin/?lang=${locale}`} />;
+  const view = accountView(user);
+  const adminHref = `/admin/?lang=${locale}`;
+  if (view) return <AccountPopover user={view} t={dictionary.account} adminHref={adminHref} />;
+  return <AccountMenu user={null} t={dictionary.account} locale={locale} adminHref={adminHref} />;
 }

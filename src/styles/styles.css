@@ -54,6 +54,33 @@
 /* Saved session detected in <head>: paint the avatar before auth.js resolves, so the header never changes width. */
 html[data-auth="pending"] .nav-actions .auth-trigger span { display: none; }
 html[data-auth="pending"] .auth-trigger::after { content: var(--auth-initials, ""); }
+/* Account menu: what the avatar opens. Same surface as the language menu, anchored under the avatar. */
+.account-switch { position: relative; }
+.account-menu { position: absolute; top: calc(100% + 14px); right: 0; z-index: 5; width: 17rem; display: grid; gap: 2px; padding: .4rem; border: 1px solid var(--border); border-radius: 18px; background: var(--bg-elevated); color: var(--ink); box-shadow: 0 1px 2px rgba(var(--shadow-color), .06), 0 18px 40px -16px rgba(var(--shadow-color), .32); transform-origin: top right; animation: lang-menu-in .22s cubic-bezier(.23, 1, .32, 1); }
+.account-menu[hidden] { display: none; }
+.account-identity { display: flex; align-items: center; gap: .75rem; padding: .6rem .7rem .8rem; margin-bottom: .3rem; border-bottom: 1px solid var(--border); }
+.account-identity > div { min-width: 0; }
+.account-identity .auth-avatar { width: 40px; height: 40px; font-size: .8rem; }
+.account-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-email { color: var(--ink-soft); font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-item { display: flex; align-items: center; gap: .7rem; width: 100%; min-height: 44px; padding: .55rem .7rem; border: 0; border-radius: 12px; background: transparent; color: var(--ink-soft); font: inherit; font-size: .92rem; font-weight: 500; text-align: left; transition: color .2s var(--ease-out), background-color .2s var(--ease-out); }
+.account-item:hover, .account-item:focus-visible { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); outline: 0; }
+.account-item:focus-visible { box-shadow: inset 0 0 0 2px var(--ink); }
+.account-item svg { width: 18px; height: 18px; flex: none; }
+.account-item > span:first-of-type { flex: 1; }
+.account-count { flex: none; min-width: 22px; padding: .1rem .4rem; border-radius: var(--radius-pill); background: var(--amber); color: var(--amber-ink); font-size: .72rem; font-weight: 600; text-align: center; }
+.account-item-leave { --leave: #b3261e; margin-top: .3rem; color: var(--leave); }
+.account-item-leave:hover, .account-item-leave:focus-visible { color: #8c1d18; background: #fbe1dd; }
+.account-item-leave:focus-visible { box-shadow: inset 0 0 0 2px #e8a59d; }
+[data-theme="dark"] .account-item-leave { --leave: #ffb4ab; }
+[data-theme="dark"] .account-item-leave:hover, [data-theme="dark"] .account-item-leave:focus-visible { color: #ffdad6; background: rgba(255, 180, 171, .16); }
+.account-item-leave { position: relative; }
+.account-item + .account-item-leave::before { content: ""; position: absolute; inset: -.2rem .7rem auto; border-top: 1px solid var(--border); }
+.account-item:disabled { cursor: progress; }
+.account-message { color: #b3261e; font-size: .85rem; padding-inline: .7rem; }
+.account-message:empty { display: none; }
+[data-theme="dark"] .account-message { color: #ffb4ab; }
+@media (max-width: 460px) { .account-menu { position: fixed; top: 76px; right: var(--gutter); left: var(--gutter); width: auto; } }
 .admin-main { padding-block: 3rem; }
 .admin-main h1 { margin: 1rem 0; }
 .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 1.5rem; margin-block: 2rem; }
@@ -183,6 +210,30 @@ body {
 .site-shell { display: flex; flex-direction: column; min-height: calc(100dvh - var(--maintenance-banner, 0px)); }
 .site-shell > main { flex: 1 0 auto; }
 .site-shell > .nav, .site-shell > .site-footer { flex-shrink: 0; }
+
+/* Scrollbars: a forest pill floating inside a cream track, the same shape the header takes when
+   it floats. It turns amber, the one accent, while it is being hovered or dragged. Chromium and
+   Safari draw it from the ::-webkit-scrollbar rules; Firefox only takes colours and a thin width.
+   The standard properties are kept to Firefox because Chromium ignores the pseudo-elements once
+   scrollbar-color is set. */
+::-webkit-scrollbar { width: 14px; height: 14px; }
+::-webkit-scrollbar-track { background: var(--bg-sunken); }
+::-webkit-scrollbar-thumb { min-height: 48px; border: 4px solid var(--bg-sunken); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--forest) 72%, var(--bg-sunken)); background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { border-width: 3px; background-color: var(--amber); }
+::-webkit-scrollbar-thumb:active { border-width: 3px; background-color: color-mix(in srgb, var(--amber) 82%, var(--amber-ink)); }
+::-webkit-scrollbar-corner { background: var(--bg-sunken); }
+/* Inner scroll areas (cart, dialogs, menus) get a slimmer version on their own surface. */
+body *::-webkit-scrollbar { width: 10px; height: 10px; }
+body *::-webkit-scrollbar-track { background: transparent; }
+body *::-webkit-scrollbar-thumb { border-width: 3px; border-color: transparent; background-color: color-mix(in srgb, var(--ink) 28%, transparent); }
+body *::-webkit-scrollbar-thumb:hover { border-width: 2px; background-color: var(--amber); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background-color: color-mix(in srgb, var(--ink-soft) 55%, var(--bg-sunken)); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background-color: var(--amber); }
+@supports not selector(::-webkit-scrollbar) {
+  html { scrollbar-color: color-mix(in srgb, var(--forest) 72%, var(--bg-sunken)) var(--bg-sunken); }
+  [data-theme="dark"] { scrollbar-color: color-mix(in srgb, var(--ink-soft) 55%, var(--bg-sunken)) var(--bg-sunken); }
+  body * { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--ink) 28%, transparent) transparent; }
+}
 
 img { max-width: 100%; display: block; }
 a { color: inherit; text-decoration: none; }
