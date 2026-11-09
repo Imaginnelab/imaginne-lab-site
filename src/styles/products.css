@@ -34,6 +34,26 @@ a[href="#products"][hidden] { display: none; }
 .products-arrow:hover:not(:disabled) { border-color: var(--forest); background: var(--forest); color: #FBF9F2; }
 .products-arrow:active:not(:disabled) { transform: scale(.94); }
 .products-arrow:disabled { opacity: .3; cursor: default; }
+.products-stage { position: relative; }
+.products-stage > .products-arrow {
+  position: absolute;
+  top: calc(.25rem + var(--card-w, 280px) * .625 - 23px);
+  z-index: 5;
+  width: 46px;
+  height: 46px;
+  border: 0;
+  background: var(--bg-elevated);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(var(--shadow-color), .1), 0 6px 18px rgba(var(--shadow-color), .2);
+  opacity: 0;
+  transition: opacity .2s var(--ease-out), transform .2s var(--ease-out), box-shadow .2s;
+}
+.products-stage > [data-products-previous] { left: -23px; }
+.products-stage > [data-products-next] { right: -23px; }
+.products-carousel:hover .products-stage > .products-arrow:not(:disabled), .products-stage > .products-arrow:focus-visible { opacity: 1; }
+.products-stage > .products-arrow:hover:not(:disabled) { background: var(--bg-elevated); color: var(--ink); border-color: transparent; transform: scale(1.07); box-shadow: 0 1px 2px rgba(var(--shadow-color), .1), 0 10px 24px rgba(var(--shadow-color), .26); }
+.products-stage > .products-arrow:disabled { opacity: 0; pointer-events: none; }
+@media (hover: none) { .products-stage > .products-arrow { display: none; } }
 /* The row of cards. The next card always peeks in at the edge, and the edges fade out while
    there is more to that side (the arrows' disabled state says when there is not). */
 .products-track {
@@ -237,7 +257,7 @@ a[href="#products"][hidden] { display: none; }
   outline-offset: -3px;
 }
 /* Photo changes are immediate, including when reduced motion is requested. */
-.products-content { display: grid; gap: .3rem; padding: .9rem .15rem 0; }
+.products-content { display: grid; gap: .3rem; padding: 1rem .75rem 0; }
 .products-name {
   font-size: 1.02rem;
   font-weight: 600;
@@ -260,7 +280,7 @@ a[href="#products"][hidden] { display: none; }
   -webkit-line-clamp: 1;
   color: var(--ink-soft);
 }
-.products-buy { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: .45rem; }
+.products-buy { position: relative; display: flex; align-items: center; justify-content: space-between; gap: .75rem; min-height: 44px; margin-top: .45rem; }
 .products-price { font-size: 1.12rem; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; color: var(--ink); }
 /* The action is a round arrow that opens into "See details" while the card is pointed at. */
 .products-order {
@@ -285,6 +305,70 @@ a[href="#products"][hidden] { display: none; }
 .products-card:hover .products-order, .products-order:focus-visible { gap: .45rem; padding: 0 14px 0 16px; }
 .products-card:hover .products-order-label, .products-order:focus-visible .products-order-label { max-width: 9rem; opacity: 1; }
 .products-order:hover { background: color-mix(in srgb, var(--amber) 85%, var(--amber-ink)); }
+/* Quick buy: the round arrow opens a small card above it with "Buy now" and "Add to cart",
+   under the pointer or on a tap or Enter. The arrow turns to point at it while it is open. */
+.products-quick { position: relative; flex: none; }
+.products-quick-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--amber);
+  color: var(--amber-ink);
+  cursor: pointer;
+  transition: background-color .2s, transform .2s var(--ease-out);
+}
+.products-quick-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .25s var(--ease-out); }
+.products-quick-toggle:hover, .products-quick.is-open .products-quick-toggle { background: color-mix(in srgb, var(--amber) 85%, var(--amber-ink)); }
+.products-quick.is-open .products-quick-toggle svg { transform: rotate(-90deg); }
+.products-quick-menu {
+  position: absolute;
+  right: -.25rem;
+  bottom: calc(100% + 10px);
+  z-index: 6;
+  display: grid;
+  gap: .4rem;
+  width: 13.5rem;
+  padding: .45rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-elevated);
+  box-shadow: 0 1px 2px rgba(var(--shadow-color), .06), 0 16px 36px -14px rgba(var(--shadow-color), .35);
+  opacity: 0;
+  transform: translateY(6px) scale(.97);
+  transform-origin: bottom right;
+  pointer-events: none;
+  transition: opacity .18s var(--ease-out), transform .22s var(--ease-out);
+}
+/* Covers the gap down to the arrow, so moving onto the card keeps it open. */
+.products-quick-menu::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 12px; }
+.products-quick.is-open .products-quick-menu { opacity: 1; transform: none; pointer-events: auto; }
+.products-quick-menu button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 .9rem;
+  border-radius: 11px;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .2s, border-color .2s;
+}
+.products-quick-buy { border: 0; background: var(--amber); color: var(--amber-ink); }
+.products-quick-buy:hover { background: color-mix(in srgb, var(--amber) 85%, var(--amber-ink)); }
+.products-quick-cart { border: 1px solid var(--border-strong); background: transparent; color: var(--ink); }
+.products-quick-cart:hover { border-color: var(--ink); background: var(--bg-sunken); }
+.products-quick-cart svg { width: 18px; height: 18px; flex: none; }
+.products-quick button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.products-quick button:disabled { cursor: progress; }
 .products-arrow:focus-visible, .products-order:focus-visible, .products-track:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
@@ -313,7 +397,7 @@ a[href="#products"][hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .products-photo[data-media-visible] .products-media-spinner, .products-page-loader .products-media-spinner { animation: none; }
   .products-track { scroll-behavior: auto; scroll-snap-type: none; }
-  .products-arrow, .products-image, .products-gallery-arrow, .products-order, .products-order-label, .products-dots i { transition: none; }
+  .products-arrow, .products-image, .products-gallery-arrow, .products-order, .products-order-label, .products-dots i, .products-quick-toggle, .products-quick-toggle svg, .products-quick-menu, .products-stage > .products-arrow { transition: none; }
   .products-card:hover .products-image:not([hidden]) { transform: none; }
 }
 

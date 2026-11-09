@@ -53,7 +53,11 @@ export function enableCarousel(track: HTMLUListElement, previous: HTMLButtonElem
     status.textContent = `${copy.position}: ${index} / ${count}`;
     update();
   };
-  const animateTo = (target: number, duration = 500) => {
+  // Paging glides like a store shelf: it eases in and out over a whole page of cards. A flick
+  // only decelerates, since the hand already gave it speed.
+  const easeInOut = (t: number) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+  const animateTo = (target: number, duration = 650, ease = easeInOut) => {
     stop();
     const start = track.scrollLeft;
     const end = clamp(target);
@@ -62,7 +66,7 @@ export function enableCarousel(track: HTMLUListElement, previous: HTMLButtonElem
     const started = performance.now();
     const tick = (now: number) => {
       const progress = Math.min(1, (now - started) / duration);
-      track.scrollLeft = start + (end - start) * (1 - Math.pow(1 - progress, 3));
+      track.scrollLeft = start + (end - start) * ease(progress);
       if (progress < 1) frame = requestAnimationFrame(tick);
       else { stop(); announce(); }
     };
@@ -138,7 +142,7 @@ export function enableCarousel(track: HTMLUListElement, previous: HTMLButtonElem
     const velocity = performance.now() - drag.time > 100 ? 0 : Math.max(-2.5, Math.min(2.5, drag.velocity));
     if (motion.matches || event.type === 'pointercancel') { stop(); announce(); return; }
     const target = Math.round(clamp(track.scrollLeft + velocity * 160) / step()) * step();
-    animateTo(target, 480);
+    animateTo(target, 480, easeOut);
   };
   listen(track, 'pointerup', release);
   listen(track, 'pointercancel', release);

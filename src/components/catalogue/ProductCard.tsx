@@ -6,6 +6,7 @@ import type { Dictionary } from '@/i18n/dictionaries';
 import { localePath, type Locale } from '@/i18n/config';
 import type { ProductDTO } from '@/lib/products/types';
 import { ProductMedia } from './ProductMedia';
+import { ProductQuickBuy } from './ProductQuickBuy';
 import { trackView } from './track-view';
 
 type Copy = Dictionary['store']['card'];
@@ -26,10 +27,12 @@ export function ProductCard({ product, locale, copy, priority = false }: {
         <p className="products-description">{product.description}</p>
         <div className="products-buy">
           <p className="products-price">{product.price ?? copy.request}</p>
-          <Link className="products-order" href={href} prefetch={false} aria-label={copy.details + ': ' + product.name}>
-            <span className="products-order-label">{copy.details}</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-          </Link>
+          {product.price === null ? (
+            <Link className="products-order" href={href} prefetch={false} aria-label={copy.details + ': ' + product.name}>
+              <span className="products-order-label">{copy.details}</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </Link>
+          ) : <ProductQuickBuy product={product} locale={locale} copy={copy} />}
         </div>
       </div>
     </li>

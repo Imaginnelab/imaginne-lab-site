@@ -9,7 +9,7 @@ test('catalogue opens localized product details, shows all public fields and def
   const models: string[] = [];
   page.on('request', (request) => { if (request.url().includes('/product-models/')) models.push(request.url()); });
   await page.goto('/pt/products/');
-  await page.locator('.products-order').first().click();
+  await page.locator('.products-name a').first().click();
   await expect(page).toHaveURL(new RegExp('/pt/products/' + id + '/$'));
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Vaso escultural');
   await expect(page.locator('.product-description')).toContainText('Impressa camada por camada');

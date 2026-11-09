@@ -274,7 +274,10 @@
       "modelAlt": "Modelo 3D interactivo del producto",
       "modelHelp": "Arrastra el modelo 3D o usa sus flechas para girar. Usa los botones de vista para alternar entre 3D y fotos. Desliza sobre las fotos para recorrer los productos.",
       "modelBadge": "3D",
-      "modelSize": " · {size} MB"
+      "modelSize": " · {size} MB",
+      "addToCart": "Añadir al carrito",
+      "buyNow": "Comprar ahora",
+      "buyOptions": "Opciones de compra"
     },
     "search": {
       "open": "Buscar productos",
