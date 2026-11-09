@@ -15,6 +15,7 @@
     "logout": "Sair",
     "admin": "Painel admin",
     "cart": "Meu carrinho",
+    "orders": "Minhas compras",
     "mismatch": "As senhas não coincidem.",
     "nameRequired": "Informe seu nome.",
     "hint": "Use pelo menos 8 caracteres.",

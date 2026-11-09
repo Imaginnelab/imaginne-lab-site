@@ -8,11 +8,11 @@ import type { AccountDictionary } from '@/i18n/account-dictionaries';
 import { signOut } from '@/lib/auth/actions';
 import type { AccountView } from '@/lib/auth/profile';
 
-type Props = { user: AccountView; t: AccountDictionary['account']; adminHref: string };
+type Props = { user: AccountView; t: AccountDictionary['account']; adminHref: string; ordersHref: string };
 
 // Signed in, the avatar opens a menu under it (same family as the language menu) instead of a
 // modal: who is signed in, then everything the account can do, one row each.
-export function AccountPopover({ user, t, adminHref }: Props) {
+export function AccountPopover({ user, t, adminHref, ordersHref }: Props) {
   const [opened, setOpened] = useState(false);
   // Opened from the keyboard, focus moves into the menu; opened with the pointer, it stays put.
   const byKeyboard = useRef(false);
@@ -98,6 +98,12 @@ export function AccountPopover({ user, t, adminHref }: Props) {
           <span>{t.cart}</span>
           {count ? <span className="account-count">{count}</span> : null}
         </button>
+        <NavigationLink role="menuitem" className="account-item" href={ordersHref} onClick={() => close(false)}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" d="M7 4h10l4 5v11H3V9Zm-4 5h18M12 4v5M8 13h8m-8 4h5" />
+          </svg>
+          <span>{t.orders}</span>
+        </NavigationLink>
         {user.isAdmin ? (
           <NavigationLink role="menuitem" className="account-item" href={adminHref} onClick={() => close(false)}>
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

@@ -1,5 +1,5 @@
 import { getAccountDictionary } from '@/i18n/account-dictionaries';
-import type { Locale } from '@/i18n/config';
+import { localePath, type Locale } from '@/i18n/config';
 import { accountView } from '@/lib/auth/profile';
 import { getCurrentUser } from '@/lib/dal';
 import { AccountMenu } from './AccountMenu';
@@ -12,6 +12,6 @@ export async function AccountButton({ locale }: { locale: Locale }) {
   const [user, dictionary] = await Promise.all([getCurrentUser(), getAccountDictionary(locale)]);
   const view = accountView(user);
   const adminHref = `/admin/?lang=${locale}`;
-  if (view) return <AccountPopover user={view} t={dictionary.account} adminHref={adminHref} />;
+  if (view) return <AccountPopover user={view} t={dictionary.account} adminHref={adminHref} ordersHref={localePath(locale, '/orders')} />;
   return <AccountMenu user={null} t={dictionary.account} locale={locale} adminHref={adminHref} />;
 }

@@ -15,6 +15,7 @@
     "logout": "Cerrar sesión",
     "admin": "Panel admin",
     "cart": "Mi carrito",
+    "orders": "Mis compras",
     "mismatch": "Las contraseñas no coinciden.",
     "nameRequired": "Introduce tu nombre.",
     "hint": "Usa al menos 8 caracteres.",
