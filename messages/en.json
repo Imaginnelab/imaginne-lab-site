@@ -182,7 +182,13 @@
       "text005": "Choice of color and material",
       "text006": "Name, date, or engraved message",
       "text007": "Order Now",
-      "alt001": "Pink wave-textured vase 3D printed by Imaginne Lab, holding a flower arrangement"
+      "alt001": "Illustration: the Imaginne Lab mascot, a smiling light bulb, next to a small Sofia nameplate being 3D printed, with colour, size and engraving options",
+      "sceneStatus": "Ready to print",
+      "sceneTitle1": "Your piece,",
+      "sceneTitle2": "your way.",
+      "sceneColor": "Colour",
+      "sceneSize": "Size",
+      "sceneEngraving": "Engraving"
     },
     "contact": {
       "text001": "Ready to bring your idea to life?",

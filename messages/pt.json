@@ -182,7 +182,13 @@
       "text005": "Escolha de cor e material",
       "text006": "Nome, data ou mensagem gravada",
       "text007": "Fazer Pedido",
-      "alt001": "Vaso rosa com textura ondulada impresso em 3D pela Imaginne Lab, com um arranjo de flores"
+      "alt001": "Ilustração: o mascote da Imaginne Lab, uma lâmpada sorridente, ao lado de uma plaquinha com o nome Sofia sendo impressa em 3D, com as opções de cor, tamanho e gravação",
+      "sceneStatus": "Pronta para imprimir",
+      "sceneTitle1": "Sua peça,",
+      "sceneTitle2": "do seu jeito.",
+      "sceneColor": "Cor",
+      "sceneSize": "Tamanho",
+      "sceneEngraving": "Gravação"
     },
     "contact": {
       "text001": "Pronta para dar vida à sua ideia?",

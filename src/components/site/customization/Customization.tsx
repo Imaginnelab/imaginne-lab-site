@@ -1,5 +1,6 @@
 import type { Locale } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries';
+import { CustomizationScene } from './CustomizationScene';
 
 type Props = { locale: Locale; anchors: Dictionary['anchors']; copy: Dictionary['home']['customization']  };
 
@@ -46,7 +47,7 @@ export function Customization({ anchors, copy }: Props) {
               </div>
             </div>
             <div className="spotlight-visual">
-              <img src="/assets/img/hero-vase.jpg" width={1086} height={1448} alt={copy.alt001} loading="lazy" decoding="async" />
+              <CustomizationScene copy={copy} />
             </div>
           </div>
         </div>
