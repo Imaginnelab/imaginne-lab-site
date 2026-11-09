@@ -1,5 +1,6 @@
 import type { Locale } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries';
+import { BulbMascot } from '../Mascot';
 
 type Props = { locale: Locale; anchors: Dictionary['anchors']; copy: Dictionary['home']['contact']  };
 
@@ -22,6 +23,8 @@ export function Contact({ anchors, copy }: Props) {
             </svg>
           </a>
         </div>
+        {/* The mascot waves goodbye under the last call to action. */}
+        <BulbMascot className="cta-mascot" />
       </div>
     </section>
   );

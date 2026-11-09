@@ -944,6 +944,19 @@ html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
 }
 .cta-band p.lede { margin-inline: auto; margin-top: 1.1rem; text-align: center; }
 .cta-band .hero-actions { justify-content: center; margin-top: 2.2rem; }
+/* The mascot under the last call to action, waving goodbye. */
+.mascot { display: block; overflow: visible; }
+.mascot .scene-mascot, .mascot .scene-shadow, .mascot .scene-sparks path, .mascot .scene-eyes { transform-box: fill-box; }
+.mascot .scene-wave { transform-box: view-box; transform-origin: 594px 292px; }
+.cta-mascot { width: clamp(96px, 11vw, 132px); height: auto; margin: 2.5rem auto 0; }
+.cta-mascot .scene-mascot { animation: scene-float 5s ease-in-out infinite; }
+.cta-mascot .scene-shadow { transform-origin: center; animation: scene-shade 5s ease-in-out infinite; }
+.cta-mascot .scene-wave { animation: scene-wave 2.6s ease-in-out infinite; }
+.cta-mascot .scene-sparks path { transform-origin: center; animation: scene-spark 2.4s ease-in-out infinite; }
+.cta-mascot .scene-sparks path:nth-child(2), .cta-mascot .scene-sparks path:nth-child(5) { animation-delay: .4s; }
+.cta-mascot .scene-sparks path:nth-child(3), .cta-mascot .scene-sparks path:nth-child(4) { animation-delay: .8s; }
+.cta-mascot .scene-eyes { transform-origin: center; animation: scene-blink 5.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .cta-mascot * { animation: none !important; } }
 
 /* ---------------------------------------------------------
    Footer
