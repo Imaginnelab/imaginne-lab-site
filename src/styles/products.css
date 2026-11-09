@@ -279,68 +279,62 @@ a[href="#products"][hidden] { display: none; }
 .products-card:hover .products-order, .products-order:focus-visible { gap: .45rem; padding: 0 14px 0 16px; }
 .products-card:hover .products-order-label, .products-order:focus-visible .products-order-label { max-width: 9rem; opacity: 1; }
 .products-order:hover { background: color-mix(in srgb, var(--amber) 85%, var(--amber-ink)); }
-/* Quick buy: the round arrow opens a small card above it with "Buy now" and "Add to cart",
-   under the pointer or on a tap or Enter. The arrow turns to point at it while it is open. */
-.products-quick { position: relative; flex: none; }
-.products-quick-toggle {
+/* Quick buy: the round amber arrow widens into a pill of two icons, "Buy now" (a bolt) and
+   "Add to cart", under the pointer or on a tap or Enter. Each icon names itself in a small tip
+   above it while pointed at or focused. */
+.products-quick {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  background: var(--amber);
+  color: var(--amber-ink);
+  transition: width .3s var(--ease-out), box-shadow .25s var(--ease-out);
+}
+.products-quick.is-open { width: 92px; box-shadow: 0 8px 20px -10px rgba(var(--shadow-color), .45); }
+.products-quick button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
+  padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--amber);
-  color: var(--amber-ink);
+  background: transparent;
+  color: inherit;
   cursor: pointer;
-  transition: background-color .2s, transform .2s var(--ease-out);
 }
-.products-quick-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .25s var(--ease-out); }
-.products-quick-toggle:hover, .products-quick.is-open .products-quick-toggle { background: color-mix(in srgb, var(--amber) 85%, var(--amber-ink)); }
-.products-quick.is-open .products-quick-toggle svg { transform: rotate(-90deg); }
-.products-quick-menu {
+.products-quick svg { width: 19px; height: 19px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.products-quick-toggle { position: absolute; top: 0; right: 0; transition: opacity .15s linear; }
+.products-quick-toggle svg { transition: transform .25s var(--ease-out); }
+.products-quick.is-open .products-quick-toggle { opacity: 0; pointer-events: none; }
+.products-quick-actions { position: absolute; inset: 0 2px; display: flex; align-items: center; justify-content: space-between; opacity: 0; transition: opacity .18s linear .08s; }
+.products-quick.is-open .products-quick-actions { opacity: 1; }
+.products-quick-actions button:hover, .products-quick-actions button:focus-visible { background: color-mix(in srgb, var(--amber) 80%, var(--amber-ink)); }
+.products-quick-actions button + button::before { content: ""; position: absolute; left: -1px; top: 12px; bottom: 12px; width: 1px; background: color-mix(in srgb, var(--amber-ink) 22%, transparent); }
+.products-quick-tip {
   position: absolute;
-  right: -.25rem;
-  bottom: calc(100% + 10px);
-  z-index: 6;
-  display: grid;
-  gap: .4rem;
-  width: 13.5rem;
-  padding: .45rem;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--bg-elevated);
-  box-shadow: 0 1px 2px rgba(var(--shadow-color), .06), 0 16px 36px -14px rgba(var(--shadow-color), .35);
-  opacity: 0;
-  transform: translateY(6px) scale(.97);
-  transform-origin: bottom right;
-  pointer-events: none;
-  transition: opacity .18s var(--ease-out), transform .22s var(--ease-out);
-}
-/* Covers the gap down to the arrow, so moving onto the card keeps it open. */
-.products-quick-menu::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 12px; }
-.products-quick.is-open .products-quick-menu { opacity: 1; transform: none; pointer-events: auto; }
-.products-quick-menu button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-  width: 100%;
-  min-height: 42px;
-  padding: 0 .9rem;
-  border-radius: 11px;
-  font: inherit;
-  font-size: .9rem;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  padding: .3rem .55rem;
+  border-radius: 8px;
+  background: var(--forest);
+  color: #FBF9F2;
+  font-size: .75rem;
   font-weight: 600;
   white-space: nowrap;
-  cursor: pointer;
-  transition: background-color .2s, border-color .2s;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  pointer-events: none;
+  transition: opacity .15s linear, transform .2s var(--ease-out);
 }
-.products-quick-buy { border: 0; background: var(--amber); color: var(--amber-ink); }
-.products-quick-buy:hover { background: color-mix(in srgb, var(--amber) 85%, var(--amber-ink)); }
-.products-quick-cart { border: 1px solid var(--border-strong); background: transparent; color: var(--ink); }
-.products-quick-cart:hover { border-color: var(--ink); background: var(--bg-sunken); }
-.products-quick-cart svg { width: 18px; height: 18px; flex: none; }
+/* The last tip hangs from the right edge, so a long label stays inside the card. */
+.products-quick-cart .products-quick-tip { left: auto; right: 0; transform: translate(0, 4px); }
+.products-quick-actions button:hover .products-quick-tip, .products-quick-actions button:focus-visible .products-quick-tip { opacity: 1; transform: translate(-50%, 0); }
+.products-quick-actions .products-quick-cart:hover .products-quick-tip, .products-quick-actions .products-quick-cart:focus-visible .products-quick-tip { transform: none; }
 .products-quick button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .products-quick button:disabled { cursor: progress; }
 .products-arrow:focus-visible, .products-order:focus-visible, .products-track:focus-visible {
@@ -371,7 +365,7 @@ a[href="#products"][hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .products-photo[data-media-visible] .products-media-spinner, .products-page-loader .products-media-spinner { animation: none; }
   .products-track { scroll-behavior: auto; scroll-snap-type: none; }
-  .products-arrow, .products-image, .products-gallery-arrow, .products-order, .products-order-label, .products-dots i, .products-quick-toggle, .products-quick-toggle svg, .products-quick-menu { transition: none; }
+  .products-arrow, .products-image, .products-gallery-arrow, .products-order, .products-order-label, .products-dots i, .products-quick, .products-quick-toggle, .products-quick-toggle svg, .products-quick-actions, .products-quick-tip { transition: none; }
   .products-card:hover .products-image:not([hidden]) { transform: none; }
 }
 

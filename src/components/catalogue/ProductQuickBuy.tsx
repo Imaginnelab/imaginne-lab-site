@@ -13,8 +13,8 @@ import type { ProductDTO } from '@/lib/products/types';
 type Copy = Dictionary['store']['card'];
 type Kind = 'buy' | 'cart';
 
-// The card's round arrow opens a small card above it, under the pointer or on a tap, holding
-// "Buy now" and "Add to cart".
+// The card's round arrow widens, under the pointer or on a tap, into two icons: "Buy now" and
+// "Add to cart".
 // Whether the piece can go straight to the cart is checked with the server first: one colour or
 // none, and in stock. A piece that needs a choice (several colours) or is sold out opens its page
 // instead, where that choice is made.
@@ -64,12 +64,18 @@ export function ProductQuickBuy({ product, locale, copy }: { product: ProductDTO
         onClick={() => setOpen((value) => !value)}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
       </button>
-      {/* After the arrow in the page, so Tab goes from it into the card; drawn above it. */}
-      <div className="products-quick-menu" id={menuId} role="group" aria-label={copy.buyOptions + ': ' + product.name} inert={!open}>
-        <button type="button" className="products-quick-buy" aria-busy={busy === 'buy' || undefined} disabled={busy !== null}
-          aria-label={copy.buyNow + ': ' + product.name} onClick={() => { void act('buy'); }}>{copy.buyNow}</button>
-        <button type="button" className="products-quick-cart" aria-busy={busy === 'cart' || undefined} disabled={busy !== null}
-          aria-label={copy.addToCart + ': ' + product.name} onClick={() => { void act('cart'); }}><CartIcon />{copy.addToCart}</button>
+      {/* Two icons in the opened pill; each names itself in a tip while pointed at or focused. */}
+      <div className="products-quick-actions" id={menuId} role="group" aria-label={copy.buyOptions + ': ' + product.name} inert={!open}>
+        <button type="button" className="products-quick-buy is-icon" aria-busy={busy === 'buy' || undefined} disabled={busy !== null}
+          aria-label={copy.buyNow + ': ' + product.name} onClick={() => { void act('buy'); }}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" /></svg>
+          <span className="products-quick-tip" aria-hidden="true">{copy.buyNow}</span>
+        </button>
+        <button type="button" className="products-quick-cart is-icon" aria-busy={busy === 'cart' || undefined} disabled={busy !== null}
+          aria-label={copy.addToCart + ': ' + product.name} onClick={() => { void act('cart'); }}>
+          <CartIcon />
+          <span className="products-quick-tip" aria-hidden="true">{copy.addToCart}</span>
+        </button>
       </div>
     </div>
   );
