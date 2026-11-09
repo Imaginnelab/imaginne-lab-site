@@ -15,8 +15,7 @@ test('catalogue opens localized product details, shows all public fields and def
   await expect(page.locator('.product-description')).toContainText('Impressa camada por camada');
   await expect(page.locator('.product-purchase-price')).toContainText('49,90');
   await expect(page.getByRole('link', { name: 'Comprar agora', exact: true })).toHaveAttribute('href', '/pt/checkout/');
-  await page.getByRole('button', { name: 'Foto 2: Vaso escultural', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Foto 2: Vaso escultural', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.product-photo-grid figure img').nth(1)).toBeVisible();
   expect(models).toEqual([]);
 });
 
@@ -79,7 +78,7 @@ test('on-request and unavailable items are explicit and do not inflate the subto
 test('empty cart follows the drawer reference and fits a narrow mobile screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(productPath);
-  await expect(page.locator('.product-detail-photo')).toBeVisible();
+  await expect(page.locator('.product-detail-photo').first()).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/store-product-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'Abrir carrinho', exact: true }).click();

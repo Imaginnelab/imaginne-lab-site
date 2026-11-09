@@ -170,7 +170,9 @@ test('product details surface translated colours and complete technical facts on
     await expect(page.locator('.product-information')).toContainText('PLA');
     await expect(page.locator('.product-information')).toContainText('180 g');
     await expect(page.locator('.product-detail-content .product-information')).toHaveCount(1);
-    await expect(page.locator('.product-care')).toBeVisible();
+    // Care sits in a folded section: opening it shows the text.
+    await page.locator('.product-care summary').click();
+    await expect(page.locator('.product-care p')).toBeVisible();
     await expect(page.locator('.product-gallery')).toContainText('3D');
   }
   await page.goto('/pt/products/' + id + '/');
@@ -202,23 +204,25 @@ test('theme and prepaint scripts do not report React script errors across layout
   await page.locator('.lang-toggle').click();
   await page.locator('#lang-menu').getByRole('link', { name: 'English', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Sculptural vase');
-  await page.locator('.product-thumbnail').nth(1).click();
-  await expect(page.locator('.product-thumbnail').nth(1)).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.product-photo-grid .product-tile')).toHaveCount(3);
   expect(issues).toEqual([]);
 });
 
-test('product gallery supports dragging, arrows and keyboard without taking over 3D controls', async ({ page }) => {
+test('product photos show side by side, swipe on phones, and the 3D model loads only when asked', async ({ page }) => {
+  const models: string[] = [];
+  page.on('request', (request) => { if (request.url().includes('/product-models/')) models.push(request.url()); });
   await page.goto('/pt/products/10000000-0000-4000-8000-000000000001/');
-  const photo = page.locator('.product-detail-photo');
-  const box = (await photo.boundingBox())!;
-  await page.mouse.move(box.x + box.width * .8, box.y + box.height * .5);
-  await page.mouse.down();
-  await page.mouse.move(box.x + box.width * .2, box.y + box.height * .5, { steps: 8 });
-  await page.mouse.up();
-  await expect(page.getByRole('button', { name: 'Foto 2: Vaso escultural', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('button', { name: 'Imagem anterior', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Foto 1: Vaso escultural', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await photo.focus(); await page.keyboard.press('ArrowRight');
-  await expect(page.getByRole('button', { name: 'Foto 2: Vaso escultural', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('button', { name: 'Ver em 3D', exact: true })).toHaveCount(1);
+  const photos = page.locator('.product-photo-grid figure.product-tile img');
+  await expect(photos).toHaveCount(2);
+  for (const photo of await photos.all()) await expect(photo).toBeVisible();
+  const open = page.getByRole('button', { name: 'Ver em 3D', exact: true });
+  await expect(open).toHaveCount(1);
+  expect(models).toEqual([]);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const grid = page.locator('.product-photo-grid');
+  expect(await grid.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await open.click();
+  await expect.poll(() => models.length).toBeGreaterThan(0);
 });

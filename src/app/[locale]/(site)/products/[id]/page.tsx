@@ -5,7 +5,7 @@ import { isLocale, localePath } from '@/i18n/config';
 import { getDictionary } from '@/i18n/dictionaries';
 import { getProduct } from '@/lib/products/queries';
 import { productIdSchema } from '@/lib/products/input';
-import { ProductGallery } from '@/components/products/ProductGallery';
+import { ProductPhotoGrid } from '@/components/products/ProductPhotoGrid';
 import { ProductPurchase } from '@/components/products/ProductPurchase';
 import { ProductLoadError } from '@/components/products/ProductLoadError';
 import { BackLink } from '@/components/navigation/BackLink';
@@ -41,6 +41,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+// Line icons for the features strip, one per fact the piece has.
+const featureIcons = {
+  material: <path d="M8 4h8v16H8zM8 8h8M8 12h8M8 16h8M16 6c2.5 0 4 1.2 4 3" />,
+  finish: <path d="M4 20c4-1 6-3 7-6l3 3c-3 1-5 3-6 6M14 4l6 6-6 3-3-3z" />,
+  size: <path d="M3 15 15 3l6 6L9 21zM7 11l2 2M10 8l2 2M13 5l2 2" />,
+  weight: <path d="M6 9h12l2 11H4zM9 9a3 3 0 0 1 6 0" />,
+  made: <path d="M12 3.5a5.5 5.5 0 0 0-3.2 10c.7.5 1.2 1.3 1.2 2.2v.8h4v-.8c0-.9.5-1.7 1.2-2.2A5.5 5.5 0 0 0 12 3.5ZM10 19.5h4" />,
+};
+
 export default async function ProductDetailPage({ params }: Props) {
   const { locale, product } = await readProduct(params);
   const t = await getDictionary(locale);
@@ -50,18 +59,24 @@ export default async function ProductDetailPage({ params }: Props) {
   const stock = product.stockQuantity === null ? copy.specifications.stockUnknown : product.stockQuantity === 0 ? copy.specifications.stockEmpty :
     copy.specifications.stockAvailable.replace('{count}', number.format(product.stockQuantity));
   const stockTone = product.stockQuantity === null ? 'unknown' : product.stockQuantity === 0 ? 'out' : 'in';
-  // Width, height and depth read as one line when all three are known, as on a store listing.
+  // Width, height and depth read as one line when all three are known.
   const { widthCm: width, heightCm: height, depthCm: depth } = product;
-  const sizes = width !== null && height !== null && depth !== null
-    ? [[copy.dimensions, [width, height, depth].map((value) => number.format(value)).join(' × ') + ' cm']]
+  const dimensions = width !== null && height !== null && depth !== null ? [width, height, depth].map((value) => number.format(value)).join(' × ') + ' cm' : null;
+  const sizes = dimensions ? [[copy.dimensions, dimensions]]
     : ([['widthPublic', width], ['heightPublic', height], ['depthPublic', depth]] as const)
       .flatMap(([label, value]) => value === null ? [] : [[copy.specifications[label], number.format(value) + ' cm']]);
+  const weight = product.weightGrams === null ? null : number.format(product.weightGrams) + ' g';
+  const { material, finish, care } = product.specifications;
   const technical = [
-    ...(['material', 'finish'] as const).flatMap((field) => product.specifications[field] ? [[copy.specifications[field], product.specifications[field]]] : []),
+    ...(material ? [[copy.specifications.material, material]] : []),
+    ...(finish ? [[copy.specifications.finish, finish]] : []),
     ...sizes,
-    ...(product.weightGrams === null ? [] : [[copy.specifications.weightPublic, number.format(product.weightGrams) + ' g']]),
+    ...(weight ? [[copy.specifications.weightPublic, weight]] : []),
   ];
-  // Each line of the description is one point of "About this item"; a single paragraph stays one.
+  // The features strip: the facts a buyer scans for, each with its icon.
+  const features = ([
+    ['material', material], ['finish', finish], ['size', dimensions], ['weight', weight], ['made', copy.madeToOrder],
+  ] as const).filter((entry): entry is [keyof typeof featureIcons, string] => Boolean(entry[1]));
   const points = product.description.split(/\n+/).map((line) => line.trim()).filter(Boolean);
   return <article className="product-detail wrap">
     <div className="product-topbar">
@@ -73,28 +88,34 @@ export default async function ProductDetailPage({ params }: Props) {
       </nav>
     </div>
     <ProductSelection key={product.id + ':' + locale} colors={product.colors}>
-    <div className="product-detail-grid">
-      <h1 className="product-detail-title">{product.name}</h1>
-      <ProductGallery key={product.id} product={product} locale={locale} copy={t.store.card} detail={{ imageError: copy.imageError, previous: copy.previous, next: copy.next }} />
-      <div className="product-detail-content">
-        <section className="product-description" aria-labelledby="product-about">
-          <h2 id="product-about">{copy.about}</h2>
-          {points.length > 1 ? <ul>{points.map((point, index) => <li key={index}>{point}</li>)}</ul> : <p>{product.description}</p>}
-        </section>
-        {technical.length ? <section className="product-information" id="product-information" aria-labelledby="product-information-title">
-          <h2 id="product-information-title">{copy.information}</h2>
-          <dl>{technical.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
-        </section> : null}
-        {product.specifications.care ? <section className="product-care" aria-labelledby="product-care-title">
-          <h3 id="product-care-title">{copy.specifications.care}</h3><p>{product.specifications.care}</p>
-        </section> : null}
+      <div className="product-detail-grid">
+        <ProductPhotoGrid key={product.id} product={product} locale={locale} copy={t.store.card} imageError={copy.imageError} />
+        <ProductPurchase locale={locale} id={product.id} name={product.name} price={product.price} unavailable={product.stockQuantity === 0} stockLabel={stock} stockTone={stockTone}
+          copy={{ quantity: copy.quantity, addToCart: copy.addToCart, buyNow: copy.buyNow,
+          comingSoon: copy.comingSoon, onRequest: copy.onRequest, cartFull: copy.cartFull, chooseColor: copy.chooseColor, quantityInvalid: copy.quantityInvalid, colorLabel: copy.colour,
+          secure: copy.secure, shipping: copy.shipping, maker: copy.maker }}
+          quantityCopy={{ quantity: t.store.cart.quantity, decrease: t.store.cart.decrease, increase: t.store.cart.increase }} />
       </div>
-      <ProductPurchase locale={locale} id={product.id} price={product.price} unavailable={product.stockQuantity === 0} stockLabel={stock} stockTone={stockTone}
-        copy={{ quantity: copy.quantity, addToCart: copy.addToCart, buyNow: copy.buyNow,
-        comingSoon: copy.comingSoon, onRequest: copy.onRequest, cartFull: copy.cartFull, chooseColor: copy.chooseColor, quantityInvalid: copy.quantityInvalid, colorLabel: copy.specifications.colors,
-        secure: copy.secure, shipping: copy.shipping, maker: copy.maker }}
-        quantityCopy={{ quantity: t.store.cart.quantity, decrease: t.store.cart.decrease, increase: t.store.cart.increase }} />
-    </div>
     </ProductSelection>
+    {features.length ? <section className="product-features" aria-labelledby="product-features-title">
+      <h2 id="product-features-title">{copy.features}</h2>
+      <ul>{features.map(([kind, text]) => <li key={kind}>
+        <svg viewBox="0 0 24 24" aria-hidden="true">{featureIcons[kind]}</svg><span>{text}</span>
+      </li>)}</ul>
+    </section> : null}
+    <div className="product-detail-content">
+      <details className="product-description" open>
+        <summary><h2 id="product-about">{copy.about}</h2></summary>
+        {points.length > 1 ? <ul>{points.map((point, index) => <li key={index}>{point}</li>)}</ul> : <p>{product.description}</p>}
+      </details>
+      {technical.length ? <details className="product-information" id="product-information">
+        <summary><h2 id="product-information-title">{copy.information}</h2></summary>
+        <dl>{technical.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+      </details> : null}
+      {care ? <details className="product-care">
+        <summary><h2 id="product-care-title">{copy.specifications.care}</h2></summary>
+        <p>{care}</p>
+      </details> : null}
+    </div>
   </article>;
 }

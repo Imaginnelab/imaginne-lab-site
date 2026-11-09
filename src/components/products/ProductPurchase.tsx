@@ -15,12 +15,12 @@ import { addToCart } from '@/lib/cart/store';
 type Copy = Pick<Dictionary['store']['detail'], 'quantity' | 'addToCart' | 'buyNow' | 'comingSoon' | 'onRequest' | 'cartFull' | 'chooseColor' | 'quantityInvalid' | 'secure' | 'shipping' | 'maker'>
   & { colorLabel: string };
 
-// The buy box: price and stock first, then colour and quantity, the two actions, and the
-// studio's assurances. It stays in view beside the photos while the page scrolls.
-export function ProductPurchase({ id, price, copy, quantityCopy, unavailable, stockLabel, stockTone, locale }: {
+// The buying column beside the photos: the piece's name, price and stock, colour and quantity,
+// the two actions, and the studio's assurances. It stays in view while the photos scroll.
+export function ProductPurchase({ id, name, price, copy, quantityCopy, unavailable, stockLabel, stockTone, locale }: {
   locale: Locale;
   unavailable: boolean; stockLabel: string; stockTone: 'in' | 'out' | 'unknown';
-  id: string; price: string | null; copy: Copy;
+  id: string; name: string; price: string | null; copy: Copy;
   quantityCopy: Pick<Dictionary['store']['cart'], 'quantity' | 'decrease' | 'increase'>;
 }) {
   const { add } = useCart();
@@ -35,7 +35,8 @@ export function ProductPurchase({ id, price, copy, quantityCopy, unavailable, st
     setAttempted(true); setError('');
     return !needsColor && Number.isInteger(quantity) && quantity > 0 && quantity <= MAX_CART_QUANTITY;
   }
-  return <aside className="product-purchase">
+  return <aside className="product-purchase" id="product-purchase">
+    <h1 className="product-detail-title">{name}</h1>
     <p className="product-purchase-price">{price ?? copy.onRequest}</p>
     <p className={'product-stock is-' + stockTone}>{stockLabel}</p>
     <ProductColorList label={copy.colorLabel} error={attempted && needsColor ? copy.chooseColor : undefined} />

@@ -360,7 +360,10 @@
       "dimensions": "Dimensões (L × A × P)",
       "secure": "Pagamento seguro",
       "shipping": "Envio para todo o Canadá",
-      "maker": "Feito pela Imaginne Lab"
+      "maker": "Feito pela Imaginne Lab",
+      "colour": "Cor",
+      "features": "Características",
+      "madeToOrder": "Feito sob encomenda"
     },
     "checkout": {
       "title": "Finalizar compra",

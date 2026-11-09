@@ -360,7 +360,10 @@
       "dimensions": "Dimensions (W × H × D)",
       "secure": "Secure payment",
       "shipping": "Shipping across Canada",
-      "maker": "Made by Imaginne Lab"
+      "maker": "Made by Imaginne Lab",
+      "colour": "Colour",
+      "features": "Features",
+      "madeToOrder": "Made to order"
     },
     "checkout": {
       "title": "Checkout",
