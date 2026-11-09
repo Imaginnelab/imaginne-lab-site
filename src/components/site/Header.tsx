@@ -1,4 +1,4 @@
-import { NavigationLink } from '@/components/navigation/NavigationLink';
+import { NavigationLink, NavigationProgress } from '@/components/navigation/NavigationLink';
 import type { Locale } from '@/i18n/config';
 import { localePath } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries';
@@ -49,6 +49,7 @@ export function Header({ locale, anchors, copy, language, theme, mobile, cartLab
           <AccountButton locale={locale} />
           <MobileNav label={mobile.toggle} />
         </div>
+        <NavigationProgress />
       </div>
     </header>
   );
