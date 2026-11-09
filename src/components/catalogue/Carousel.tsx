@@ -49,6 +49,28 @@ export function Carousel({ locale, initial, copy }: { locale: Locale; initial: P
     controls.current = api;
     return () => { api.dispose(); controls.current = null; dispose(); };
   }, [activate, dispose, loadNext, copy.list.position]);
+  // The rail under the track: how much of the row is in view, and where.
+  const rail = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = track.current;
+    const bar = rail.current;
+    if (!element || !bar) return;
+    let frame = 0;
+    const paint = () => {
+      frame = 0;
+      const size = element.scrollWidth > 0 ? Math.min(1, element.clientWidth / element.scrollWidth) : 1;
+      const room = element.scrollWidth - element.clientWidth;
+      bar.style.setProperty('--rail-size', String(size));
+      bar.style.setProperty('--rail-at', String(room > 0 ? element.scrollLeft / room : 0));
+      bar.hidden = size >= 1;
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(paint); };
+    paint();
+    element.addEventListener('scroll', schedule, { passive: true });
+    const observer = new ResizeObserver(schedule);
+    observer.observe(element);
+    return () => { cancelAnimationFrame(frame); element.removeEventListener('scroll', schedule); observer.disconnect(); };
+  }, [list.page.items.length]);
   const onSearch = useCallback((term: string) => {
     const pending = search(term);
     controls.current?.reset();
@@ -84,6 +106,7 @@ export function Carousel({ locale, initial, copy }: { locale: Locale; initial: P
             aria-busy={list.loading ? 'true' : undefined} onClick={(event) => { void onRetry(event.currentTarget); }}>{copy.list.retry}</button>
         </li> : null}
       </ul>
+      <div className="products-rail" ref={rail} aria-hidden="true" hidden><span /></div>
       <p className="products-status" ref={status} data-products-status="" role="status" aria-live="polite" aria-atomic="true">{copy.list.position}: {list.page.items.length}</p>
     </div>
   );

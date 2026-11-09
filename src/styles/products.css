@@ -17,7 +17,7 @@ a[href="#products"][hidden] { display: none; }
   line-height: 1.6;
   text-align: center;
 }
-.products-controls { display: flex; justify-content: flex-end; gap: .5rem; margin-bottom: 1rem; }
+.products-controls { display: flex; align-items: center; justify-content: flex-end; gap: .5rem; margin-bottom: 1.25rem; }
 .products-arrow {
   display: inline-flex;
   align-items: center;
@@ -29,59 +29,79 @@ a[href="#products"][hidden] { display: none; }
   background: var(--bg-elevated);
   color: var(--ink);
   font-size: 1.25rem;
-  transition: background-color .2s, border-color .2s;
+  transition: background-color .2s, border-color .2s, color .2s, transform .2s var(--ease-out);
 }
-.products-arrow:hover:not(:disabled) { border-color: var(--ink); background: var(--bg-sunken); }
-.products-arrow:disabled { opacity: .35; cursor: default; }
+.products-arrow:hover:not(:disabled) { border-color: var(--forest); background: var(--forest); color: #FBF9F2; }
+.products-arrow:active:not(:disabled) { transform: scale(.94); }
+.products-arrow:disabled { opacity: .3; cursor: default; }
+/* The row of cards. The next card always peeks in at the edge, and the edges fade out while
+   there is more to that side (the arrows' disabled state says when there is not). */
 .products-track {
-  --products-gap: 1rem;
+  --products-gap: clamp(1rem, 1.6vw, 1.5rem);
+  --products-peek: .35;
+  --products-fade: 56px;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: calc((100% - 3 * var(--products-gap)) / 4);
+  grid-auto-columns: calc((100% - 4 * var(--products-gap)) / (4 + var(--products-peek)));
   gap: var(--products-gap);
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  scroll-snap-type: x proximity;
-  scroll-padding-inline: .125rem;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 0;
   scroll-behavior: auto;
   cursor: grab;
   user-select: none;
-  /* Keep the skeleton and the populated rail the same height on classic-scrollbar systems. */
   scrollbar-width: none;
   list-style: none;
   margin: 0;
-  padding: .25rem .125rem 1rem;
+  padding: .25rem 0 .5rem;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--products-fade)), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - var(--products-fade)), transparent);
 }
+.products-carousel:has([data-products-previous]:not(:disabled)) .products-track {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--products-fade), #000 calc(100% - var(--products-fade)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--products-fade), #000 calc(100% - var(--products-fade)), transparent);
+}
+.products-carousel:has([data-products-previous]:not(:disabled)):has([data-products-next]:disabled) .products-track {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--products-fade));
+  mask-image: linear-gradient(to right, transparent, #000 var(--products-fade));
+}
+.products-carousel:has([data-products-previous]:disabled):has([data-products-next]:disabled) .products-track { -webkit-mask-image: none; mask-image: none; }
 .products-track::-webkit-scrollbar { display: none; }
 .products-track.products-interacting { scroll-snap-type: none; }
 .products-track.products-dragging { cursor: grabbing; }
 .products-track .products-order, .products-track button { cursor: pointer; }
 .products-all-link { margin-right: auto; }
-.products-featured { border-color: color-mix(in srgb, #f4c542 60%, var(--border)); }
-.products-featured .products-name { position: relative; padding-right: 2.25rem; }
+/* Where the row is: a thin line that fills in proportion to what is in view. */
+.products-rail { position: relative; height: 3px; margin-top: 1.25rem; border-radius: 999px; background: var(--border); overflow: hidden; }
+.products-rail[hidden] { display: none; }
+.products-rail > span {
+  position: absolute; inset: 0 auto 0 0; width: calc(var(--rail-size, 1) * 100%); border-radius: inherit; background: var(--forest);
+  transform: translateX(calc(var(--rail-at, 0) * (100% / var(--rail-size, 1) - 100%)));
+}
+[data-theme="dark"] .products-rail > span { background: var(--amber); }
+/* A card is a photo and a few lines under it: no box around it. */
+.products-card { position: relative; min-width: 0; scroll-snap-align: start; }
 .products-featured-badge {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: .75rem;
+  right: .75rem;
+  z-index: 4;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
+  gap: .3rem;
+  padding: .3rem .6rem .3rem .45rem;
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, #f4c542 15%, var(--bg-elevated));
+  background: var(--amber);
+  color: var(--amber-ink);
+  font-size: .72rem;
+  font-weight: 600;
   pointer-events: none;
 }
-.products-featured-badge svg { width: 21px; height: 21px; fill: #f4c542; stroke: #916b16; stroke-width: .8; }
-.products-card {
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--bg-elevated);
-  scroll-snap-align: start;
-}
-.products-photo { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--bg-sunken); }
+.products-featured-badge svg { width: 13px; height: 13px; fill: currentColor; }
+.products-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 20px; background: var(--bg-sunken); }
+.products-image { transition: transform .6s var(--ease-out); }
+.products-card:hover .products-image:not([hidden]) { transform: scale(1.04); }
 .products-photo .products-photo-link { position: absolute; inset: 0; z-index: 1; display: block; }
 .products-photo-link:focus-visible { outline: 3px solid var(--amber); outline-offset: -4px; }
 .products-photo .products-gallery-controls { z-index: 4; }
@@ -180,116 +200,91 @@ a[href="#products"][hidden] { display: none; }
   letter-spacing: .08em;
   pointer-events: none;
 }
-.products-gallery-controls {
-  position: absolute;
-  z-index: 1;
-  right: .5rem;
-  bottom: .5rem;
-  left: .5rem;
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
-  align-items: center;
-  gap: .375rem;
-}
+/* Gallery controls sit on the photo: arrows on its sides and dots at its foot, shown while the
+   pointer is over the card (always on touch screens). The count is for screen readers. */
+.products-gallery-controls { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .products-gallery-arrow {
+  position: absolute;
+  top: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--border-strong);
+  width: 36px;
+  height: 36px;
+  margin-top: -18px;
+  border: 0;
   border-radius: var(--radius-pill);
-  background: var(--bg-elevated);
+  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
   color: var(--ink);
-  font-size: 1.5rem;
+  box-shadow: 0 2px 10px rgba(var(--shadow-color), .16);
   line-height: 1;
   cursor: pointer;
-}
-.products-gallery-arrow:hover { background: var(--bg-sunken); border-color: var(--ink); }
-.products-gallery-count {
-  justify-self: center;
-  max-width: 100%;
-  padding: .35rem .5rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  background: var(--bg-elevated);
-  color: var(--ink);
-  font-family: var(--font-mono);
-  font-size: .65rem;
-  line-height: 1.4;
-  text-align: center;
-}
-/* Keep the central model/base clear; only the corner arrows receive pointer input. */
-.products-model-active > .products-gallery-controls {
-  inset: 0;
-  pointer-events: none;
-}
-.products-model-active .products-gallery-count {
-  position: absolute;
-  top: .65rem;
-  right: .65rem;
-  width: max-content;
-  max-width: calc(100% - 5rem);
-}
-.products-model-active .products-gallery-arrow {
-  position: absolute;
-  bottom: .5rem;
   pointer-events: auto;
+  opacity: 0;
+  transition: opacity .2s var(--ease-out), transform .2s var(--ease-out);
 }
-.products-model-active .products-gallery-arrow:first-child { left: .5rem; }
-.products-model-active .products-gallery-arrow:last-child { right: .5rem; }
+.products-gallery-controls > .products-gallery-arrow:first-of-type { left: .6rem; right: auto; transform: translateX(-4px); }
+.products-gallery-controls > .products-gallery-arrow:last-of-type { right: .6rem; left: auto; transform: translateX(4px); }
+.products-card:hover .products-gallery-controls > .products-gallery-arrow, .products-photo:focus-within .products-gallery-controls > .products-gallery-arrow { opacity: 1; transform: none; }
+.products-gallery-arrow:hover { background: var(--bg-elevated); }
+.products-gallery-count { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.products-dots { position: absolute; left: 50%; bottom: .75rem; display: flex; gap: 5px; transform: translateX(-50%); padding: 5px 7px; border-radius: 999px; background: rgba(20, 24, 17, .28); }
+.products-dots i { width: 6px; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, .6); transition: width .25s var(--ease-out), background-color .25s; }
+.products-dots i.is-on { width: 16px; background: #fff; }
+@media (hover: none) { .products-gallery-controls > .products-gallery-arrow { opacity: 1; transform: none; } }
 .products-gallery:focus-visible, .products-gallery-arrow:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: -3px;
 }
 /* Photo changes are immediate, including when reduced motion is requested. */
-.products-content { display: grid; gap: .75rem; padding: 1.25rem; }
+.products-content { display: grid; gap: .3rem; padding: .9rem .15rem 0; }
 .products-name {
-  font-size: 1.1rem;
+  font-size: 1.02rem;
   font-weight: 600;
-  line-height: 1.35;
-  height: 2.7em;
+  line-height: 1.3;
   overflow: hidden;
   overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   color: var(--ink);
 }
+.products-name a:hover { text-decoration: underline; text-decoration-color: var(--amber); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .products-description {
-  font-size: .95rem;
-  line-height: 1.5;
-  height: 3em;
+  font-size: .9rem;
+  line-height: 1.45;
   overflow: hidden;
   overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   color: var(--ink-soft);
 }
-.products-price {
-  height: 1.5rem;
-  font-family: var(--font-mono);
-  font-size: .85rem;
-  font-weight: 500;
-  line-height: 1.5rem;
-  white-space: nowrap;
-  color: var(--ink);
-}
+.products-buy { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: .45rem; }
+.products-price { font-size: 1.12rem; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; color: var(--ink); }
+/* The action is a round arrow that opens into "See details" while the card is pointed at. */
 .products-order {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: .55rem .75rem;
+  flex: none;
+  gap: 0;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 12px;
   border-radius: var(--radius-pill);
   background: var(--amber);
   color: var(--amber-ink);
-  font-size: .9rem;
+  font-size: .88rem;
   font-weight: 600;
-  line-height: 1.25;
+  white-space: nowrap;
+  transition: gap .3s var(--ease-out), padding .3s var(--ease-out), background-color .2s;
 }
-.products-order:hover { background: color-mix(in srgb, var(--amber) 88%, var(--bg-elevated)); }
+.products-order svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.products-order-label { display: inline-block; max-width: 0; overflow: hidden; opacity: 0; transition: max-width .3s var(--ease-out), opacity .2s; }
+.products-card:hover .products-order, .products-order:focus-visible { gap: .45rem; padding: 0 14px 0 16px; }
+.products-card:hover .products-order-label, .products-order:focus-visible .products-order-label { max-width: 9rem; opacity: 1; }
+.products-order:hover { background: color-mix(in srgb, var(--amber) 85%, var(--amber-ink)); }
 .products-arrow:focus-visible, .products-order:focus-visible, .products-track:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
@@ -312,19 +307,14 @@ a[href="#products"][hidden] { display: none; }
 .products-skeleton .products-price { width: 55%; }
 .products-skeleton .products-order { background: var(--bg-sunken); }
 .products-loading .products-track { overflow: hidden; }
-@media (max-width: 1100px) {
-  .products-track { grid-auto-columns: calc((100% - 2 * var(--products-gap)) / 3); }
-}
-@media (max-width: 900px) {
-  .products-track { grid-auto-columns: calc((100% - var(--products-gap)) / 2); }
-}
-@media (max-width: 560px) {
-  .products-track { grid-auto-columns: 82%; }
-}
+@media (max-width: 1100px) { .products-track { grid-auto-columns: calc((100% - 3 * var(--products-gap)) / (3 + var(--products-peek))); } }
+@media (max-width: 900px) { .products-track { grid-auto-columns: calc((100% - 2 * var(--products-gap)) / (2 + var(--products-peek))); } }
+@media (max-width: 560px) { .products-track { --products-fade: 28px; grid-auto-columns: 74%; } }
 @media (prefers-reduced-motion: reduce) {
   .products-photo[data-media-visible] .products-media-spinner, .products-page-loader .products-media-spinner { animation: none; }
   .products-track { scroll-behavior: auto; scroll-snap-type: none; }
-  .products-arrow { transition: none; }
+  .products-arrow, .products-image, .products-gallery-arrow, .products-order, .products-order-label, .products-dots i { transition: none; }
+  .products-card:hover .products-image:not([hidden]) { transform: none; }
 }
 
 /* Arrow icons are drawn, not typed: text arrows sit on the font's baseline and never land in
@@ -342,13 +332,12 @@ a[href="#products"][hidden] { display: none; }
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E") center / contain no-repeat;
 }
-.products-gallery-arrow:last-child::after { transform: scaleX(-1); }
+.products-gallery-controls > .products-gallery-arrow:last-of-type::after { transform: scaleX(-1); }
 /* While one of them waits, the spinner takes the icon's place at the same size. */
 .products-arrow[aria-busy="true"]::before, .products-gallery-arrow[aria-busy="true"]::before { width: 16px; height: 16px; margin: 0; }
 .products-gallery-arrow[aria-busy="true"]::after { display: none; }
 .products-arrow[hidden], .products-gallery-arrow[hidden] { display: none; }
 /* The card arrows still hold their (invisible) text, which would share the button with the
    icon and push it off centre; the icon is placed on the button itself instead. */
-.products-gallery-arrow { position: relative; }
 .products-gallery-arrow::after { position: absolute; inset: 0; margin: auto; }
 .products-gallery-arrow[aria-busy="true"]::before { position: absolute; inset: 0; margin: auto; }
