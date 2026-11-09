@@ -311,7 +311,7 @@ a[href="#products"][hidden] { display: none; }
 .products-quick svg { width: 19px; height: 19px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 .products-quick-toggle { position: absolute; top: 0; right: 0; transition: opacity .15s linear; }
 .products-quick-toggle svg { transition: transform .25s var(--ease-out); }
-.products-quick.is-open .products-quick-toggle { opacity: 0; pointer-events: none; }
+.products-quick.is-open .products-quick-toggle, .products-quick.is-added .products-quick-toggle { opacity: 0; pointer-events: none; }
 .products-quick-actions { position: absolute; inset: 0 2px; display: flex; align-items: center; justify-content: space-between; opacity: 0; transition: opacity .18s linear .08s; }
 .products-quick.is-open .products-quick-actions { opacity: 1; }
 /* Pointed at, an icon is not boxed in a circle: it is painted in a deep brand amber and grows a little. */
@@ -339,6 +339,20 @@ a[href="#products"][hidden] { display: none; }
 .products-quick-actions button:hover .products-quick-tip, .products-quick-actions button:focus-visible .products-quick-tip { opacity: 1; transform: translate(-50%, 0); }
 .products-quick-actions .products-quick-cart:hover .products-quick-tip, .products-quick-actions .products-quick-cart:focus-visible .products-quick-tip { transform: none; }
 .products-quick button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+/* Choosing a colour: the icons give way to one swatch per colour; each names itself on hover. */
+.products-quick.is-picking { width: var(--quick-w, 92px); }
+/* Added: the pill closes into a green circle where a check draws itself, then the arrow returns. */
+.products-quick.is-added { width: 44px; background: var(--forest); color: #FBF9F2; }
+.products-quick-added { position: absolute; inset: 0; display: grid; place-items: center; animation: quick-pop .35s var(--ease-out) both; }
+.products-quick-added svg { width: 20px; height: 20px; stroke: var(--amber); stroke-width: 2.6; stroke-dasharray: 24; stroke-dashoffset: 24; animation: quick-check .35s var(--ease-out) .1s forwards; }
+@keyframes quick-pop { from { transform: scale(.6); opacity: 0; } }
+@keyframes quick-check { to { stroke-dashoffset: 0; } }
+/* While the server is asked, the pressed icon turns into a spinner of the same size. */
+.products-quick button[aria-busy="true"]::before { width: 18px; height: 18px; margin: 0; }
+.products-quick-swatches { justify-content: flex-end; gap: 0; }
+.products-quick .products-quick-swatch { width: 34px; }
+.products-quick-dot { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(28, 33, 24, .22); transition: transform .2s var(--ease-out); }
+.products-quick-swatch:hover .products-quick-dot, .products-quick-swatch:focus-visible .products-quick-dot { transform: scale(1.25); box-shadow: inset 0 0 0 1px rgba(28, 33, 24, .22), 0 0 0 2px var(--bg), 0 0 0 4px #C99300; }
 .products-quick button:disabled { cursor: progress; }
 .products-arrow:focus-visible, .products-order:focus-visible, .products-track:focus-visible {
   outline: 2px solid var(--ink);
@@ -369,6 +383,7 @@ a[href="#products"][hidden] { display: none; }
   .products-photo[data-media-visible] .products-media-spinner, .products-page-loader .products-media-spinner { animation: none; }
   .products-track { scroll-behavior: auto; scroll-snap-type: none; }
   .products-arrow, .products-image, .products-gallery-arrow, .products-order, .products-order-label, .products-dots i, .products-quick, .products-quick-toggle, .products-quick-toggle svg, .products-quick-actions, .products-quick-actions svg, .products-quick-tip { transition: none; }
+  .products-quick-added, .products-quick-added svg { animation: none; stroke-dashoffset: 0; }
   .products-card:hover .products-image:not([hidden]) { transform: none; }
 }
 

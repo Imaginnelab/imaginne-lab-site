@@ -282,7 +282,8 @@
       "modelSize": " · {size} MB",
       "addToCart": "Adicionar ao carrinho",
       "buyNow": "Comprar agora",
-      "buyOptions": "Opções de compra"
+      "buyOptions": "Opções de compra",
+      "added": "Adicionado ao carrinho"
     },
     "search": {
       "open": "Pesquisar produtos",
