@@ -1,9 +1,7 @@
 /* Scoped catalogue styles; the shared header/design system remains untouched. */
 .products-section { scroll-margin-top: 96px; }
 .products-section[hidden] { display: none; }
-a[href="#products"][hidden],
-a[href="#produtos"][hidden],
-a[href="#productos"][hidden] { display: none; }
+a[href="#products"][hidden] { display: none; }
 .products-carousel { position: relative; }
 .products-empty {
   display: grid;

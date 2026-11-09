@@ -1,4 +1,5 @@
 import { NavigationLink } from '@/components/navigation/NavigationLink';
+import { SectionLink } from '@/components/navigation/SectionLink';
 import type { Locale } from '@/i18n/config';
 import { localePath } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries';
@@ -11,15 +12,15 @@ export function MobilePanel({ locale, anchors, copy, language }: Props) {
       <NavigationLink href={localePath(locale, '/products')}>
         {copy.text001}
       </NavigationLink>
-      <NavigationLink href={localePath(locale) + "#"+anchors.process}>
+      <SectionLink href={localePath(locale) + "#"+anchors.process}>
         {copy.text002}
-      </NavigationLink>
-      <NavigationLink href={localePath(locale) + "#"+anchors.customization}>
+      </SectionLink>
+      <SectionLink href={localePath(locale) + "#"+anchors.customization}>
         {copy.text003}
-      </NavigationLink>
-      <NavigationLink href={localePath(locale) + "#"+anchors.contact}>
+      </SectionLink>
+      <SectionLink href={localePath(locale) + "#"+anchors.contact}>
         {copy.text004}
-      </NavigationLink>
+      </SectionLink>
       <a className="btn btn-primary" href="https://www.instagram.com/imaginne.lab/" target="_blank" rel="noopener">
         {copy.text005}
       </a>

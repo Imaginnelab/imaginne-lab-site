@@ -32,18 +32,23 @@ export function NavigationProgress() {
 // finishes the line when the page arrives, then lifts away while the filament cools and fades.
 function ProgressLine({ className }: { className: string }) {
   const { active, label } = useContext(NavigationState);
+  const [phase, setPhase] = useState<'idle' | 'loading' | 'done'>('idle');
   const [wasActive, setWasActive] = useState(active);
-  const [finishing, setFinishing] = useState(false);
   if (wasActive !== active) {
     setWasActive(active);
-    setFinishing(!active);
+    if (!active) setPhase(phase === 'loading' ? 'done' : 'idle');
   }
+  // Only a navigation that actually takes a moment draws the line; an instant one shows nothing.
   useEffect(() => {
-    if (!finishing) return;
-    const timer = setTimeout(() => setFinishing(false), 600);
+    if (!active) return;
+    const timer = setTimeout(() => setPhase('loading'), 120);
     return () => clearTimeout(timer);
-  }, [finishing]);
-  const phase = active ? 'loading' : finishing ? 'done' : 'idle';
+  }, [active]);
+  useEffect(() => {
+    if (phase !== 'done') return;
+    const timer = setTimeout(() => setPhase('idle'), 600);
+    return () => clearTimeout(timer);
+  }, [phase]);
   return <div className={className} data-phase={phase} role="status" aria-live="polite">
     <span className="navigation-run" aria-hidden="true">
       <span className="navigation-filament" />

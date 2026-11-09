@@ -1,4 +1,5 @@
 import { NavigationLink } from '@/components/navigation/NavigationLink';
+import { SectionLink } from '@/components/navigation/SectionLink';
 import type { Locale } from '@/i18n/config';
 import { localePath } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries';
@@ -11,12 +12,12 @@ export function Footer({ locale, anchors, copy }: Props) {
       <div className="wrap">
         <div className="footer-grid">
           <div className="footer-brand">
-            <NavigationLink className="brand" href={localePath(locale) + "#"+anchors.top}>
+            <SectionLink className="brand" href={localePath(locale)}>
               <img src="/assets/img/logo-icon.svg" alt={copy.alt001} />
               <span>
                 {copy.text001}
               </span>
-            </NavigationLink>
+            </SectionLink>
             <p>
               {copy.text002}
             </p>
@@ -34,19 +35,19 @@ export function Footer({ locale, anchors, copy }: Props) {
             </h4>
             <ul>
               <li>
-                <NavigationLink href={localePath(locale) + "#"+anchors.products}>
+                <SectionLink href={localePath(locale) + "#"+anchors.products}>
                   {copy.text005}
-                </NavigationLink>
+                </SectionLink>
               </li>
               <li>
-                <NavigationLink href={localePath(locale) + "#"+anchors.process}>
+                <SectionLink href={localePath(locale) + "#"+anchors.process}>
                   {copy.text006}
-                </NavigationLink>
+                </SectionLink>
               </li>
               <li>
-                <NavigationLink href={localePath(locale) + "#"+anchors.customization}>
+                <SectionLink href={localePath(locale) + "#"+anchors.customization}>
                   {copy.text007}
-                </NavigationLink>
+                </SectionLink>
               </li>
             </ul>
           </div>

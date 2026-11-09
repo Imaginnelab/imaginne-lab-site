@@ -254,8 +254,7 @@ p { text-wrap: pretty; }
   padding-block: var(--section-pad);
 }
 
-#como-funciona,
-#how-it-works,
+main section[id],
 .bento-card[id] {
   scroll-margin-top: 96px;
 }

@@ -32,7 +32,7 @@ test('the catalogue lists products, most viewed first, and searches', async ({ p
 
 test('the home carousel pages through products and a model loads on its own', async ({ page }) => {
   await page.goto('/pt/');
-  const section = page.locator('#produtos');
+  const section = page.locator('#products');
   await section.scrollIntoViewIfNeeded();
   const cards = section.locator('.products-card');
   await expect(cards.first()).toBeVisible();

@@ -1,4 +1,5 @@
 import { NavigationLink, NavigationProgress } from '@/components/navigation/NavigationLink';
+import { SectionLink } from '@/components/navigation/SectionLink';
 import type { Locale } from '@/i18n/config';
 import { localePath } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries';
@@ -13,7 +14,7 @@ export function Header({ locale, anchors, copy, language, theme, mobile, cartLab
   return (
     <header className="nav">
       <div className="wrap">
-        <NavigationLink className="brand" href={localePath(locale) + "#"+anchors.top}>
+        <SectionLink className="brand" href={localePath(locale)}>
           <img src="/assets/img/logo-icon.svg" alt={copy.alt001} />
           <span>
             {' '}{copy.text001}{' '}
@@ -21,20 +22,20 @@ export function Header({ locale, anchors, copy, language, theme, mobile, cartLab
               {copy.text002}
             </small>
           </span>
-        </NavigationLink>
+        </SectionLink>
         <nav className="nav-links">
           <NavigationLink href={localePath(locale, '/products')}>
             {copy.text003}
           </NavigationLink>
-          <NavigationLink href={localePath(locale) + "#"+anchors.process}>
+          <SectionLink href={localePath(locale) + "#"+anchors.process}>
             {copy.text004}
-          </NavigationLink>
-          <NavigationLink href={localePath(locale) + "#"+anchors.customization}>
+          </SectionLink>
+          <SectionLink href={localePath(locale) + "#"+anchors.customization}>
             {copy.text005}
-          </NavigationLink>
-          <NavigationLink href={localePath(locale) + "#"+anchors.contact}>
+          </SectionLink>
+          <SectionLink href={localePath(locale) + "#"+anchors.contact}>
             {copy.text006}
-          </NavigationLink>
+          </SectionLink>
         </nav>
         <div className="nav-actions">
           <LanguageSwitcher locale={locale} copy={language} />

@@ -11,11 +11,11 @@
     }
   },
   "anchors": {
-    "products": "produtos",
-    "process": "como-funciona",
-    "customization": "personalizacao",
-    "contact": "contato",
-    "top": "inicio"
+    "products": "products",
+    "process": "how-it-works",
+    "customization": "customization",
+    "contact": "contact",
+    "top": "top"
   },
   "site": {
     "language": {
