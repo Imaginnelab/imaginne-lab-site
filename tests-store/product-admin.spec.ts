@@ -197,7 +197,8 @@ test('theme and prepaint scripts do not report React script errors across layout
   await page.goto('/pt/admin/');
   await page.locator('.product-thumb-link').first().click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Vaso escultural');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  // A dark choice saved earlier is ignored while the site is light only.
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await page.locator('.lang-toggle').click();
   await page.locator('#lang-menu').getByRole('link', { name: 'English', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Sculptural vase');

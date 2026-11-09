@@ -7,7 +7,6 @@ import { isLocale, localePath, type Locale } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries';
 import { FlagSprite } from './FlagSprite';
 import { LanguageSwitcher } from './LanguageSwitcher';
-import { ThemeToggle } from './ThemeToggle';
 import { SiteEffects } from './SiteEffects';
 
 type Copy = { error: Dictionary['notFound']; language: Dictionary['site']['language']; theme: Dictionary['site']['theme']; brand: string };
@@ -23,7 +22,7 @@ export function LocalizedNotFound({ copies }: { copies: Record<Locale, Copy> }) 
       <FlagSprite />
       <header className="nav"><div className="wrap">
         <NavigationLink className="brand" href={localePath(locale)}><img src="/assets/img/logo-icon.svg" alt={copy.brand} /><span>{copy.brand}<small>{copy.error.tagline}</small></span></NavigationLink>
-        <div className="nav-actions"><LanguageSwitcher locale={locale} copy={copy.language} homeOnly /><ThemeToggle label={copy.theme.toggle} /></div>
+        <div className="nav-actions"><LanguageSwitcher locale={locale} copy={copy.language} homeOnly /></div>
       </div></header>
       <main><section className="error-page"><div className="wrap">
         <div className="error-icon"><svg className="icon" viewBox="0 0 256 256"><path fill="currentColor" d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,32l80.34,44L128,120,47.66,76ZM40,90l80,43.78v85.79L40,175.82Zm96,129.57V133.82L216,90v85.78Z"></path></svg></div>

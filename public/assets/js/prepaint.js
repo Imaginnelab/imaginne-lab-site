@@ -1,8 +1,11 @@
 // Constant first-party bootstrap; storage values are never interpolated into executable code.
 (function () {
   var root = document.documentElement;
+  // The site is light only for now. The dark theme and its toggle (ThemeToggle) are kept: set
+  // this to true and put the toggle back in the header to offer it again.
+  var DARK_THEME_ENABLED = false;
   var theme = 'light';
-  try { if (localStorage.getItem('imaginne-theme') === 'dark') theme = 'dark'; } catch (_) {}
+  if (DARK_THEME_ENABLED) try { if (localStorage.getItem('imaginne-theme') === 'dark') theme = 'dark'; } catch (_) {}
   root.setAttribute('data-theme', theme);
 
   var path = location.pathname.replace(/^\/(?:pt|en|es)(?=\/|$)/, '');

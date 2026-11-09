@@ -34,11 +34,12 @@ async function createOrder(request: APIRequestContext, owner = customerId, pendi
   return { id: session.id as string, name };
 }
 
-test('customer opens order history directly from the header and sees original purchase details', async ({ page, context, request }) => {
+test('customer opens order history from the account menu and sees original purchase details', async ({ page, context, request }) => {
   const order = await createOrder(request);
   await signInLocally(context);
   await page.goto('/pt/products/');
-  await page.locator('header.nav').getByRole('link', { name: 'Meus pedidos', exact: true }).click();
+  await page.locator('header.nav [data-auth-open]').click();
+  await page.getByRole('menuitem', { name: 'Minhas compras', exact: true }).click();
   await expect(page).toHaveURL(/\/pt\/orders\/$/);
   const card = page.locator('.order-card').filter({ hasText: order.name });
   await expect(card).toContainText('Pagamento confirmado');
@@ -111,7 +112,11 @@ test('order history and timeline fit mobile, dark theme, and all three languages
   await page.goto('/pt/orders/' + order.id + '/');
   await expect(page.locator('.order-items')).toContainText(order.name);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await expect(page.locator('header.nav').getByRole('link', { name: 'Meus pedidos', exact: true })).toBeVisible();
+  // Orders are reached from the account menu, not a header button.
+  await expect(page.locator('header.nav').getByRole('link', { name: 'Meus pedidos', exact: true })).toHaveCount(0);
+  await page.locator('header.nav [data-auth-open]').click();
+  await expect(page.getByRole('menuitem', { name: 'Minhas compras', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
   await page.screenshot({ path: 'test-results/order-details-mobile.png', fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/pt/orders/');

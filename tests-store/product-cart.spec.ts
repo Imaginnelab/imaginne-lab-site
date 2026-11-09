@@ -149,10 +149,9 @@ test('cart stays usable when storage is full', async ({ page }) => {
   await expect(page.locator('.cart-subtotal strong')).toContainText('99,80');
 });
 
-test('cart synchronizes across tabs and works in the dark theme at 320px', async ({ page, context }) => {
+test('cart synchronizes across tabs and fits a 320px screen', async ({ page, context }) => {
   await page.setViewportSize({ width: 320, height: 740 });
   await page.goto(productPath);
-  await page.getByRole('button', { name: 'Alternar tema', exact: true }).click();
   const other = await context.newPage();
   await other.goto(productPath);
   await page.getByRole('radio', { name: 'Rosa', exact: true }).check();
@@ -160,9 +159,9 @@ test('cart synchronizes across tabs and works in the dark theme at 320px', async
   await expect(other.getByRole('button', { name: 'Abrir carrinho (1)', exact: true })).toBeVisible();
   await expect(page.locator('.cart-item-name')).toHaveText('Vaso escultural');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.screenshot({ path: 'test-results/store-cart-dark-mobile.png' });
+  await page.screenshot({ path: 'test-results/store-cart-mobile-320.png' });
   await page.keyboard.press('Escape');
-  await page.screenshot({ path: 'test-results/store-product-dark-mobile.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/store-product-mobile-320.png', fullPage: true });
   await other.close();
 });
 
