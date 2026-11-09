@@ -356,7 +356,11 @@
       "chooseColor": "Select a colour to add this item to your cart.",
       "previous": "Previous image",
       "next": "Next image",
-      "quantityInvalid": "Quantity must be a whole number greater than 0, up to 99."
+      "quantityInvalid": "Quantity must be a whole number greater than 0, up to 99.",
+      "dimensions": "Dimensions (W × H × D)",
+      "secure": "Secure payment",
+      "shipping": "Shipping across Canada",
+      "maker": "Made by Imaginne Lab"
     },
     "checkout": {
       "title": "Checkout",

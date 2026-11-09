@@ -49,39 +49,52 @@ export default async function ProductDetailPage({ params }: Props) {
   const number = new Intl.NumberFormat({ en: 'en-CA', pt: 'pt-BR', es: 'es-ES' }[locale], { maximumFractionDigits: 2 });
   const stock = product.stockQuantity === null ? copy.specifications.stockUnknown : product.stockQuantity === 0 ? copy.specifications.stockEmpty :
     copy.specifications.stockAvailable.replace('{count}', number.format(product.stockQuantity));
-  const measurements = ([['widthPublic', product.widthCm], ['heightPublic', product.heightCm], ['depthPublic', product.depthCm], ['weightPublic', product.weightGrams]] as const)
-    .flatMap(([label, value]) => value === null ? [] : [[copy.specifications[label], number.format(value) + (label === 'weightPublic' ? ' g' : ' cm')]]);
+  const stockTone = product.stockQuantity === null ? 'unknown' : product.stockQuantity === 0 ? 'out' : 'in';
+  // Width, height and depth read as one line when all three are known, as on a store listing.
+  const { widthCm: width, heightCm: height, depthCm: depth } = product;
+  const sizes = width !== null && height !== null && depth !== null
+    ? [[copy.dimensions, [width, height, depth].map((value) => number.format(value)).join(' × ') + ' cm']]
+    : ([['widthPublic', width], ['heightPublic', height], ['depthPublic', depth]] as const)
+      .flatMap(([label, value]) => value === null ? [] : [[copy.specifications[label], number.format(value) + ' cm']]);
   const technical = [
     ...(['material', 'finish'] as const).flatMap((field) => product.specifications[field] ? [[copy.specifications[field], product.specifications[field]]] : []),
-    ...measurements,
+    ...sizes,
+    ...(product.weightGrams === null ? [] : [[copy.specifications.weightPublic, number.format(product.weightGrams) + ' g']]),
   ];
+  // Each line of the description is one point of "About this item"; a single paragraph stays one.
+  const points = product.description.split(/\n+/).map((line) => line.trim()).filter(Boolean);
   return <article className="product-detail wrap">
-    <BackLink href={localePath(locale, '/products')} label={copy.back} />
-    <nav className="product-breadcrumb" aria-label={copy.breadcrumb}>
-      <Link href={localePath(locale)}>{copy.home}</Link><span aria-hidden="true">/</span>
-      <Link href={localePath(locale, '/products')}>{copy.products}</Link><span aria-hidden="true">/</span>
-      <span aria-current="page">{product.name}</span>
-    </nav>
+    <div className="product-topbar">
+      <BackLink href={localePath(locale, '/products')} label={copy.back} />
+      <nav className="product-breadcrumb" aria-label={copy.breadcrumb}>
+        <Link href={localePath(locale)}>{copy.home}</Link><span aria-hidden="true">/</span>
+        <Link href={localePath(locale, '/products')}>{copy.products}</Link><span aria-hidden="true">/</span>
+        <span aria-current="page">{product.name}</span>
+      </nav>
+    </div>
     <ProductSelection key={product.id + ':' + locale} colors={product.colors}>
     <div className="product-detail-grid">
+      <h1 className="product-detail-title">{product.name}</h1>
       <ProductGallery key={product.id} product={product} locale={locale} copy={t.store.card} detail={{ imageError: copy.imageError, previous: copy.previous, next: copy.next }} />
       <div className="product-detail-content">
-        <h1>{product.name}</h1>
+        <section className="product-description" aria-labelledby="product-about">
+          <h2 id="product-about">{copy.about}</h2>
+          {points.length > 1 ? <ul>{points.map((point, index) => <li key={index}>{point}</li>)}</ul> : <p>{product.description}</p>}
+        </section>
         {technical.length ? <section className="product-information" id="product-information" aria-labelledby="product-information-title">
           <h2 id="product-information-title">{copy.information}</h2>
           <dl>{technical.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
         </section> : null}
+        {product.specifications.care ? <section className="product-care" aria-labelledby="product-care-title">
+          <h3 id="product-care-title">{copy.specifications.care}</h3><p>{product.specifications.care}</p>
+        </section> : null}
       </div>
-      <ProductPurchase locale={locale} id={product.id} price={product.price} unavailable={product.stockQuantity === 0} stockLabel={stock} copy={{ quantity: copy.quantity, addToCart: copy.addToCart, buyNow: copy.buyNow,
-        comingSoon: copy.comingSoon, onRequest: copy.onRequest, cartFull: copy.cartFull, chooseColor: copy.chooseColor, quantityInvalid: copy.quantityInvalid, colorLabel: copy.specifications.colors }}
+      <ProductPurchase locale={locale} id={product.id} price={product.price} unavailable={product.stockQuantity === 0} stockLabel={stock} stockTone={stockTone}
+        copy={{ quantity: copy.quantity, addToCart: copy.addToCart, buyNow: copy.buyNow,
+        comingSoon: copy.comingSoon, onRequest: copy.onRequest, cartFull: copy.cartFull, chooseColor: copy.chooseColor, quantityInvalid: copy.quantityInvalid, colorLabel: copy.specifications.colors,
+        secure: copy.secure, shipping: copy.shipping, maker: copy.maker }}
         quantityCopy={{ quantity: t.store.cart.quantity, decrease: t.store.cart.decrease, increase: t.store.cart.increase }} />
     </div>
     </ProductSelection>
-    <section className="product-description" aria-labelledby="product-about">
-      <h2 id="product-about">{copy.about}</h2><p>{product.description}</p>
-    </section>
-      {product.specifications.care ? <section className="product-care" aria-labelledby="product-care-title">
-        <h3 id="product-care-title">{copy.specifications.care}</h3><p>{product.specifications.care}</p>
-      </section> : null}
   </article>;
 }

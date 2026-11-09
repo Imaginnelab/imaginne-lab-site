@@ -34,7 +34,8 @@ export function ProductGallery({ product, locale, copy, detail }: {
   return <div className="product-gallery" role="group" aria-label={copy.views}>
     <div className="product-thumbnails">
       {product.photos.map((src, position) => <button key={src} type="button" className="product-thumbnail" aria-pressed={index === position}
-        aria-label={`${copy.photo} ${position + 1}: ${product.name}`} onClick={() => show(position)}>
+        aria-label={`${copy.photo} ${position + 1}: ${product.name}`} onClick={() => show(position)}
+        onPointerEnter={(event) => { if (event.pointerType === 'mouse' && index !== position) show(position); }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt="" width={60} height={60} loading="lazy" />
       </button>)}

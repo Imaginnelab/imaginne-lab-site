@@ -356,7 +356,11 @@
       "chooseColor": "Selecciona un color para añadir el producto al carrito.",
       "previous": "Imagen anterior",
       "next": "Imagen siguiente",
-      "quantityInvalid": "La cantidad debe ser un número entero mayor que 0, hasta 99."
+      "quantityInvalid": "La cantidad debe ser un número entero mayor que 0, hasta 99.",
+      "dimensions": "Dimensiones (An × Al × P)",
+      "secure": "Pago seguro",
+      "shipping": "Envío a todo Canadá",
+      "maker": "Hecho por Imaginne Lab"
     },
     "checkout": {
       "title": "Finalizar compra",
