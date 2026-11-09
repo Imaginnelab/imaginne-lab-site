@@ -290,9 +290,10 @@ a[href="#products"][hidden] { display: none; }
   border-radius: var(--radius-pill);
   background: var(--amber);
   color: var(--amber-ink);
-  transition: width .3s var(--ease-out), box-shadow .25s var(--ease-out);
+  transition: width .3s var(--ease-out), background-color .2s, color .2s;
 }
-.products-quick.is-open { width: 92px; box-shadow: 0 8px 20px -10px rgba(var(--shadow-color), .45); }
+/* Opened, the amber pill gives way to two bare icons: no fill, no shadow, no divider. */
+.products-quick.is-open { width: 92px; background: transparent; color: var(--ink); }
 .products-quick button {
   position: relative;
   display: inline-flex;
@@ -313,11 +314,10 @@ a[href="#products"][hidden] { display: none; }
 .products-quick.is-open .products-quick-toggle { opacity: 0; pointer-events: none; }
 .products-quick-actions { position: absolute; inset: 0 2px; display: flex; align-items: center; justify-content: space-between; opacity: 0; transition: opacity .18s linear .08s; }
 .products-quick.is-open .products-quick-actions { opacity: 1; }
-/* Pointed at, an icon is not boxed in a darker circle: it takes the brand green and grows a little. */
+/* Pointed at, an icon is not boxed in a circle: it is painted in a deep brand amber and grows a little. */
 .products-quick-actions svg { transition: transform .2s var(--ease-out), color .2s, fill .2s; }
-.products-quick-actions button:hover svg, .products-quick-actions button:focus-visible svg { color: var(--forest); transform: scale(1.22); }
+.products-quick-actions button:hover svg, .products-quick-actions button:focus-visible svg { color: #C99300; transform: scale(1.25); }
 .products-quick-buy:hover svg, .products-quick-buy:focus-visible svg, .products-quick-cart:hover svg circle, .products-quick-cart:focus-visible svg circle { fill: currentColor; }
-.products-quick-actions button + button::before { content: ""; position: absolute; left: -1px; top: 12px; bottom: 12px; width: 1px; background: color-mix(in srgb, var(--amber-ink) 22%, transparent); }
 .products-quick-tip {
   position: absolute;
   bottom: calc(100% + 8px);
