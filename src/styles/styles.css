@@ -933,22 +933,57 @@ html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
 /* ---------------------------------------------------------
    Final CTA band
 --------------------------------------------------------- */
-.cta-band { text-align: center; }
-.cta-band h2 {
-  font-size: clamp(2.1rem, 4vw, 3.2rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  margin-top: 1.1rem;
-  max-width: 20ch;
-  margin-inline: auto;
+/* The closing scene: the mascot, big and waving, next to a speech bubble with one question
+   and the order button. Pointing at the button gets the mascot excited. */
+.cta-band { position: relative; overflow: hidden; }
+.cta-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
 }
-.cta-band p.lede { margin-inline: auto; margin-top: 1.1rem; text-align: center; }
-.cta-band .hero-actions { justify-content: center; margin-top: 2.2rem; }
-/* The mascot under the last call to action, waving goodbye. */
+/* A warm light behind the mascot, as if the bulb were switched on. */
+.cta-stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(760px, 120%);
+  aspect-ratio: 2 / 1;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 203, 41, .28), transparent);
+  transform: translate(-58%, -50%);
+}
 .mascot { display: block; overflow: visible; }
 .mascot .scene-mascot, .mascot .scene-shadow, .mascot .scene-sparks path, .mascot .scene-eyes { transform-box: fill-box; }
 .mascot .scene-wave { transform-box: view-box; transform-origin: 594px 292px; }
-.cta-mascot { width: clamp(96px, 11vw, 132px); height: auto; margin: 2.5rem auto 0; }
+.cta-mascot { flex: none; width: clamp(150px, 17vw, 220px); height: auto; }
+.cta-bubble {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 1.4rem;
+  max-width: 30rem;
+  padding: clamp(1.6rem, 3vw, 2.4rem) clamp(1.6rem, 3vw, 2.6rem);
+  border-radius: 32px;
+  background: var(--bg-elevated);
+  box-shadow: 0 1px 2px rgba(var(--shadow-color), .06), 0 24px 50px -24px rgba(var(--shadow-color), .35);
+}
+/* The bubble's tail points back at the mascot. */
+.cta-bubble::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 46%;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px 0 0 0;
+  background: inherit;
+  transform: rotate(-45deg);
+}
+.cta-bubble h2 { position: relative; font-size: clamp(1.8rem, 3.2vw, 2.6rem); font-weight: 600; letter-spacing: -.02em; line-height: 1.12; }
 .cta-mascot .scene-mascot { animation: scene-float 5s ease-in-out infinite; }
 .cta-mascot .scene-shadow { transform-origin: center; animation: scene-shade 5s ease-in-out infinite; }
 .cta-mascot .scene-wave { animation: scene-wave 2.6s ease-in-out infinite; }
@@ -956,6 +991,17 @@ html[data-nav="scrolled"] .nav:not(.is-synced) .wrap::before {
 .cta-mascot .scene-sparks path:nth-child(2), .cta-mascot .scene-sparks path:nth-child(5) { animation-delay: .4s; }
 .cta-mascot .scene-sparks path:nth-child(3), .cta-mascot .scene-sparks path:nth-child(4) { animation-delay: .8s; }
 .cta-mascot .scene-eyes { transform-origin: center; animation: scene-blink 5.5s ease-in-out infinite; }
+/* Excited while the button is pointed at or focused: a quick wave and every spark lit. */
+.cta-stage:has(.btn:hover, .btn:focus-visible) .cta-mascot .scene-wave { animation: scene-wave-fast .9s ease-in-out infinite; }
+.cta-stage:has(.btn:hover, .btn:focus-visible) .cta-mascot .scene-sparks path { animation: none; opacity: 1; }
+@keyframes scene-wave-fast { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-18deg); } 75% { transform: rotate(10deg); } }
+@media (max-width: 700px) {
+  .cta-stage { flex-direction: column-reverse; text-align: center; }
+  .cta-stage::before { transform: translate(-50%, -30%); }
+  .cta-bubble { justify-items: center; }
+  .cta-bubble::before { left: calc(50% - 15px); top: auto; bottom: -14px; border-radius: 0 0 6px 0; transform: rotate(45deg); }
+  .cta-mascot { width: 150px; }
+}
 @media (prefers-reduced-motion: reduce) { .cta-mascot * { animation: none !important; } }
 
 /* ---------------------------------------------------------
