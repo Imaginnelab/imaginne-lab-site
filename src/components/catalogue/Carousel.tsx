@@ -49,32 +49,6 @@ export function Carousel({ locale, initial, copy }: { locale: Locale; initial: P
     controls.current = api;
     return () => { api.dispose(); controls.current = null; dispose(); };
   }, [activate, dispose, loadNext, copy.list.position]);
-  // The rail under the track: how much of the row is in view, and where. The card width is
-  // shared with the stage so its arrows line up with the middle of the photos.
-  const rail = useRef<HTMLDivElement>(null);
-  const stage = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const element = track.current;
-    const bar = rail.current;
-    if (!element || !bar) return;
-    let frame = 0;
-    const paint = () => {
-      frame = 0;
-      const size = element.scrollWidth > 0 ? Math.min(1, element.clientWidth / element.scrollWidth) : 1;
-      const room = element.scrollWidth - element.clientWidth;
-      bar.style.setProperty('--rail-size', String(size));
-      bar.style.setProperty('--rail-at', String(room > 0 ? element.scrollLeft / room : 0));
-      bar.hidden = size >= 1;
-      const card = element.firstElementChild;
-      if (card) stage.current?.style.setProperty('--card-w', card.getBoundingClientRect().width + 'px');
-    };
-    const schedule = () => { if (!frame) frame = requestAnimationFrame(paint); };
-    paint();
-    element.addEventListener('scroll', schedule, { passive: true });
-    const observer = new ResizeObserver(schedule);
-    observer.observe(element);
-    return () => { cancelAnimationFrame(frame); element.removeEventListener('scroll', schedule); observer.disconnect(); };
-  }, [list.page.items.length]);
   const onSearch = useCallback((term: string) => {
     const pending = search(term);
     controls.current?.reset();
@@ -92,28 +66,24 @@ export function Carousel({ locale, initial, copy }: { locale: Locale; initial: P
       <div className="products-controls">
         <NavigationLink className="btn btn-ghost btn-sm products-all-link" href={localePath(locale, '/products')}>{copy.carousel.all}</NavigationLink>
         <div data-products-search=""><SearchBox copy={copy.search} onSearch={onSearch} /></div>
+        <button ref={previous} type="button" className="products-arrow is-icon" data-products-previous="" aria-label={copy.carousel.previous} aria-controls={trackId} disabled><span aria-hidden="true" /></button>
+        <button ref={next} type="button" className="products-arrow is-icon" data-products-next="" aria-label={copy.carousel.next} aria-controls={trackId} disabled={empty}><span aria-hidden="true" /></button>
       </div>
       {empty ? <div className="products-empty products-search-feedback">
         <p role="status">{message}</p>
         <button className="products-page-retry" type="button" hidden={!list.error} disabled={list.loading}
           aria-busy={list.loading ? 'true' : undefined} onClick={(event) => { void onRetry(event.currentTarget); }}>{copy.list.retry}</button>
       </div> : null}
-      {/* The page arrows sit on the sides of the row, level with the middle of the photos. */}
-      <div className="products-stage" ref={stage}>
-        <button ref={previous} type="button" className="products-arrow is-icon" data-products-previous="" aria-label={copy.carousel.previous} aria-controls={trackId} disabled><span aria-hidden="true" /></button>
-        <ul className="products-track" id={trackId} ref={track} data-products-track="" role="list" aria-label={copy.carousel.region}
-          hidden={empty} style={empty ? { display: 'none' } : undefined} tabIndex={empty ? -1 : 0} aria-busy={list.loading ? 'true' : undefined}>
-          {list.page.items.map((product, index) => <ProductCard key={product.id} product={product} locale={locale} copy={copy.card} priority={index === 0} />)}
-          {!empty && (list.loading || list.error) ? <li className="products-card products-page-loader">
-            <span className="products-media-spinner" aria-hidden="true" hidden={!list.loading} />
-            <p role="status">{list.error ? copy.list.retryMore : copy.list.loadingMore}</p>
-            <button className="products-page-retry" type="button" hidden={!list.error} disabled={list.loading}
-              aria-busy={list.loading ? 'true' : undefined} onClick={(event) => { void onRetry(event.currentTarget); }}>{copy.list.retry}</button>
-          </li> : null}
-        </ul>
-        <button ref={next} type="button" className="products-arrow is-icon" data-products-next="" aria-label={copy.carousel.next} aria-controls={trackId} disabled={empty}><span aria-hidden="true" /></button>
-      </div>
-      <div className="products-rail" ref={rail} aria-hidden="true" hidden><span /></div>
+      <ul className="products-track" id={trackId} ref={track} data-products-track="" role="list" aria-label={copy.carousel.region}
+        hidden={empty} style={empty ? { display: 'none' } : undefined} tabIndex={empty ? -1 : 0} aria-busy={list.loading ? 'true' : undefined}>
+        {list.page.items.map((product, index) => <ProductCard key={product.id} product={product} locale={locale} copy={copy.card} priority={index === 0} />)}
+        {!empty && (list.loading || list.error) ? <li className="products-card products-page-loader">
+          <span className="products-media-spinner" aria-hidden="true" hidden={!list.loading} />
+          <p role="status">{list.error ? copy.list.retryMore : copy.list.loadingMore}</p>
+          <button className="products-page-retry" type="button" hidden={!list.error} disabled={list.loading}
+            aria-busy={list.loading ? 'true' : undefined} onClick={(event) => { void onRetry(event.currentTarget); }}>{copy.list.retry}</button>
+        </li> : null}
+      </ul>
       <p className="products-status" ref={status} data-products-status="" role="status" aria-live="polite" aria-atomic="true">{copy.list.position}: {list.page.items.length}</p>
     </div>
   );

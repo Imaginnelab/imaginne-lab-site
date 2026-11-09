@@ -34,26 +34,6 @@ a[href="#products"][hidden] { display: none; }
 .products-arrow:hover:not(:disabled) { border-color: var(--forest); background: var(--forest); color: #FBF9F2; }
 .products-arrow:active:not(:disabled) { transform: scale(.94); }
 .products-arrow:disabled { opacity: .3; cursor: default; }
-.products-stage { position: relative; }
-.products-stage > .products-arrow {
-  position: absolute;
-  top: calc(.25rem + var(--card-w, 280px) * .625 - 23px);
-  z-index: 5;
-  width: 46px;
-  height: 46px;
-  border: 0;
-  background: var(--bg-elevated);
-  color: var(--ink);
-  box-shadow: 0 1px 2px rgba(var(--shadow-color), .1), 0 6px 18px rgba(var(--shadow-color), .2);
-  opacity: 0;
-  transition: opacity .2s var(--ease-out), transform .2s var(--ease-out), box-shadow .2s;
-}
-.products-stage > [data-products-previous] { left: -23px; }
-.products-stage > [data-products-next] { right: -23px; }
-.products-carousel:hover .products-stage > .products-arrow:not(:disabled), .products-stage > .products-arrow:focus-visible { opacity: 1; }
-.products-stage > .products-arrow:hover:not(:disabled) { background: var(--bg-elevated); color: var(--ink); border-color: transparent; transform: scale(1.07); box-shadow: 0 1px 2px rgba(var(--shadow-color), .1), 0 10px 24px rgba(var(--shadow-color), .26); }
-.products-stage > .products-arrow:disabled { opacity: 0; pointer-events: none; }
-@media (hover: none) { .products-stage > .products-arrow { display: none; } }
 /* The row of cards. The next card always peeks in at the edge, and the edges fade out while
    there is more to that side (the arrows' disabled state says when there is not). */
 .products-track {
@@ -92,14 +72,6 @@ a[href="#products"][hidden] { display: none; }
 .products-track.products-dragging { cursor: grabbing; }
 .products-track .products-order, .products-track button { cursor: pointer; }
 .products-all-link { margin-right: auto; }
-/* Where the row is: a thin line that fills in proportion to what is in view. */
-.products-rail { position: relative; height: 3px; margin-top: 1.25rem; border-radius: 999px; background: var(--border); overflow: hidden; }
-.products-rail[hidden] { display: none; }
-.products-rail > span {
-  position: absolute; inset: 0 auto 0 0; width: calc(var(--rail-size, 1) * 100%); border-radius: inherit; background: var(--forest);
-  transform: translateX(calc(var(--rail-at, 0) * (100% / var(--rail-size, 1) - 100%)));
-}
-[data-theme="dark"] .products-rail > span { background: var(--amber); }
 /* A card is a photo and a few lines under it: no box around it. */
 .products-card { position: relative; min-width: 0; scroll-snap-align: start; }
 .products-featured-badge {
@@ -397,7 +369,7 @@ a[href="#products"][hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .products-photo[data-media-visible] .products-media-spinner, .products-page-loader .products-media-spinner { animation: none; }
   .products-track { scroll-behavior: auto; scroll-snap-type: none; }
-  .products-arrow, .products-image, .products-gallery-arrow, .products-order, .products-order-label, .products-dots i, .products-quick-toggle, .products-quick-toggle svg, .products-quick-menu, .products-stage > .products-arrow { transition: none; }
+  .products-arrow, .products-image, .products-gallery-arrow, .products-order, .products-order-label, .products-dots i, .products-quick-toggle, .products-quick-toggle svg, .products-quick-menu { transition: none; }
   .products-card:hover .products-image:not([hidden]) { transform: none; }
 }
 
