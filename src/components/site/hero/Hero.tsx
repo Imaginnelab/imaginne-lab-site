@@ -21,7 +21,7 @@ export function Hero({ locale, anchors, copy }: Props) {
         </picture>
       </div>
       <div className="wrap">
-        <div className="hero-copy" data-reveal="">
+        <div className="hero-copy">
           {/* Two lines in every language: the highlighted word closes the first one. */}
           <h1>
             <span className="hero-line">
