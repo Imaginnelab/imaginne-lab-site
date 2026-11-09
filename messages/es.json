@@ -86,16 +86,13 @@
   },
   "home": {
     "hero": {
-      "text001": "Estudio de impresión 3D",
       "text002": "Tu idea,",
       "text003": "impresa",
       "text004": "en 3D, con esmero.",
       "text005": "Miniaturas, organización y regalos personalizados, hechos bajo pedido en nuestro estudio y entregados listos para usar.",
       "text006": "Hacer Pedido",
       "text007": "Ver Productos",
-      "alt001": "Portarretrato de luz impreso en 3D con la foto de una familia, encendido sobre una mesa, hecho por Imaginne Lab",
-      "text008": "Cada pieza es única",
-      "text009": "Hecha bajo pedido"
+      "alt001": "Portarretrato de luz impreso en 3D con la foto de una familia, encendido sobre una mesa, hecho por Imaginne Lab"
     },
     "advantages": {
       "text001": "Impreso bajo pedido",
@@ -106,7 +103,6 @@
       "text006": "Empaque protegido para que tu pieza llegue entera."
     },
     "products": {
-      "text001": "Hechos en capas",
       "text002": "Encuentra tu próxima pieza favorita.",
       "text003": "Descubre nuestras piezas impresas en 3D y haz tu pedido directamente al estudio.",
       "ariaLabel001": "Catálogo de productos",
@@ -120,7 +116,6 @@
       "empty": "Nuevas piezas están en camino. Vuelve pronto."
     },
     "process": {
-      "text001": "Cómo funciona",
       "text002": "De tu idea",
       "text003": "a una pieza solo tuya.",
       "text004": "Una conversación, un diseño y capas de cuidado. Descubre cómo transformamos lo que imaginas en algo que puedes tener en tus manos.",
@@ -180,14 +175,13 @@
       "text058": "Lista para ti"
     },
     "customization": {
-      "text001": "Pieza a medida",
       "text002": "Si lo imaginas, lo imprimimos.",
       "text003": "Desde un pequeño regalo de cumpleaños hasta una pieza decorativa que no existe en ninguna tienda, cada pedido se modela desde cero para encajar exactamente con tu idea.",
       "text004": "Modelado 3D personalizado",
       "text005": "Elección de color y material",
       "text006": "Nombre, fecha o mensaje grabado",
       "text007": "Hacer Pedido",
-      "alt001": "Detrás de escena en el estudio Imaginne Lab durante una impresión"
+      "alt001": "Jarrón rosa con textura ondulada impreso en 3D por Imaginne Lab, con un arreglo de flores"
     },
     "contact": {
       "text001": "¿Lista para darle vida a tu idea?",

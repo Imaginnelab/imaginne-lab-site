@@ -86,16 +86,13 @@
   },
   "home": {
     "hero": {
-      "text001": "Estúdio de impressão 3D",
       "text002": "Sua ideia,",
       "text003": "impressa",
       "text004": "em 3D, com capricho.",
       "text005": "Miniaturas, organização e presentes personalizados, criados sob encomenda no nosso estúdio e entregues prontos para usar.",
       "text006": "Fazer Pedido",
       "text007": "Ver Produtos",
-      "alt001": "Porta-retrato de luz impresso em 3D com a foto de uma família, aceso sobre uma mesa, feito pela Imaginne Lab",
-      "text008": "Cada peça é única",
-      "text009": "Feita sob encomenda"
+      "alt001": "Porta-retrato de luz impresso em 3D com a foto de uma família, aceso sobre uma mesa, feito pela Imaginne Lab"
     },
     "advantages": {
       "text001": "Impresso sob encomenda",
@@ -106,7 +103,6 @@
       "text006": "Embalagem protegida para a peça chegar inteira até você."
     },
     "products": {
-      "text001": "Feitos em camadas",
       "text002": "Encontre sua próxima peça favorita.",
       "text003": "Conheça nossas peças impressas em 3D e faça seu pedido direto com o estúdio.",
       "ariaLabel001": "Catálogo de produtos",
@@ -120,7 +116,6 @@
       "empty": "Novas peças estão a caminho. Volte em breve."
     },
     "process": {
-      "text001": "Como funciona",
       "text002": "Da sua ideia",
       "text003": "a uma peça só sua.",
       "text004": "Uma conversa, um desenho e camadas de cuidado. Veja como transformamos o que você imagina em algo que pode segurar.",
@@ -180,14 +175,13 @@
       "text058": "Pronta para você"
     },
     "customization": {
-      "text001": "Peça sob medida",
       "text002": "Se você imagina, a gente imprime.",
       "text003": "Do mini presente de aniversário à peça de decoração que não existe em loja nenhuma, cada encomenda é modelada do zero para caber exatamente na sua ideia.",
       "text004": "Modelagem 3D personalizada",
       "text005": "Escolha de cor e material",
       "text006": "Nome, data ou mensagem gravada",
       "text007": "Fazer Pedido",
-      "alt001": "Bastidores do estúdio Imaginne Lab durante uma impressão"
+      "alt001": "Vaso rosa com textura ondulada impresso em 3D pela Imaginne Lab, com um arranjo de flores"
     },
     "contact": {
       "text001": "Pronta para dar vida à sua ideia?",

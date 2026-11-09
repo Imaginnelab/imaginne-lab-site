@@ -10,9 +10,6 @@ export function Customization({ anchors, copy }: Props) {
         <div className="spotlight" data-reveal="">
           <div className="inner">
             <div className="spotlight-copy">
-              <span className="eyebrow">
-                {copy.text001}
-              </span>
               <h2>
                 {copy.text002}
               </h2>
@@ -49,7 +46,7 @@ export function Customization({ anchors, copy }: Props) {
               </div>
             </div>
             <div className="spotlight-visual">
-              <img src="https://picsum.photos/seed/imaginne-lab-oficina-impressao/900/700" alt={copy.alt001} />
+              <img src="/assets/img/hero-vase.jpg" width={1086} height={1448} alt={copy.alt001} loading="lazy" decoding="async" />
             </div>
           </div>
         </div>

@@ -13,7 +13,7 @@ export async function Products({ locale, anchors, copy, storeCopy }: Props) {
   return (
     <section className="section products-section" id={anchors.products} data-products-section="" aria-labelledby="products-title">
       <div className="wrap">
-        <div className="section-head"><span className="eyebrow">{copy.text001}</span><h2 className="heading" id="products-title">{copy.text002}</h2><p className="lede">{copy.text003}</p></div>
+        <div className="section-head"><h2 className="heading" id="products-title">{copy.text002}</h2><p className="lede">{copy.text003}</p></div>
         <Carousel locale={locale} initial={initial} copy={storeCopy} />
       </div>
     </section>

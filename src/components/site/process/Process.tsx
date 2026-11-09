@@ -8,9 +8,6 @@ export function Process({ anchors, copy }: Props) {
     <section className="section journey" id={anchors.process} data-process="" aria-labelledby="journey-heading">
       <div className="wrap">
         <header className="journey-header">
-          <p className="journey-badge">
-            {copy.text001}
-          </p>
           <h2 id="journey-heading">
             {copy.text002}
             <br />

@@ -56,7 +56,7 @@ export function Footer({ locale, anchors, copy }: Props) {
             </h4>
             <ul>
               <li>
-                <NavigationLink href={localePath(locale) + "#"+anchors.products}>
+                <NavigationLink href={localePath(locale, '/products')}>
                   {copy.text009}
                 </NavigationLink>
               </li>

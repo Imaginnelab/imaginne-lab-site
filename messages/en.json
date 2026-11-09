@@ -86,16 +86,13 @@
   },
   "home": {
     "hero": {
-      "text001": "3D printing studio",
       "text002": "Your idea,",
       "text003": "printed",
       "text004": "in 3D, with care.",
       "text005": "Miniatures, organization, and personalized gifts, made to order in our studio and delivered ready to use.",
       "text006": "Order Now",
       "text007": "View Products",
-      "alt001": "3D printed light-up photo frame showing a family photo, glowing on a table, made by Imaginne Lab",
-      "text008": "Every piece is one of a kind",
-      "text009": "Made to order"
+      "alt001": "3D printed light-up photo frame showing a family photo, glowing on a table, made by Imaginne Lab"
     },
     "advantages": {
       "text001": "Printed to order",
@@ -106,7 +103,6 @@
       "text006": "Protective packaging so your piece arrives safe and sound."
     },
     "products": {
-      "text001": "Made in layers",
       "text002": "Find your next favorite piece.",
       "text003": "Explore our 3D printed pieces and order directly from the studio.",
       "ariaLabel001": "Product catalogue",
@@ -120,7 +116,6 @@
       "empty": "New pieces are on their way. Check back soon."
     },
     "process": {
-      "text001": "How it works",
       "text002": "From your idea",
       "text003": "to a piece of your own.",
       "text004": "A conversation, a design, a few careful layers. Discover how we turn what you imagine into something you can hold.",
@@ -180,14 +175,13 @@
       "text058": "Ready for you"
     },
     "customization": {
-      "text001": "Made to order",
       "text002": "If you can imagine it, we can print it.",
       "text003": "From a small birthday gift to a decor piece you will not find in any store, every order is modeled from scratch to fit your idea exactly.",
       "text004": "Custom 3D modeling",
       "text005": "Choice of color and material",
       "text006": "Name, date, or engraved message",
       "text007": "Order Now",
-      "alt001": "Behind the scenes at the Imaginne Lab studio during a print"
+      "alt001": "Pink wave-textured vase 3D printed by Imaginne Lab, holding a flower arrangement"
     },
     "contact": {
       "text001": "Ready to bring your idea to life?",

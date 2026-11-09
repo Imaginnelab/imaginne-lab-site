@@ -20,25 +20,8 @@ export function Hero({ locale, anchors, copy }: Props) {
             sizes="min(62vw, 1180px)" width={1300} height={941} alt={copy.alt001} fetchPriority="high" decoding="async" />
         </picture>
       </div>
-      <div className="hero-badge">
-        <svg className="icon" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-          <path fill="currentColor" d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,32l80.34,44L128,120,47.66,76ZM40,90l80,43.78v85.79L40,175.82Zm96,129.57V133.82L216,90v85.78Z">
-          </path>
-        </svg>
-        <span>
-          <strong>
-            {copy.text008}
-          </strong>
-          <span>
-            {copy.text009}
-          </span>
-        </span>
-      </div>
       <div className="wrap">
         <div className="hero-copy" data-reveal="">
-          <span className="eyebrow">
-            {copy.text001}
-          </span>
           {/* Two lines in every language: the highlighted word closes the first one. */}
           <h1>
             <span className="hero-line">

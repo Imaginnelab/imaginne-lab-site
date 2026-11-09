@@ -1,10 +1,10 @@
 /* Local process timeline. Static, complete scenes are the no-JS baseline. */
 .journey { padding-top: clamp(2rem, 5vw, 4rem); }
 .journey-header { text-align: center; max-width: 56rem; margin: 0 auto clamp(2.5rem, 6vw, 5rem); }
-.journey-badge { display: inline-flex; padding: .55rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--bg-elevated); font-family: var(--font-mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
-.journey-header h2 { margin: 1.1rem 0; font-size: clamp(2rem, 4.3vw, 3.65rem); line-height: 1.12; font-weight: 600; letter-spacing: -.035em; text-wrap: balance; }
-.journey-header h2 span, .journey-copy h3 span { color: var(--forest); background: linear-gradient(transparent 78%, var(--amber) 78%, var(--amber) 94%, transparent 94%); }
-[data-theme="dark"] .journey-header h2 span, [data-theme="dark"] .journey-copy h3 span { color: var(--amber); background: none; }
+.journey-header h2 { margin: 0 0 1.1rem; font-size: clamp(2rem, 4.3vw, 3.65rem); line-height: 1.12; font-weight: 600; letter-spacing: -.035em; text-wrap: balance; }
+/* The amber underline marks the section title only; the step titles stay plain ink. */
+.journey-header h2 span { color: var(--forest); background: linear-gradient(transparent 78%, var(--amber) 78%, var(--amber) 94%, transparent 94%); }
+[data-theme="dark"] .journey-header h2 span { color: var(--amber); background: none; }
 .journey-header > p:last-child { max-width: 56ch; margin-inline: auto; color: var(--ink-soft); font-size: 1.08rem; line-height: 1.7; text-wrap: pretty; }
 .journey-track { position: relative; }
 .journey-steps { position: relative; list-style: none; margin: 0; padding: 0; }
