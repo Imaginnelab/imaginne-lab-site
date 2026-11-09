@@ -2,7 +2,7 @@ import type { Dictionary } from '@/i18n/dictionaries';
 
 type Copy = Dictionary['home']['customization'];
 
-// The custom-order scene: an order card where a "Sofia" nameplate is printed layer by layer
+// The custom-order scene: an order card where a "Julia" nameplate is printed layer by layer
 // under the site's nozzle, with its colour, size and engraving, and the brand's light bulb as a
 // mascot leaning on it. One SVG, so it stays sharp at any size; it moves only once the section
 // is in view (see .spotlight.is-visible) and never with reduced motion.
@@ -34,7 +34,7 @@ export function CustomizationScene({ copy }: { copy: Copy }) {
       {/* The print bed, with the nameplate being printed */}
       <rect x="68" y="222" width="304" height="134" rx="18" fill="#F1EEE2" />
       <g className="scene-plate">
-        <text className="scene-name" x="220" y="308" textAnchor="middle">Sofia</text>
+        <text className="scene-name" x="220" y="308" textAnchor="middle">Julia</text>
         <rect x="120" y="318" width="200" height="16" rx="6" fill="#343D30" />
       </g>
       <rect className="scene-cover" x="96" y="238" width="248" height="98" fill="#F1EEE2" />
@@ -56,7 +56,7 @@ export function CustomizationScene({ copy }: { copy: Copy }) {
       <text className="scene-label" x="68" y="448">{copy.sceneSize}</text>
       <text className="scene-value" x="372" y="448" textAnchor="end">12 cm</text>
       <text className="scene-label" x="68" y="490">{copy.sceneEngraving}</text>
-      <text className="scene-value scene-value-script" x="372" y="491" textAnchor="end">Sofia</text>
+      <text className="scene-value scene-value-script" x="372" y="491" textAnchor="end">Julia</text>
 
       {/* The mascot: the logo's light bulb */}
       <ellipse className="scene-shadow" cx="506" cy="512" rx="74" ry="10" fill="#1C2118" opacity=".12" />
