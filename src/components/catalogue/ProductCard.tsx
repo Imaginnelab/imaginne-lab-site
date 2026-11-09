@@ -17,7 +17,18 @@ export function ProductCard({ product, locale, copy, priority = false }: {
   const href = localePath(locale, '/products/' + product.id);
   return (
     <li className={'products-card' + (product.featured ? ' products-featured' : '')} onClick={interest}>
-      <ProductMedia product={product} locale={locale} copy={copy} priority={priority} />
+      {/* The print bed: in the carousel the photo is built up layer by layer the first time the
+          card comes into view, under the same nozzle as the page loading line. */}
+      <div className="products-bed">
+        <ProductMedia product={product} locale={locale} copy={copy} priority={priority} />
+        <span className="products-print" aria-hidden="true">
+          <span className="products-print-layers" />
+          <span className="products-print-head">
+            <svg viewBox="0 0 14 16" focusable="false"><path className="products-print-body" d="M1 0h12v8H1zM4 8h6l-3 5z" /><circle className="products-print-tip" cx="7" cy="14.2" r="1.6" /></svg>
+          </span>
+          <span className="products-print-status">{copy.printing}</span>
+        </span>
+      </div>
       {product.featured ? <span className="products-featured-badge">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.5 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.3l6.5-.9Z" /></svg>
         {copy.mostViewed}

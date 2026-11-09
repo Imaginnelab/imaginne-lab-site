@@ -49,6 +49,25 @@ export function Carousel({ locale, initial, copy }: { locale: Locale; initial: P
     controls.current = api;
     return () => { api.dispose(); controls.current = null; dispose(); };
   }, [activate, dispose, loadNext, copy.list.position]);
+  // Each card is printed the first time it comes into view in the row; cards that arrive together
+  // start one after the other. Without this (no script, reduced motion) photos simply show.
+  useEffect(() => {
+    const element = track.current;
+    if (!element || window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+    element.setAttribute('data-print', '');
+    const observer = new IntersectionObserver((entries) => {
+      let order = 0;
+      for (const entry of entries) {
+        const card = entry.target as HTMLElement;
+        if (!entry.isIntersecting || card.hasAttribute('data-printed')) continue;
+        card.style.setProperty('--print-delay', order++ * 160 + 'ms');
+        card.setAttribute('data-printed', '');
+        observer.unobserve(card);
+      }
+    }, { threshold: .55 });
+    element.querySelectorAll<HTMLElement>('.products-card:not([data-printed]):not(.products-page-loader)').forEach((card) => observer.observe(card));
+    return () => observer.disconnect();
+  }, [list.page.items.length]);
   const onSearch = useCallback((term: string) => {
     const pending = search(term);
     controls.current?.reset();

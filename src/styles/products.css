@@ -33,7 +33,9 @@ a[href="#products"][hidden] { display: none; }
 }
 .products-arrow:hover:not(:disabled) { border-color: var(--forest); background: var(--forest); color: #FBF9F2; }
 .products-arrow:active:not(:disabled) { transform: scale(.94); }
-.products-arrow:disabled { opacity: .3; cursor: default; }
+/* An arrow only shows while there is more to see on its side. */
+.products-arrow:disabled { visibility: hidden; }
+.products-arrow[aria-busy="true"]:disabled { visibility: visible; }
 /* The row of cards. The next card always peeks in at the edge, and the edges fade out while
    there is more to that side (the arrows' disabled state says when there is not). */
 .products-track {
@@ -397,3 +399,75 @@ a[href="#products"][hidden] { display: none; }
    icon and push it off centre; the icon is placed on the button itself instead. */
 .products-gallery-arrow::after { position: absolute; inset: 0; margin: auto; }
 .products-gallery-arrow[aria-busy="true"]::before { position: absolute; inset: 0; margin: auto; }
+
+/* ---------------------------------------------------------
+   The print: the first time a card shows in the carousel, its photo is built from the bed up
+   in sixteen layers under the site's print nozzle, with a percentage counter; then the layer
+   lines cool and fade, leaving the clean photo. Only in the carousel (the track gets
+   data-print from its script), never with reduced motion, so photos otherwise just show.
+--------------------------------------------------------- */
+@property --print-pct { syntax: '<integer>'; inherits: false; initial-value: 0; }
+/* The empty bed shows the shape of the photo before the print fills it. */
+.products-bed { position: relative; border-radius: 20px; background: var(--bg-sunken); box-shadow: inset 0 0 0 1px var(--border); }
+.products-print { display: none; }
+.products-track[data-print] .products-card:not([data-printed]) .products-photo { clip-path: inset(100% 0 0 0); }
+.products-track[data-print] .products-card[data-printed] .products-photo { animation: print-build 1.6s steps(16, end) var(--print-delay, 0ms) both; }
+.products-track[data-print] .products-card[data-printed] .products-print {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: block;
+  overflow: hidden;
+  border-radius: 20px;
+  pointer-events: none;
+  animation: print-done .35s ease-out calc(var(--print-delay, 0ms) + 1.75s) both;
+}
+/* Layer lines over the part already printed. */
+.products-print-layers {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to top, rgba(255, 255, 255, .22) 0 1px, transparent 1px calc(100% / 16));
+  animation: print-build 1.6s steps(16, end) var(--print-delay, 0ms) both;
+}
+/* The nozzle rides the top of the print, sweeping across every layer. */
+.products-print-head {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  animation: print-rise 1.6s steps(16, end) var(--print-delay, 0ms) both;
+}
+.products-print-head svg {
+  position: absolute;
+  bottom: 0;
+  width: 18px;
+  height: 21px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .25));
+  animation: print-sweep .1s linear var(--print-delay, 0ms) 16 alternate both;
+}
+.products-print-body { fill: var(--forest); }
+.products-print-tip { fill: var(--amber); }
+.products-print-status {
+  position: absolute;
+  left: .75rem;
+  bottom: .75rem;
+  padding: .3rem .6rem;
+  border-radius: var(--radius-pill);
+  background: var(--forest);
+  color: #FBF9F2;
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  letter-spacing: .02em;
+  counter-reset: print var(--print-pct);
+  animation: print-count 1.6s linear var(--print-delay, 0ms) both;
+}
+.products-print-status::after { content: " " counter(print) "%"; }
+@keyframes print-build { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes print-rise { from { top: 100%; } to { top: 0%; } }
+@keyframes print-sweep { from { left: 6%; } to { left: calc(94% - 18px); } }
+@keyframes print-count { from { --print-pct: 0; } to { --print-pct: 100; } }
+@keyframes print-done { to { opacity: 0; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) {
+  .products-track[data-print] .products-card .products-photo { clip-path: none; animation: none; }
+  .products-track[data-print] .products-card .products-print { display: none; }
+}
