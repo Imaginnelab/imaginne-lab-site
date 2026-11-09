@@ -98,8 +98,7 @@ export default function CartDrawer({ locale, copy, lines, close }: {
         <p className="cart-subtotal"><span>{copy.subtotal}</span><strong>{products ? formatPrice(subtotal, locale) : '—'}</strong></p>
         {products && incomplete ? <p>{copy.partialTotal}</p> : null}
         <p>{copy.shippingNote}</p>
-        <button className="btn btn-primary" type="button" disabled>{copy.checkout}</button>
-        <p className="cart-coming-soon">{copy.comingSoon}</p>
+        <Link className="btn btn-primary" href={localePath(locale, '/checkout')}>{copy.checkout}</Link>
         <button className="cart-continue" type="button" onClick={close}>{copy.continueShopping}</button>
       </div>
     </>}

@@ -37,6 +37,7 @@
       "tagline": "Impressão 3D"
     },
     "header": {
+      "orders": "Meus pedidos",
       "alt001": "Imaginne Lab",
       "text001": "Imaginne Lab",
       "text002": "Impressão 3D",
@@ -347,6 +348,48 @@
       "previous": "Imagem anterior",
       "next": "Próxima imagem",
       "quantityInvalid": "A quantidade deve ser um número inteiro maior que 0, até 99."
+    },
+    "checkout": {
+      "title": "Finalizar compra",
+      "description": "Revise suas peças antes de continuar para o pagamento.",
+      "testNotice": "Checkout de teste. Nenhum pagamento real será cobrado e nenhum produto será enviado.",
+      "items": "Suas peças",
+      "summary": "Resumo do pedido",
+      "shipping": "Frete de teste",
+      "tax": "Impostos",
+      "taxAtPayment": "Calculados no pagamento",
+      "taxNotConfigured": "Não configurados para este teste",
+      "totalBeforeTax": "Total antes dos impostos",
+      "total": "Total",
+      "deliveryNote": "Frete simulado dentro do Canadá. Os valores finais de teste aparecem na Stripe antes de pagar.",
+      "signInNote": "Use Entrar no topo da página para continuar. Seu carrinho será mantido.",
+      "pay": "Continuar para pagamento de teste",
+      "redirecting": "Abrindo pagamento seguro…",
+      "secure": "Os dados de pagamento são preenchidos com segurança na Stripe.",
+      "canceled": "O pagamento foi cancelado. Seu carrinho continua aqui; você pode tentar de novo.",
+      "backToCheckout": "Voltar para a finalização da compra",
+      "checkStatus": "Consultar status do pagamento",
+      "errors": {
+        "invalid": "Confira os produtos e as quantidades do carrinho.",
+        "signIn": "Entre novamente na sua conta para continuar com o pagamento.",
+        "unavailable": "Não foi possível abrir o pagamento. Tente novamente em instantes.",
+        "configuration": "O pagamento de teste ainda não foi configurado neste ambiente local.",
+        "productUnavailable": "Remova os produtos indisponíveis e os que precisam de orçamento antes de continuar.",
+        "colorUnavailable": "Escolha uma cor válida na página do produto antes de continuar.",
+        "stock": "Uma ou mais quantidades ultrapassam o estoque disponível. Diminua a quantidade para continuar.",
+        "priceChanged": "Um preço mudou. Revise o resumo atualizado e continue novamente.",
+        "taxConfiguration": "O Stripe Tax precisa de um registro canadense de teste ativo e das configurações de teste preenchidas."
+      },
+      "result": {
+        "paid": "Pagamento de teste confirmado",
+        "pending": "Aguardando confirmação do pagamento",
+        "expired": "Esta sessão de pagamento de teste expirou",
+        "failed": "O pagamento de teste falhou",
+        "unknown": "Não foi possível verificar este pagamento",
+        "paidDescription": "A Stripe confirmou o pagamento simulado. Este teste não gera envio nem reserva estoque. Seu carrinho foi mantido para novos testes.",
+        "pendingDescription": "O pagamento ainda não foi confirmado. Consulte o status novamente antes de iniciar outro pagamento.",
+        "unknownDescription": "Entre com a conta usada na compra e abra o link original de retorno, ou volte para seu carrinho."
+      }
     },
     "cart": {
       "open": "Abrir carrinho",

@@ -37,6 +37,7 @@
       "tagline": "Impresión 3D"
     },
     "header": {
+      "orders": "Mis pedidos",
       "alt001": "Imaginne Lab",
       "text001": "Imaginne Lab",
       "text002": "Impresión 3D",
@@ -347,6 +348,48 @@
       "previous": "Imagen anterior",
       "next": "Imagen siguiente",
       "quantityInvalid": "La cantidad debe ser un número entero mayor que 0, hasta 99."
+    },
+    "checkout": {
+      "title": "Finalizar compra",
+      "description": "Revisa tus piezas antes de continuar al pago.",
+      "testNotice": "Compra de prueba. No se cobrará ningún pago real ni se enviarán productos.",
+      "items": "Tus piezas",
+      "summary": "Resumen del pedido",
+      "shipping": "Envío de prueba",
+      "tax": "Impuestos",
+      "taxAtPayment": "Calculados en el pago",
+      "taxNotConfigured": "No configurados para esta prueba",
+      "totalBeforeTax": "Total antes de impuestos",
+      "total": "Total",
+      "deliveryNote": "Envío simulado dentro de Canadá. Los importes finales de prueba aparecen en Stripe antes de pagar.",
+      "signInNote": "Usa Iniciar sesión en la parte superior para continuar. Tu carrito se conservará.",
+      "pay": "Continuar al pago de prueba",
+      "redirecting": "Abriendo pago seguro…",
+      "secure": "Los datos de pago se introducen de forma segura en Stripe.",
+      "canceled": "El pago se canceló. Tu carrito sigue aquí; puedes intentarlo de nuevo.",
+      "backToCheckout": "Volver a finalizar la compra",
+      "checkStatus": "Consultar estado del pago",
+      "errors": {
+        "invalid": "Revisa los productos y las cantidades del carrito.",
+        "signIn": "Inicia sesión de nuevo para continuar con el pago.",
+        "unavailable": "No se pudo abrir el pago. Inténtalo de nuevo en un momento.",
+        "configuration": "El pago de prueba aún no está configurado en este entorno local.",
+        "productUnavailable": "Elimina los productos no disponibles y los que necesitan presupuesto antes de continuar.",
+        "colorUnavailable": "Elige un color válido en la página del producto antes de continuar.",
+        "stock": "Una o más cantidades superan las existencias. Reduce la cantidad para continuar.",
+        "priceChanged": "Un precio ha cambiado. Revisa el resumen actualizado y continúa de nuevo.",
+        "taxConfiguration": "Stripe Tax necesita un registro canadiense de prueba activo y la configuración de prueba completa."
+      },
+      "result": {
+        "paid": "Pago de prueba confirmado",
+        "pending": "Esperando la confirmación del pago",
+        "expired": "Esta sesión de pago de prueba ha caducado",
+        "failed": "El pago de prueba falló",
+        "unknown": "No se pudo verificar este pago",
+        "paidDescription": "Stripe confirmó el pago simulado. Esta prueba no genera envíos ni reserva existencias. Tu carrito se conserva para más pruebas.",
+        "pendingDescription": "El pago aún no está confirmado. Consulta su estado antes de iniciar otro pago.",
+        "unknownDescription": "Inicia sesión con la cuenta usada en la compra y abre el enlace original de retorno, o vuelve a tu carrito."
+      }
     },
     "cart": {
       "open": "Abrir carrito",

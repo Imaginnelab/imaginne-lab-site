@@ -1,0 +1,19 @@
+{
+  "title": "Your orders", "intro": "Follow your purchases from our studio to your door.", "testNotice": "Test orders. No products are shipped automatically.", "moreResults": "Continue to check earlier purchases.",
+  "number": "Order #{number}", "placedOn": "Order placed", "total": "Total", "details": "View order details", "back": "Back to orders", "browse": "Explore the collection",
+  "empty": "No orders yet", "emptyHelp": "Your completed purchases will appear here, along with their progress.",
+  "signIn": "Sign in at the top of the page to see your orders.", "configuration": "Order history is not configured in this environment yet.", "unavailable": "We could not load your orders. Please try again.",
+  "retry": "Try again", "older": "Older orders", "newest": "Most recent orders", "items": "Items", "quantity": "Quantity", "progress": "Order progress",
+  "shippingAddress": "Shipping address", "addressUnavailable": "The shipping address is not available for this order.",
+  "subtotal": "Items subtotal", "shipping": "Shipping", "tax": "Tax", "summary": "Order summary",
+  "estimatedDelivery": "Estimated delivery: {date}", "estimatePending": "The studio will add an estimated delivery date when available.",
+  "tracking": "Tracking number", "track": "Track on Canada Post", "trackingPending": "Tracking will appear here once the studio adds it.",
+  "manualUpdates": "Production and delivery progress is updated by the studio. Carrier tracking opens on Canada Post.",
+  "status": { "payment_pending": "Waiting for payment", "confirmed": "Payment confirmed", "in_production": "In production", "packing": "Preparing shipment", "shipped": "Shipped", "delivered": "Delivered", "canceled": "Canceled" },
+  "admin": {
+    "filters": { "title": "Filter orders", "status": "Status", "all": "All statuses", "from": "Created from", "to": "Created through", "apply": "Apply filters", "clear": "Clear filters", "timezone": "Creation dates use São Paulo time. The final day is included.", "invalid": "Check the status and dates. The start date must be on or before the end date.", "empty": "No matching orders", "emptyHelp": "Change or clear the filters to see more orders." },
+    "title": "Orders", "intro": "Manage production, shipment and delivery progress.", "back": "Back to dashboard", "edit": "Manage order", "status": "Order status", "tracking": "Canada Post tracking number (optional)",
+    "estimate": "Estimated delivery (optional)", "save": "Save update", "saving": "Saving…", "saved": "Order updated.", "refresh": "Reload order", "note": "Changing the status does not buy postage, ship a parcel or issue a refund.",
+    "forbidden": "Only administrators can update orders.", "invalid": "Check the order details and tracking number.", "conflict": "This order changed in another tab. Reload it before saving.", "transition": "A completed stage cannot be reversed and unpaid orders cannot advance.", "unavailable": "We could not save the update. Please try again."
+  }
+}

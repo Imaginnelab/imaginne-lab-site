@@ -80,12 +80,13 @@ export async function getCartProducts(input: unknown): Promise<ProductsResult> {
     if (!(await catalogueAllowed())) return { ok: true, products: [] };
     if (!parsed.data.ids.length) return { ok: true, products: [] };
     const supabase = await createClient();
-    const { data, error } = await supabase.from('products').select(`${fields},stock_quantity,colors:cor(id,name,hex,locale,sort_order)`).eq('is_active', true)
+    const { data, error } = await supabase.from('products').select(`${fields},stock_quantity,width_cm,height_cm,depth_cm,weight_g,colors:cor(id,name,hex,locale,sort_order)`).eq('is_active', true)
       .in('id', Array.from(new Set(parsed.data.ids))).abortSignal(AbortSignal.timeout(12_000));
     if (error || !data) return { ok: false };
     return { ok: true, products: data.flatMap((row): CartProductDTO[] => {
       const product = dto(row, parsed.data.locale);
-      return product ? [{ ...product, colors: productColorOptions(row.colors), stockQuantity: row.stock_quantity }] : [];
+      return product ? [{ ...product, colors: productColorOptions(row.colors), stockQuantity: row.stock_quantity,
+        widthCm: row.width_cm, heightCm: row.height_cm, depthCm: row.depth_cm, weightGrams: row.weight_g }] : [];
     }) };
   } catch { return { ok: false }; }
 }

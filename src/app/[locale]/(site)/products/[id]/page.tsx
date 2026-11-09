@@ -72,7 +72,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <dl>{technical.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
         </section> : null}
       </div>
-      <ProductPurchase id={product.id} price={product.price} unavailable={product.stockQuantity === 0} stockLabel={stock} copy={{ quantity: copy.quantity, addToCart: copy.addToCart, buyNow: copy.buyNow,
+      <ProductPurchase locale={locale} id={product.id} price={product.price} unavailable={product.stockQuantity === 0} stockLabel={stock} copy={{ quantity: copy.quantity, addToCart: copy.addToCart, buyNow: copy.buyNow,
         comingSoon: copy.comingSoon, onRequest: copy.onRequest, cartFull: copy.cartFull, chooseColor: copy.chooseColor, quantityInvalid: copy.quantityInvalid, colorLabel: copy.specifications.colors }}
         quantityCopy={{ quantity: t.store.cart.quantity, decrease: t.store.cart.decrease, increase: t.store.cart.increase }} />
     </div>

@@ -1,0 +1,19 @@
+{
+  "title": "Mis pedidos", "intro": "Sigue tus compras, desde nuestro estudio hasta tu casa.", "testNotice": "Pedidos de prueba. No se envían productos automáticamente.", "moreResults": "Continúa para consultar las compras anteriores.",
+  "number": "Pedido #{number}", "placedOn": "Pedido realizado el", "total": "Total", "details": "Ver detalles del pedido", "back": "Volver a mis pedidos", "browse": "Explorar la colección",
+  "empty": "Todavía no tienes pedidos", "emptyHelp": "Tus compras completadas aparecerán aquí con el seguimiento de cada etapa.",
+  "signIn": "Inicia sesión en la parte superior para ver tus pedidos.", "configuration": "El historial de pedidos aún no está configurado en este entorno.", "unavailable": "No se pudieron cargar tus pedidos. Inténtalo de nuevo.",
+  "retry": "Intentar de nuevo", "older": "Pedidos anteriores", "newest": "Pedidos más recientes", "items": "Artículos", "quantity": "Cantidad", "progress": "Seguimiento del pedido",
+  "shippingAddress": "Dirección de entrega", "addressUnavailable": "La dirección de entrega no está disponible para este pedido.",
+  "subtotal": "Subtotal de productos", "shipping": "Envío", "tax": "Impuestos", "summary": "Resumen del pedido",
+  "estimatedDelivery": "Entrega estimada: {date}", "estimatePending": "El estudio añadirá una fecha estimada cuando esté disponible.",
+  "tracking": "Número de seguimiento", "track": "Rastrear en Canada Post", "trackingPending": "El seguimiento aparecerá cuando lo añada el estudio.",
+  "manualUpdates": "El estudio actualiza las etapas de producción y entrega. El seguimiento del transportista se abre en Canada Post.",
+  "status": { "payment_pending": "Esperando el pago", "confirmed": "Pago confirmado", "in_production": "En producción", "packing": "Preparando el envío", "shipped": "Enviado", "delivered": "Entregado", "canceled": "Cancelado" },
+  "admin": {
+    "filters": { "title": "Filtrar pedidos", "status": "Estado", "all": "Todos los estados", "from": "Creados desde", "to": "Creados hasta", "apply": "Aplicar filtros", "clear": "Limpiar filtros", "timezone": "Fechas de creación en la hora de São Paulo. Se incluye el día final.", "invalid": "Revisa el estado y las fechas. La fecha inicial debe ser anterior o igual a la final.", "empty": "No se encontraron pedidos", "emptyHelp": "Cambia o elimina los filtros para ver más pedidos." },
+    "title": "Pedidos", "intro": "Gestiona las etapas de producción, envío y entrega.", "back": "Volver al panel", "edit": "Gestionar pedido", "status": "Estado del pedido", "tracking": "Número de seguimiento de Canada Post (opcional)",
+    "estimate": "Entrega estimada (opcional)", "save": "Guardar actualización", "saving": "Guardando…", "saved": "Pedido actualizado.", "refresh": "Recargar pedido", "note": "Cambiar el estado no compra envíos, no envía paquetes ni reembolsa el pago.",
+    "forbidden": "Solo los administradores pueden actualizar pedidos.", "invalid": "Revisa los datos del pedido y el número de seguimiento.", "conflict": "Este pedido cambió en otra pestaña. Recárgalo antes de guardar.", "transition": "Una etapa completada no puede retroceder y los pedidos sin pagar no pueden avanzar.", "unavailable": "No se pudo guardar la actualización. Inténtalo de nuevo."
+  }
+}

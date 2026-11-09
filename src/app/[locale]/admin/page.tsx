@@ -1,6 +1,7 @@
 import { NavigationLink } from '@/components/navigation/NavigationLink';
 import { notFound, redirect } from 'next/navigation';
 import { getAdminDictionary } from '@/i18n/admin-dictionaries';
+import { getOrderDictionary } from '@/i18n/order-dictionaries';
 import { isLocale, localePath } from '@/i18n/config';
 import { getAdmin } from '@/lib/dal';
 import { listCoupons, listProducts, maintenanceState, mostViewedProductId } from '@/lib/admin/queries';
@@ -24,9 +25,9 @@ export default async function AdminPage({ params, searchParams }: Props) {
   // The layout already refuses visitors; a page must not depend on that alone.
   const user = await getAdmin();
   if (!user) redirect(localePath(locale));
-  const [t, products, coupons, maintenance, star, now] = await Promise.all([
+  const [t, products, coupons, maintenance, star, now, ordersCopy] = await Promise.all([
     getAdminDictionary(locale), listProducts().catch(() => null), listCoupons().catch(() => null),
-    maintenanceState().catch(() => null), mostViewedProductId().catch(() => null), requestTime(),
+    maintenanceState().catch(() => null), mostViewedProductId().catch(() => null), requestTime(), getOrderDictionary(locale),
   ]);
   const m = t.interface;
   return (
@@ -37,7 +38,10 @@ export default async function AdminPage({ params, searchParams }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/img/logo-icon.svg" alt={t.brand} /><span>{t.brand}<small>{t.pageHeading}</small></span>
         </NavigationLink>
-        <NavigationLink className="btn btn-ghost btn-sm" data-home="" data-back="" href={localePath(locale)}>{m.back}</NavigationLink>
+        <div className="nav-actions">
+          <NavigationLink className="btn btn-ghost btn-sm" href={localePath(locale, '/admin/orders')}>{ordersCopy.admin.title}</NavigationLink>
+          <NavigationLink className="btn btn-ghost btn-sm" data-home="" data-back="" href={localePath(locale)}>{m.back}</NavigationLink>
+        </div>
       </div></header>
       <main className="wrap admin-main" data-admin-root>
         <p id="admin-status" role="status" aria-live="polite" />
