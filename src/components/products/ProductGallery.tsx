@@ -7,6 +7,7 @@ import type { ProductDTO } from '@/lib/products/types';
 import { ProductPhoto } from '@/components/catalogue/ProductPhoto';
 import { ModelMedia } from '@/components/catalogue/ModelMedia';
 import { watchMedia } from '@/components/catalogue/media-visibility';
+import { ProductZoom, paintedRect } from './ProductZoom';
 
 const noInterest = () => {};
 export function ProductGallery({ product, locale, copy, detail }: {
@@ -31,6 +32,17 @@ export function ProductGallery({ product, locale, copy, detail }: {
     if (target === product.photos.length) setReady(false);
     if (target < product.photos.length) setVisited((current) => new Set([...current, target]));
   }
+  // A click (or Enter) on the photo opens it large in the middle of the screen.
+  const [zoom, setZoom] = useState<{ src: string; from: DOMRect; size: { width: number; height: number } } | null>(null);
+  function shownImage() {
+    const src = product.photos[index];
+    return [...photo.current?.querySelectorAll('img') ?? []].find((image) => image.getAttribute('src') === src && image.complete && image.naturalWidth > 0) ?? null;
+  }
+  function openZoom() {
+    const image = modelSelected ? null : shownImage();
+    if (image) setZoom({ src: image.currentSrc || image.src, from: paintedRect(image), size: { width: image.naturalWidth, height: image.naturalHeight } });
+  }
+  const closeZoom = useCallback(() => setZoom(null), []);
   return <div className="product-gallery" role="group" aria-label={copy.views}>
     <div className="product-thumbnails">
       {product.photos.map((src, position) => <button key={src} type="button" className="product-thumbnail" aria-pressed={index === position}
@@ -56,11 +68,13 @@ export function ProductGallery({ product, locale, copy, detail }: {
           if (!start || start.id !== event.pointerId || modelSelected) return;
           const dx = event.clientX - start.x, dy = event.clientY - start.y;
           if (Math.abs(dx) >= 45 && Math.abs(dx) > Math.abs(dy) * 1.25) show(index + (dx < 0 ? 1 : -1));
+          else if (Math.hypot(dx, dy) < 8) openZoom();
         }}
         onDragStart={(event) => { if (!modelSelected) event.preventDefault(); }}
         onKeyDown={(event) => {
           // Arrow keys inside the 3D viewer rotate the model rather than changing media.
           if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+          if (event.key === 'Enter' && !modelSelected) { event.preventDefault(); openZoom(); return; }
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
           event.preventDefault();
           show(event.key === 'Home' ? 0 : event.key === 'End' ? count - 1 : index + (event.key === 'ArrowRight' ? 1 : -1));
@@ -79,5 +93,7 @@ export function ProductGallery({ product, locale, copy, detail }: {
       </div> : null}
       <p className="products-status" aria-live="polite">{modelSelected ? copy.modelBadge : `${copy.photo} ${index + 1} / ${product.photos.length}`}</p>
     </div>
+    {zoom ? <ProductZoom src={zoom.src} alt={`${copy.photo} ${index + 1}: ${product.name}`} size={zoom.size} from={zoom.from}
+      origin={() => { const image = shownImage(); return image ? paintedRect(image) : null; }} onClosed={closeZoom} /> : null}
   </div>;
 }

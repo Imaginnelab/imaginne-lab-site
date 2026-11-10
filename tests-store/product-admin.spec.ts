@@ -222,3 +222,26 @@ test('product gallery supports dragging, arrows and keyboard without taking over
   await expect(page.getByRole('button', { name: 'Foto 2: Vaso escultural', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('button', { name: 'Ver em 3D', exact: true })).toHaveCount(1);
 });
+
+test('clicking the product photo opens it centred and a click outside closes it', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/pt/products/10000000-0000-4000-8000-000000000001/');
+  await page.locator('.product-detail-photo > img').first().evaluate((element: HTMLImageElement) => element.decode());
+  await page.locator('.product-detail-photo').click();
+  const zoom = page.getByRole('dialog', { name: 'Foto 1: Vaso escultural' });
+  await expect(zoom).toBeVisible();
+  await page.waitForTimeout(500);
+  const box = (await zoom.locator('img').boundingBox())!;
+  expect(Math.abs(box.x + box.width / 2 - 640)).toBeLessThan(4);
+  expect(Math.abs(box.y + box.height / 2 - 400)).toBeLessThan(4);
+  await page.screenshot({ path: 'test-results/store-product-zoom.png' });
+  await zoom.locator('img').click();
+  await expect(zoom).toBeVisible();
+  await page.mouse.click(30, 30);
+  await expect(zoom).toHaveCount(0);
+  await page.locator('.product-detail-photo').focus();
+  await page.keyboard.press('Enter');
+  await expect(zoom).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(zoom).toHaveCount(0);
+});
