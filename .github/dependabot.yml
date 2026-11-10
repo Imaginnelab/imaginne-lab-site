@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Security updates arrive as soon as an alert exists; these are the routine ones, weekly
+  # and grouped so review stays manageable. Each one is a PR like any other change.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dependencies:
+        patterns: ['*']
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
