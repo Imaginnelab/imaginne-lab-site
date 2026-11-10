@@ -37,7 +37,7 @@ Permissões da chave restrita: escrita/leitura de Checkout Sessions e permissõe
 
 Execute `npm run dev` e abra `/pt/checkout/` depois de adicionar uma peça ao carrinho. Use uma conta autenticada no site. Cadastros e autenticação dependem do ambiente Supabase configurado; não criar contas de teste no backend de produção.
 
-O código recusa chaves `*_live_*` e origens sem https (exceto localhost). Desde 09/11/2026 o checkout de teste também roda no site publicado: na Vercel, configure `STRIPE_CHECKOUT_ENABLED=true`, `STRIPE_SECRET_KEY` de teste e `CHECKOUT_SITE_URL` com o domínio https de produção. Para o webhook em produção, crie o endpoint `https://<domínio>/api/stripe/webhook/` no painel da Stripe (modo teste) e coloque o segredo em `STRIPE_WEBHOOK_SECRET`. Atenção: o `vercel env pull` sobrescreve o `.env.local`; foi isso que apagou as variáveis locais da Stripe. As travas de concorrência de pedidos continuam por processo (ver orders.md).
+O código recusa chaves `*_live_*` e origens sem https (exceto localhost). Desde 09/11/2026 o checkout de teste também roda no site publicado: na Vercel, configure `STRIPE_CHECKOUT_ENABLED=true`, `STRIPE_SECRET_KEY` de teste e `CHECKOUT_SITE_URL` com o domínio https de produção. Para o webhook em produção, crie o endpoint `https://<domínio>/api/stripe/webhook/` no painel da Stripe (modo teste) e coloque o segredo em `STRIPE_WEBHOOK_SECRET`. As variáveis locais também ficam na Vercel (ambiente Development, com `CHECKOUT_SITE_URL=http://localhost:3000`): para montar o `.env.local`, rode `vercel env pull`. As travas de concorrência de pedidos continuam por processo (ver orders.md).
 
 ## Stripe Tax
 
