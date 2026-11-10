@@ -33,20 +33,14 @@ export default async function AdminPage({ params, searchParams }: Props) {
   return (
     <>
       <AdminSessionRefresh />
-      <header className="nav"><div className="wrap">
-        <NavigationLink className="brand" data-home="" href={localePath(locale)}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/img/logo-icon.svg" alt={t.brand} /><span>{t.brand}<small>{t.pageHeading}</small></span>
-        </NavigationLink>
-        <div className="nav-actions">
-          <NavigationLink className="btn btn-ghost btn-sm" href={localePath(locale, '/admin/orders')}>{ordersCopy.admin.title}</NavigationLink>
-          <NavigationLink className="btn btn-ghost btn-sm" data-home="" data-back="" href={localePath(locale)}>{m.back}</NavigationLink>
-        </div>
-      </div></header>
-      <main className="wrap admin-main" data-admin-root>
+      {/* The site's own header sits above, the same as on every other page. */}
+      <div className="wrap admin-main" data-admin-root>
         <p id="admin-status" role="status" aria-live="polite" />
         <section id="admin-content" aria-labelledby="admin-title">
-          <p className="eyebrow">{t.brand}</p><h1 className="heading" id="admin-title">{t.pageHeading}</h1>
+          <div className="admin-heading">
+            <h1 className="heading" id="admin-title">{t.pageHeading}</h1>
+            <NavigationLink className="btn btn-ghost btn-sm" href={localePath(locale, '/admin/orders')}>{ordersCopy.admin.title}</NavigationLink>
+          </div>
           <p id="admin-welcome" className="lede">{m.welcome}</p>
           <div className="admin-grid">
             <article className="admin-card"><h2 id="profile-heading">{m.profile}</h2><p id="admin-name">{user.fullName}</p><p id="admin-email">{user.email}</p></article>
@@ -63,7 +57,7 @@ export default async function AdminPage({ params, searchParams }: Props) {
             products={<ProductsPanel locale={locale} copy={t.products} initial={products} mostViewedId={star} />}
             coupons={<CouponsPanel locale={locale} copy={t.coupons} initial={coupons} initialNow={now} />} />
         </section>
-      </main>
+      </div>
     </>
   );
 }

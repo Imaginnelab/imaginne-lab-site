@@ -23,12 +23,12 @@ export default async function AdminOrdersPage({ params, searchParams }: Props) {
   };
   const [copy, result] = await Promise.all([getOrderDictionary(locale), listAdminOrders(query.after, input)]);
   if (!result.ok && result.error === 'signIn') redirect(localePath(locale));
-  return <main className="orders-page admin-orders-page wrap">
+  return <article className="orders-page admin-orders-page wrap">
     <BackLink href={localePath(locale, '/admin')} label={copy.admin.back} />
     <h1>{copy.admin.title}</h1><p className="orders-intro">{copy.admin.intro}</p>
     <p className="orders-test-notice">{copy.testNotice}</p>
     <AdminOrderFilters key={JSON.stringify(values)} locale={locale} values={values} copy={copy.admin.filters} labels={copy.status} />
     {query.after ? <NavigationLink className="order-newest" href={orderListHref(locale, true, values)}>{copy.newest}</NavigationLink> : null}
     <OrderList result={result} copy={copy} locale={locale} admin filters={values} />
-  </main>;
+  </article>;
 }
