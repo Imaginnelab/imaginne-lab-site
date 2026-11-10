@@ -16,6 +16,7 @@
     "admin": "Admin dashboard",
     "cart": "My cart",
     "orders": "My purchases",
+    "store": "Back to store",
     "mismatch": "Passwords do not match.",
     "nameRequired": "Enter your name.",
     "hint": "Use at least 8 characters.",

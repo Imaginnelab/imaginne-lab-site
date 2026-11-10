@@ -16,6 +16,7 @@
     "admin": "Painel admin",
     "cart": "Meu carrinho",
     "orders": "Minhas compras",
+    "store": "Voltar para a loja",
     "mismatch": "As senhas não coincidem.",
     "nameRequired": "Informe seu nome.",
     "hint": "Use pelo menos 8 caracteres.",

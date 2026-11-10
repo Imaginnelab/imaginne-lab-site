@@ -180,15 +180,22 @@ test('invalid and empty admin filters show helpful feedback', async ({ page, con
   await expect(page.getByLabel('Creados desde')).toBeVisible();
 });
 
-test('admin and order pages carry the same site header that turns into a pill on scroll', async ({ page, context }) => {
+test('admin pages carry only the logo and account menu; order pages the full header; both turn into a pill on scroll', async ({ page, context }) => {
   await signInLocally(context, adminId);
   await page.setViewportSize({ width: 1280, height: 800 });
   for (const path of ['/pt/admin/', '/pt/admin/orders/', '/pt/orders/']) {
+    const admin = path.startsWith('/pt/admin/');
     await page.goto(path);
     await expect(page.locator('header.nav')).toHaveCount(1);
-    await expect(page.locator('header.nav .nav-links')).toBeVisible();
-    await expect(page.locator('header.nav').getByRole('button', { name: /Abrir carrinho/ })).toBeVisible();
+    await expect(page.locator('header.nav .nav-links')).toHaveCount(admin ? 0 : 1);
+    await expect(page.locator('header.nav').getByRole('button', { name: /Abrir carrinho/ })).toHaveCount(admin ? 0 : 1);
     await expect(page.locator('main main')).toHaveCount(0);
+    if (admin) {
+      await expect(page.locator('footer')).toHaveCount(0);
+      await page.locator('header.nav .auth-trigger').click();
+      await expect(page.locator('#account-menu [role="menuitem"]')).toHaveText(['Voltar para a loja', 'Sair']);
+      await page.keyboard.press('Escape');
+    }
     await page.screenshot({ path: 'test-results/header' + path.replaceAll('/', '-') + 'top.png' });
     await page.mouse.wheel(0, 600);
     await expect(page.locator('header.nav')).toHaveClass(/is-scrolled/);

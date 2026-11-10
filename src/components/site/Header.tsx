@@ -7,11 +7,26 @@ import { AccountButton } from '@/components/account/AccountButton';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { MobileNav } from './MobileNav';
 import { CartButton } from '@/components/cart/CartButton';
-type Props = { locale: Locale; anchors: Dictionary['anchors']; copy: Dictionary['site']['header'] ; language: Dictionary['site']['language']; theme: Dictionary['site']['theme']; mobile: Dictionary['site']['mobile']; cartLabel: string };
+type Props = { locale: Locale; anchors: Dictionary['anchors']; copy: Dictionary['site']['header'] ; language: Dictionary['site']['language']; theme: Dictionary['site']['theme']; mobile: Dictionary['site']['mobile']; cartLabel: string; variant?: 'admin' };
 
 // The theme toggle is off while the site is light only (see prepaint.js); 'theme' stays in the
 // props so it can come back without touching the layouts. Orders live in the account menu.
-export function Header({ locale, anchors, copy, language, mobile, cartLabel }: Props) {
+// The admin variant is only the logo and the account button.
+export function Header({ locale, anchors, copy, language, mobile, cartLabel, variant }: Props) {
+  if (variant === 'admin') return (
+    <header className="nav">
+      <div className="wrap">
+        <NavigationLink className="brand" href={localePath(locale)}>
+          <img src="/assets/img/logo-icon.svg" alt={copy.alt001} />
+          <span>{' '}{copy.text001}{' '}<small>{copy.text002}</small></span>
+        </NavigationLink>
+        <div className="nav-actions">
+          <AccountButton locale={locale} admin />
+        </div>
+        <NavigationProgress />
+      </div>
+    </header>
+  );
   return (
     <header className="nav">
       <div className="wrap">

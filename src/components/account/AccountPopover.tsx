@@ -8,11 +8,26 @@ import type { AccountDictionary } from '@/i18n/account-dictionaries';
 import { signOut } from '@/lib/auth/actions';
 import type { AccountView } from '@/lib/auth/profile';
 
-type Props = { user: AccountView; t: AccountDictionary['account']; adminHref: string; ordersHref: string };
+type Props = { user: AccountView; t: AccountDictionary['account']; adminHref: string; ordersHref: string; storeHref?: string };
+
+// The cart row reads the cart, so it lives apart: the admin pages have no cart around them.
+function CartItem({ label, onOpen }: { label: string; onOpen: () => void }) {
+  const cart = useCart();
+  const count = cart.lines.reduce((sum, line) => sum + line.quantity, 0);
+  return (
+    <button type="button" role="menuitem" className="account-item"
+      onClick={() => { onOpen(); document.body.classList.remove('nav-open'); cart.open(); }}>
+      <CartIcon />
+      <span>{label}</span>
+      {count ? <span className="account-count">{count}</span> : null}
+    </button>
+  );
+}
 
 // Signed in, the avatar opens a menu under it (same family as the language menu) instead of a
-// modal: who is signed in, then everything the account can do, one row each.
-export function AccountPopover({ user, t, adminHref, ordersHref }: Props) {
+// modal: who is signed in, then everything the account can do, one row each. With storeHref
+// (the admin pages) it only leads back to the store or signs out.
+export function AccountPopover({ user, t, adminHref, ordersHref, storeHref }: Props) {
   const [opened, setOpened] = useState(false);
   // Opened from the keyboard, focus moves into the menu; opened with the pointer, it stays put.
   const byKeyboard = useRef(false);
@@ -21,8 +36,6 @@ export function AccountPopover({ user, t, adminHref, ordersHref }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
-  const cart = useCart();
-  const count = cart.lines.reduce((sum, line) => sum + line.quantity, 0);
 
   const items = () => Array.from(menu.current?.querySelectorAll<HTMLElement>('[role="menuitem"]:not([hidden])') ?? []);
 
@@ -51,12 +64,6 @@ export function AccountPopover({ user, t, adminHref, ordersHref }: Props) {
     const next = event.key === 'Home' ? 0 : event.key === 'End' ? list.length - 1
       : (at + (event.key === 'ArrowDown' ? 1 : -1) + list.length) % list.length;
     list[next]?.focus();
-  }
-
-  function openCart() {
-    close(false);
-    document.body.classList.remove('nav-open');
-    cart.open();
   }
 
   function leave() {
@@ -93,18 +100,23 @@ export function AccountPopover({ user, t, adminHref, ordersHref }: Props) {
             <p className="account-email">{user.email}</p>
           </div>
         </div>
-        <button type="button" role="menuitem" className="account-item" onClick={openCart}>
-          <CartIcon />
-          <span>{t.cart}</span>
-          {count ? <span className="account-count">{count}</span> : null}
-        </button>
-        <NavigationLink role="menuitem" className="account-item" href={ordersHref} onClick={() => close(false)}>
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" d="M7 4h10l4 5v11H3V9Zm-4 5h18M12 4v5M8 13h8m-8 4h5" />
-          </svg>
-          <span>{t.orders}</span>
-        </NavigationLink>
-        {user.isAdmin ? (
+        {storeHref ? (
+          <NavigationLink role="menuitem" className="account-item" href={storeHref} onClick={() => close(false)}>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" d="M4 9.5 5.5 4h13L20 9.5M4 9.5h16M4 9.5V20h16V9.5M9.5 20v-6h5v6" />
+            </svg>
+            <span>{t.store}</span>
+          </NavigationLink>
+        ) : (<>
+          <CartItem label={t.cart} onOpen={() => close(false)} />
+          <NavigationLink role="menuitem" className="account-item" href={ordersHref} onClick={() => close(false)}>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" d="M7 4h10l4 5v11H3V9Zm-4 5h18M12 4v5M8 13h8m-8 4h5" />
+            </svg>
+            <span>{t.orders}</span>
+          </NavigationLink>
+        </>)}
+        {user.isAdmin && !storeHref ? (
           <NavigationLink role="menuitem" className="account-item" href={adminHref} onClick={() => close(false)}>
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M4 5h7v8H4zM13 5h7v5h-7zM13 12h7v7h-7zM4 15h7v4H4z" />
