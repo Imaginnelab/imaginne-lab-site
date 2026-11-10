@@ -4,13 +4,15 @@ import Stripe from 'stripe';
 export { CHECKOUT_SOURCE, INTEGRATION_IDENTIFIER } from './constants';
 
 export function checkoutSettings() {
-  // This implementation is deliberately local and test-only. A live key cannot enable it.
-  if (process.env.STRIPE_CHECKOUT_ENABLED !== 'true' || process.env.VERCEL === '1' || process.env.VERCEL_ENV === 'production') return null;
+  // Test mode only, locally or on the deployed site. A live key cannot enable it.
+  if (process.env.STRIPE_CHECKOUT_ENABLED !== 'true') return null;
   const key = process.env.STRIPE_SECRET_KEY ?? '';
   if (!/^(sk|rk)_test_[A-Za-z0-9]+$/.test(key)) return null;
   try {
     const url = new URL(process.env.CHECKOUT_SITE_URL ?? 'http://localhost:3000');
-    if (!['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) || !['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.pathname !== '/' || url.search || url.hash) return null;
+    // Plain http only for a local server; the deployed site must be https.
+    const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+    if (!(url.protocol === 'https:' || (local && url.protocol === 'http:')) || url.username || url.password || url.pathname !== '/' || url.search || url.hash) return null;
     const shippingCents = Number(process.env.STRIPE_TEST_SHIPPING_CENTS ?? '0');
     if (!Number.isSafeInteger(shippingCents) || shippingCents < 0 || shippingCents > 100_000) return null;
     return { key, origin: url.origin, shippingCents, taxEnabled: process.env.STRIPE_TAX_ENABLED === 'true' };
