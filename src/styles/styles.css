@@ -75,7 +75,9 @@ html[data-auth="pending"] .auth-trigger::after { content: var(--auth-initials, "
 [data-theme="dark"] .account-item-leave { --leave: #ffb4ab; }
 [data-theme="dark"] .account-item-leave:hover, [data-theme="dark"] .account-item-leave:focus-visible { color: #ffdad6; background: rgba(255, 180, 171, .16); }
 .account-item-leave { position: relative; }
-.account-item + .account-item-leave::before { content: ""; position: absolute; inset: -.2rem .7rem auto; border-top: 1px solid var(--border); }
+/* The divider is ::after so ::before stays free for the busy spinner, which takes the icon's place. */
+.account-item + .account-item-leave::after { content: ""; position: absolute; inset: -.2rem .7rem auto; border-top: 1px solid var(--border); }
+.account-item-leave[aria-busy="true"]::before { width: 18px; height: 18px; margin: 0; box-sizing: border-box; }
 .account-item:disabled { cursor: progress; }
 .account-message { color: #b3261e; font-size: .85rem; padding-inline: .7rem; }
 .account-message:empty { display: none; }
