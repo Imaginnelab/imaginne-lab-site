@@ -1,5 +1,8 @@
-name: Deploy to production
+name: Prepare production deployment
 
+# A merge into main builds a production deployment on Vercel but does not put it live.
+# Going live is a manual step: Vercel → imaginne-lab-site → Deployments → the new one →
+# Promote. The same screen rolls back to an earlier deployment.
 on:
   push:
     branches: [main]
@@ -7,6 +10,8 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
+  checks: read
 
 concurrency:
   group: production-deploy
@@ -28,12 +33,23 @@ jobs:
         with:
           node-version: 24
 
+      # Only a PR approved by the other person, with its checks passed, gets deployed.
+      - name: Require an approved pull request
+        run: node .github/scripts/require-approved-pr.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          APPROVERS: GabrielFarinela,guifarinela
+
       # Without Git metadata the deployment belongs to the token's owner, so
       # Vercel does not block it because of who wrote the commit.
       - name: Remove Git metadata
         run: rm -rf .git
 
-      - name: Deploy
-        run: npx --yes vercel@65.8.0 deploy --prod --yes --token "$VERCEL_TOKEN" --meta commit="$GITHUB_SHA"
+      # --skip-domain: built as production, but www.imaginnelab.com keeps serving the current
+      # deployment until someone promotes this one on Vercel.
+      - name: Build the deployment (not live yet)
+        run: |
+          url=$(npx --yes vercel@65.8.0 deploy --prod --skip-domain --yes --token "$VERCEL_TOKEN" --meta commit="$GITHUB_SHA")
+          echo "Ready to promote: $url" >> "$GITHUB_STEP_SUMMARY"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
