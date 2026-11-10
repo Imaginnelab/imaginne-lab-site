@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      VERCEL_ORG_ID: team_oE6BNzH79wPoH8uONycQtm6H
-      VERCEL_PROJECT_ID: prj_wz7DcBO2rVmDSiws1p49Twqf71pS
+      VERCEL_ORG_ID: team_EbYm1ZwnAvsF36WCPTreXTgB
+      VERCEL_PROJECT_ID: prj_Ui7dxXaSbZmjBIbuRpAnObde7Nov
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
