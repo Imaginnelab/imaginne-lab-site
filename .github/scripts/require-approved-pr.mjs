@@ -1,6 +1,6 @@
 // Refuses to deploy a commit that did not reach main through a reviewed pull request.
-// GitHub Free cannot protect a private branch, so this is where the rule is enforced:
-// a direct push to main may land, but it never becomes a deployment.
+// The ruleset on main already refuses direct pushes; this is the second layer, in case the
+// ruleset is ever turned off: a commit that skipped review never becomes a deployment.
 //
 // Passes only when the commit being deployed is the merge of a pull request into main that
 //   - was approved, on its final commit, by one of APPROVERS other than its author, and

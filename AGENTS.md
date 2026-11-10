@@ -8,7 +8,8 @@ O site é uma aplicação Next.js e a produção sai da `main`. A versão estát
 - O PR precisa da aprovação da outra pessoa: se Gabriel (`GabrielFarinela`) abriu, Guilherme (`guifarinela`) aprova, e vice-versa. A aprovação vale para o último commit; um push depois dela exige nova aprovação. A conta `Imaginnelab` é só de administração: não abre nem aprova PR.
 - Todo PR roda typecheck, lint, testes e build (`.github/workflows/ci.yml`).
 - Depois do merge, `.github/workflows/deploy.yml` só prepara o deploy se o commit veio de PR aprovado com checks passando. O deploy é criado na Vercel (time Imaginnelab) **sem ir para o ar**. Publicar é manual: Vercel → imaginne-lab-site → Deployments → **Promote**.
-- O GitHub Free não protege branch privada: o push direto na `main` é tecnicamente possível, mas nunca vira deploy.
+- O repositório é público e a `main` tem uma regra no GitHub (ruleset): push direto, force push e exclusão são recusados para todos, inclusive admin; o merge exige o check `Checks` e aprovação de um code owner (`.github/CODEOWNERS`) que não seja quem fez o último push. A trava do deploy continua como segunda camada.
+- Repositório público: nunca commite segredo, senha, token ou dado de cliente. O GitHub recusa push com segredo conhecido, mas não confie só nisso.
 
 ## Stack
 
