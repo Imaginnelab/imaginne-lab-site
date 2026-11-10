@@ -14,7 +14,8 @@ import '@/styles/products.css';
 import '@/styles/product-search.css';
 
 type Copy = Pick<Dictionary['store'], 'card' | 'search' | 'list' | 'carousel'>;
-export function Carousel({ locale, initial, copy }: { locale: Locale; initial: PageResult; copy: Copy }) {
+// `search` off hides the search box, for a carousel that only suggests more pieces.
+export function Carousel({ locale, initial, copy, search: searchable = true }: { locale: Locale; initial: PageResult; copy: Copy; search?: boolean }) {
   const list = usePagedProducts(locale, initial);
   const track = useRef<HTMLUListElement>(null);
   const previous = useRef<HTMLButtonElement>(null);
@@ -65,7 +66,7 @@ export function Carousel({ locale, initial, copy }: { locale: Locale; initial: P
     <div className="products-carousel" role="region" aria-label={copy.carousel.region}>
       <div className="products-controls">
         <NavigationLink className="btn btn-ghost btn-sm products-all-link" href={localePath(locale, '/products')}>{copy.carousel.all}</NavigationLink>
-        <div data-products-search=""><SearchBox copy={copy.search} onSearch={onSearch} /></div>
+        {searchable ? <div data-products-search=""><SearchBox copy={copy.search} onSearch={onSearch} /></div> : null}
         <button ref={previous} type="button" className="products-arrow is-icon" data-products-previous="" aria-label={copy.carousel.previous} aria-controls={trackId} disabled><span aria-hidden="true" /></button>
         <button ref={next} type="button" className="products-arrow is-icon" data-products-next="" aria-label={copy.carousel.next} aria-controls={trackId} disabled={empty}><span aria-hidden="true" /></button>
       </div>

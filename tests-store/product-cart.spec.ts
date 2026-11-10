@@ -15,7 +15,7 @@ test('catalogue opens localized product details, shows all public fields and def
   await expect(page.locator('.product-description')).toContainText('Impressa camada por camada');
   await expect(page.locator('.product-purchase-price')).toContainText('49,90');
   await expect(page.getByRole('link', { name: 'Comprar agora', exact: true })).toHaveAttribute('href', '/pt/checkout/');
-  await expect(page.locator('.product-photo-grid figure img').nth(1)).toBeVisible();
+  await expect(page.locator('.product-thumbnail img').nth(1)).toBeVisible();
   expect(models).toEqual([]);
 });
 

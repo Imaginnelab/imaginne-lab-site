@@ -4,11 +4,12 @@ import { useProductSelection } from './ProductSelection';
 
 // Colours as round swatches; the chosen colour's name shows beside the label, and each swatch
 // carries its name for touch, hover (title) and screen readers.
-export function ProductColorList({ label, error }: { label: string; error?: string }) {
-  const { colors, selected, choose } = useProductSelection();
+export function ProductColorList({ label, missing }: { label: string; missing: string }) {
+  const { colors, selected, choose, attempted } = useProductSelection();
+  const error = attempted && !selected ? missing : undefined;
   const group = useId();
   if (!colors.length) return null;
-  return <fieldset className="product-colour-options" aria-describedby={error ? group + '-error' : undefined} aria-invalid={!!error}>
+  return <fieldset className="product-colour-options" id="product-colours" aria-describedby={error ? group + '-error' : undefined} aria-invalid={!!error}>
     <legend className="product-colour-label">{label}{selected ? <>: <span className="product-colour-chosen">{selected.name}</span></> : null}</legend>
     <ul className="product-detail-colors" aria-label={label}>
       {colors.map((color) => <li key={color.id}>

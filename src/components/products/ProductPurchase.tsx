@@ -6,25 +6,23 @@ import { useCart } from '@/components/cart/CartProvider';
 import { CartIcon } from '@/components/cart/CartIcon';
 import { QuantityControl } from '@/components/cart/QuantityControl';
 import { useProductSelection } from './ProductSelection';
-import { ProductColorList } from './ProductColorList';
 import { MAX_CART_QUANTITY } from '@/lib/products/input';
 import { NavigationLink } from '@/components/navigation/NavigationLink';
 import { localePath, type Locale } from '@/i18n/config';
 import { addToCart } from '@/lib/cart/store';
 
-type Copy = Pick<Dictionary['store']['detail'], 'quantity' | 'addToCart' | 'buyNow' | 'comingSoon' | 'onRequest' | 'cartFull' | 'chooseColor' | 'quantityInvalid' | 'secure' | 'shipping' | 'maker'>
-  & { colorLabel: string };
+type Copy = Pick<Dictionary['store']['detail'], 'quantity' | 'addToCart' | 'buyNow' | 'comingSoon' | 'onRequest' | 'cartFull' | 'chooseColor' | 'quantityInvalid' | 'secure' | 'shipping' | 'maker'>;
 
-// The buying column beside the photos: the piece's name, price and stock, colour and quantity,
-// the two actions, and the studio's assurances. It stays in view while the photos scroll.
-export function ProductPurchase({ id, name, price, copy, quantityCopy, unavailable, stockLabel, stockTone, locale }: {
+// The buy box on the right of the listing: price and stock, quantity, the two actions and the
+// studio's assurances. A missing colour is flagged in the colour list beside it, scrolled into view.
+export function ProductPurchase({ id, price, copy, quantityCopy, unavailable, stockLabel, stockTone, locale }: {
   locale: Locale;
   unavailable: boolean; stockLabel: string; stockTone: 'in' | 'out' | 'unknown';
-  id: string; name: string; price: string | null; copy: Copy;
+  id: string; price: string | null; copy: Copy;
   quantityCopy: Pick<Dictionary['store']['cart'], 'quantity' | 'decrease' | 'increase'>;
 }) {
   const { add } = useCart();
-  const { colors, selected } = useProductSelection();
+  const { colors, selected, attempt } = useProductSelection();
   const needsColor = colors.length > 0 && !selected;
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState('');
@@ -32,14 +30,13 @@ export function ProductPurchase({ id, name, price, copy, quantityCopy, unavailab
   const quantityError = attempted && (!Number.isInteger(quantity) || quantity <= 0 || quantity > MAX_CART_QUANTITY);
   const errorId = useId();
   function validSelection() {
-    setAttempted(true); setError('');
+    setAttempted(true); attempt(); setError('');
+    if (needsColor) document.getElementById('product-colours')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     return !needsColor && Number.isInteger(quantity) && quantity > 0 && quantity <= MAX_CART_QUANTITY;
   }
   return <aside className="product-purchase" id="product-purchase">
-    <h1 className="product-detail-title">{name}</h1>
     <p className="product-purchase-price">{price ?? copy.onRequest}</p>
     <p className={'product-stock is-' + stockTone}>{stockLabel}</p>
-    <ProductColorList label={copy.colorLabel} error={attempted && needsColor ? copy.chooseColor : undefined} />
     <p className="product-quantity-label">{copy.quantity}</p>
     <QuantityControl value={quantity} onChange={setQuantity} copy={quantityCopy} allowInvalid invalid={quantityError} describedBy={quantityError ? errorId : undefined} />
     {quantityError ? <p className="product-field-error" id={errorId} role="alert">{copy.quantityInvalid}</p> : null}

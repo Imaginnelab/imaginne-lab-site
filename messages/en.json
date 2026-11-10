@@ -362,8 +362,9 @@
       "shipping": "Shipping across Canada",
       "maker": "Made by Imaginne Lab",
       "colour": "Colour",
-      "features": "Features",
-      "madeToOrder": "Made to order"
+      "madeToOrder": "Made to order",
+      "more": "You may also like",
+      "visitStore": "See all Imaginne Lab pieces"
     },
     "checkout": {
       "title": "Checkout",

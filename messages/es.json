@@ -362,8 +362,9 @@
       "shipping": "Envío a todo Canadá",
       "maker": "Hecho por Imaginne Lab",
       "colour": "Color",
-      "features": "Características",
-      "madeToOrder": "Hecho por encargo"
+      "madeToOrder": "Hecho por encargo",
+      "more": "También te puede gustar",
+      "visitStore": "Ver todas las piezas de Imaginne Lab"
     },
     "checkout": {
       "title": "Finalizar compra",
