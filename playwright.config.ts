@@ -28,10 +28,12 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: [/\.admin\.spec\.ts$/, /\.setup\.ts$/] },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: [/\.admin\.spec\.ts$/, /\.setup\.ts$/, /\.teardown\.ts$/] },
     ...(hasAdmin
       ? [
-          { name: 'sign-in', testMatch: /auth\.setup\.ts$/ },
+          // The session saved by sign-in is revoked and deleted once the admin tests finish.
+          { name: 'sign-in', testMatch: /auth\.setup\.ts$/, teardown: 'sign-out' },
+          { name: 'sign-out', testMatch: /auth\.teardown\.ts$/, use: { ...devices['Desktop Chrome'] } },
           {
             name: 'admin',
             testMatch: /\.admin\.spec\.ts$/,
